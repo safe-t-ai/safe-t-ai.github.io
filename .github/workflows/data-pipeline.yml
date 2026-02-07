@@ -209,8 +209,8 @@ jobs:
           if [ -f backend/data/simulated/infrastructure_recommendations.json ]; then
             AI_PROJECTS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(d['summary']['ai_projects'])" 2>/dev/null || echo "N/A")
             NEED_PROJECTS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(d['summary']['need_based_projects'])" 2>/dev/null || echo "N/A")
-            AI_IMPACT=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(f\"{d['summary']['ai_disparate_impact']:.1%}\")" 2>/dev/null || echo "N/A")
-            NEED_IMPACT=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(f\"{d['summary']['need_based_disparate_impact']:.1%}\")" 2>/dev/null || echo "N/A")
+            AI_IMPACT=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(f\"{d['equity_metrics']['ai_allocation']['disparate_impact_ratio']:.1%}\")" 2>/dev/null || echo "N/A")
+            NEED_IMPACT=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(f\"{d['equity_metrics']['need_based_allocation']['disparate_impact_ratio']:.1%}\")" 2>/dev/null || echo "N/A")
 
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Test 3: Infrastructure Recommendations" >> $GITHUB_STEP_SUMMARY
