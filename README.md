@@ -1,14 +1,14 @@
 # SAFE-T: Safety Algorithm Fairness Evaluation for Transportation
 
-[![Live Demo](https://img.shields.io/badge/demo-live-success?style=flat-square)](https://civic-ai-audits.github.io/durham-transport/)
-[![Deploy](https://img.shields.io/github/actions/workflow/status/civic-ai-audits/durham-transport/deploy.yml?branch=main&style=flat-square&label=deploy)](https://github.com/civic-ai-audits/durham-transport/actions/workflows/deploy.yml)
+[![Live Demo](https://img.shields.io/badge/demo-live-success?style=flat-square)](https://safe-t-ai.github.io/)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/safe-t-ai/safe-t-ai.github.io/deploy.yml?branch=main&style=flat-square&label=deploy)](https://github.com/safe-t-ai/safe-t-ai.github.io/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9+-blue?style=flat-square&logo=python)](https://www.python.org/)
 [![Node](https://img.shields.io/badge/node-18+-green?style=flat-square&logo=node.js)](https://nodejs.org/)
 
 Society-centered auditing framework for evaluating equity and fairness in AI-driven transportation safety systems.
 
-**[🚀 Live Demo](https://civic-ai-audits.github.io/durham-transport/)**
+**[🚀 Live Demo](https://safe-t-ai.github.io/)**
 
 ## Problem Statement
 
@@ -27,7 +27,7 @@ AI tools like Strava Metro and StreetLight Data used by cities for infrastructur
 
 ### View Live Site
 
-Visit **[civic-ai-audits.github.io/durham-transport](https://civic-ai-audits.github.io/durham-transport/)**
+Visit **[safe-t-ai.github.io](https://safe-t-ai.github.io/)**
 
 The site updates automatically via scheduled data pipeline (Mondays 6 AM UTC).
 
@@ -241,13 +241,13 @@ python scripts/generate_static_data.py
 
 ```bash
 # Manually run data pipeline
-gh workflow run data-pipeline.yml --repo civic-ai-audits/durham-transport
+gh workflow run data-pipeline.yml --repo safe-t-ai/safe-t-ai.github.io
 
 # Manually deploy to gh-pages
-gh workflow run deploy.yml --repo civic-ai-audits/durham-transport
+gh workflow run deploy.yml --repo safe-t-ai/safe-t-ai.github.io
 
 # Check workflow status
-gh run list --repo civic-ai-audits/durham-transport --limit 5
+gh run list --repo safe-t-ai/safe-t-ai.github.io --limit 5
 ```
 
 ### Adding New Tests
