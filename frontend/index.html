@@ -173,29 +173,49 @@
         }
 
         .interpretation {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 1.5rem;
-            border-radius: 4px;
             margin-bottom: 2rem;
         }
 
         .interpretation h3 {
             font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: #856404;
+            margin-bottom: 1rem;
+            color: #2d3748;
         }
 
         .interpretation ul {
             list-style: none;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
         }
 
         .interpretation li {
-            padding: 0.5rem 0;
-            color: #856404;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 1.25rem;
+            padding-left: 3.5rem;
+            color: #0c4a6e;
             line-height: 1.6;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+        }
+
+        .interpretation li:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            transform: translateY(-1px);
+        }
+
+        .interpretation li::before {
+            content: "⚠";
+            position: absolute;
+            left: 1.25rem;
+            top: 1.25rem;
+            font-size: 1.5rem;
+            color: #0891b2;
         }
 
         .legend {
