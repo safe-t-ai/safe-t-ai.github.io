@@ -18,16 +18,6 @@ import {
 
 class App {
     constructor() {
-        // Fix Leaflet default marker icons with bundlers
-        if (typeof L !== 'undefined' && L.Icon && L.Icon.Default) {
-            delete L.Icon.Default.prototype._getIconUrl;
-            L.Icon.Default.mergeOptions({
-                iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-            });
-        }
-
         this.data = {};
         this.charts = {};
         this.map = null;
@@ -149,8 +139,17 @@ class App {
             valueField: 'error_pct'
         });
 
+        // Create custom icon (avoids Leaflet default icon issues)
+        const customIcon = L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="background-color: #3388ff; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>',
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
+        });
+
         // Add counter markers
         this.map.addMarkers(this.data.counters, {
+            icon: customIcon,
             popupContent: (point) => `
                 <div style="font-size: 13px;">
                     <strong>${point.counter_id}</strong><br/>
