@@ -114,8 +114,13 @@ export class Test2 {
     }
 
     updateCrashLayer() {
-        const field = this.currentView === 'actual' ? 'actual_crashes' : 'ai_predicted_crashes';
-        const label = this.currentView === 'actual' ? 'Actual Crashes' : 'AI Predicted Crashes';
+        const field = this.currentView === 'actual' ? 'actual_crashes_5yr' : 'ai_predicted_crashes';
+        const label = this.currentView === 'actual' ? 'Actual Crashes (5yr)' : 'AI Predicted Crashes';
+
+        // Different breaks for actual vs predicted (AI severely underpredicts)
+        const breaks = this.currentView === 'actual'
+            ? [500, 1000, 1500, 2000, 2500, 3000, 4000, 5000]
+            : [20, 40, 60, 80, 100, 150, 200, 250];
 
         // Clear existing layer
         if (this.map.choroplethLayer) {
@@ -129,15 +134,15 @@ export class Test2 {
             {
                 fillOpacity: 0.7,
                 colors: ['#ffffcc', '#ffeda0', '#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c', '#b10026'],
-                breaks: [15, 20, 25, 30, 35, 40, 45, 50]
+                breaks: breaks
             }
         );
 
         // Add legend
-        this.addCrashLegend(label);
+        this.addCrashLegend(label, breaks);
     }
 
-    addCrashLegend(title) {
+    addCrashLegend(title, breaks) {
         if (this.legend) {
             this.map.map.removeControl(this.legend);
         }
@@ -151,19 +156,19 @@ export class Test2 {
                 <div style="margin-top: 0.5rem;">
                     <div class="legend-item">
                         <span class="legend-color" style="background: #b10026;"></span>
-                        >45 crashes/year
+                        >${breaks[7]}
                     </div>
                     <div class="legend-item">
                         <span class="legend-color" style="background: #fc4e2a;"></span>
-                        35-45
+                        ${breaks[5]}-${breaks[7]}
                     </div>
                     <div class="legend-item">
                         <span class="legend-color" style="background: #fed976;"></span>
-                        25-35
+                        ${breaks[2]}-${breaks[5]}
                     </div>
                     <div class="legend-item">
                         <span class="legend-color" style="background: #ffffcc;"></span>
-                        <15
+                        <${breaks[2]}
                     </div>
                 </div>
             `;
