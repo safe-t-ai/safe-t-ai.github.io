@@ -5,10 +5,10 @@ Automated data pipeline that runs weekly to update Durham transportation safety 
 ## 🎯 Architecture
 
 ```
-┌─────────────────┐
-│  Weekly Cron    │  Every Monday 6 AM UTC
-│  or Manual      │  or Push to backend/scripts
-└────────┬────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  Data Pipeline (data-pipeline.yml)                          │
+│  Trigger: Weekly Mon 6AM UTC / Manual / Push to backend     │
+└────────┬─────────────────────────────────────────────────────┘
          │
          v
 ┌─────────────────────────────────────────────────────────────┐
@@ -31,20 +31,32 @@ Automated data pipeline that runs weekly to update Durham transportation safety 
 ┌─────────────────────────────────────────────────────────────┐
 │  Job 3: Generate Static Files                               │
 │  - Run backend analysis (Flask + GeoPandas)                │
-│  - Export 8 JSON files to frontend/public/data/           │
+│  - Export 8 JSON files                                     │
+│  - Upload as artifacts (30 day retention)                  │
 │  - Add metadata (hash, timestamp, commit)                  │
-└────────┬────────────────────────────────────────────────────┘
-         │
-         v
-┌─────────────────────────────────────────────────────────────┐
-│  Job 4: Commit & Deploy                                     │
-│  - Commit updated JSON files                                │
-│  - Push to main branch                                      │
-│  - Trigger gh-pages deployment automatically               │
 └─────────────────────────────────────────────────────────────┘
-         │
-         v
-   Live at: civic-ai-audits.github.io/durham-transport
+
+         ┌────────────────────────────────────────────────────┐
+         │  Deploy Workflow (deploy.yml)                      │
+         │  Trigger: Weekly Mon 7AM UTC / Manual / Push       │
+         └────────┬───────────────────────────────────────────┘
+                  │
+                  v
+         ┌────────────────────────────────────────────────────┐
+         │  Download Latest Data from Pipeline                │
+         │  - Fetch static-data-files artifact                │
+         │  - From latest successful data-pipeline run        │
+         └────────┬───────────────────────────────────────────┘
+                  │
+                  v
+         ┌────────────────────────────────────────────────────┐
+         │  Build & Deploy                                    │
+         │  - Build Vite frontend with latest data            │
+         │  - Deploy directly to gh-pages branch              │
+         └────────────────────────────────────────────────────┘
+                  │
+                  v
+         Live at: civic-ai-audits.github.io/durham-transport
 ```
 
 ## 🚀 Quick Start
@@ -155,7 +167,9 @@ This enables:
 
 ## 🔧 Pipeline Jobs
 
-### Job 1: Fetch Census Data
+### Data Pipeline Workflow (data-pipeline.yml)
+
+#### Job 1: Fetch Census Data
 
 **Purpose:** Get latest Durham census demographics
 
@@ -170,7 +184,7 @@ This enables:
 **Skips if:**
 - Scheduled run + data hash unchanged
 
-### Job 2: Simulate AI Predictions
+#### Job 2: Simulate AI Predictions
 
 **Purpose:** Generate AI volume predictions with bias
 
@@ -182,7 +196,7 @@ This enables:
 
 **Runtime:** ~30 seconds
 
-### Job 3: Generate Static Files
+#### Job 3: Generate Static Files
 
 **Purpose:** Run full backend analysis and export results
 
@@ -190,24 +204,29 @@ This enables:
 - Loads census + simulation data
 - Runs VolumeEstimationAuditor
 - Calculates all equity metrics
-- Exports 8 JSON files for gh-pages
+- Exports 8 JSON files
+- Uploads as artifacts (30 day retention)
 - Adds verification metadata
 
 **Runtime:** ~1-2 minutes
 
-### Job 4: Commit & Deploy
+**Total Data Pipeline:** ~3-5 minutes
 
-**Purpose:** Update repository and trigger deployment
+### Deploy Workflow (deploy.yml)
+
+#### Job: Build & Deploy
+
+**Purpose:** Build frontend with latest data and deploy
 
 **Actions:**
-- Commits new JSON files to main branch
-- Git bot commits with pipeline metadata
-- Push triggers gh-pages deploy workflow
-- Site updates automatically
+- Downloads latest `static-data-files` artifact from data-pipeline
+- Builds Vite frontend with data in public/data/
+- Deploys directly to gh-pages branch
+- No commits to main branch
 
 **Runtime:** ~30 seconds
 
-**Total Pipeline:** ~5-7 minutes end-to-end
+**Total Deploy:** ~30 seconds
 
 ---
 
@@ -360,11 +379,34 @@ This pipeline is modeled after [`duke-mlk/medical-flow`](../../duke-mlk/medical-
 - Multi-job workflow with artifacts
 - Automated report generation
 - Metadata tracking for reproducibility
+- **Two-workflow pattern** (data pipeline + deploy)
 
-Key pattern borrowed:
+### Two-Workflow Pattern
+
+Following duke-mlk/medical-flow, we use separate workflows:
+
+**Why Two Workflows?**
+1. **No git history pollution:** Data files stored as artifacts, not committed to main
+2. **Decoupled processes:** Data generation independent from deployment
+3. **No bot trigger issues:** Deploy workflow pulls artifacts (not triggered by bot commits)
+4. **Flexible scheduling:** Pipeline runs weekly, deploy can run independently
+5. **Clean separation:** Data science work vs frontend deployment
+
+**Key Implementation:**
 ```yaml
-# Only run expensive jobs if data changed
-if: needs.fetch-data.outputs.should-skip != 'true'
+# deploy.yml downloads artifacts from latest pipeline run
+- uses: dawidd6/action-download-artifact@v6
+  with:
+    workflow: data-pipeline.yml
+    name: static-data-files
+    path: frontend/public/data
+
+# deploy.yml uses peaceiris/actions-gh-pages for direct gh-pages push
+- uses: peaceiris/actions-gh-pages@v3
+  with:
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+    publish_branch: gh-pages
+    publish_dir: ./frontend/dist
 ```
 
 ---
