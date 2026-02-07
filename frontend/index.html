@@ -22,7 +22,7 @@
         .header {
             background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
             color: white;
-            padding: 2rem 2rem 1.5rem;
+            padding: 2rem 2rem 0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
@@ -36,6 +36,43 @@
             font-size: 0.95rem;
             opacity: 0.85;
             max-width: 900px;
+            margin-bottom: 1.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tab {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.9);
+        }
+
+        .tab.active {
+            background: #f5f7fa;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .test-content {
+            display: none;
+        }
+
+        .test-content.active {
+            display: block;
         }
 
         .container {
@@ -192,13 +229,19 @@
 <body>
     <div class="header">
         <h1>Durham Transportation Safety AI Audit</h1>
-        <p>Test 1: Volume Estimation Equity Audit – Evaluating AI tools for demographic bias in pedestrian and cyclist volume predictions</p>
+        <p id="test-description">Evaluating AI-driven transportation safety systems for equity</p>
+        <div class="tabs">
+            <button class="tab active" data-test="test1">Test 1: Volume Estimation</button>
+            <button class="tab" data-test="test3">Test 3: Infrastructure Allocation</button>
+        </div>
     </div>
 
     <div class="container">
         <div id="loading" class="loading">Loading data...</div>
         <div id="app" style="display: none;">
-            <div id="interpretation"></div>
+            <!-- Test 1 Content -->
+            <div id="test1-content" class="test-content active">
+                <div id="interpretation"></div>
 
             <div class="metrics-grid" id="metrics"></div>
 
@@ -228,6 +271,41 @@
                     <div id="chart-histogram" class="chart"></div>
                 </div>
             </div>
+            </div>
+            <!-- End Test 1 Content -->
+
+            <!-- Test 3 Content -->
+            <div id="test3-content" class="test-content">
+                <div id="test3-interpretation"></div>
+
+                <div class="metrics-grid" id="test3-metrics"></div>
+
+                <div class="map-container">
+                    <h2>Infrastructure Recommendations Map</h2>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="margin-right: 1rem;">
+                            <input type="radio" name="allocation-type" value="ai" checked> AI Allocation (Biased)
+                        </label>
+                        <label>
+                            <input type="radio" name="allocation-type" value="need"> Need-Based (Equitable)
+                        </label>
+                    </div>
+                    <div id="map-infrastructure"></div>
+                </div>
+
+                <div class="chart-grid">
+                    <div class="chart-container">
+                        <h2>Budget Flow (Sankey Diagram)</h2>
+                        <div id="chart-sankey" class="chart"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h2>Equity Dimensions (Radar Chart)</h2>
+                        <div id="chart-radar" class="chart"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Test 3 Content -->
         </div>
     </div>
 

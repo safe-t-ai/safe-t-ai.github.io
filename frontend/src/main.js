@@ -1,11 +1,12 @@
 /**
  * Durham Transportation Safety AI Audit - Main Application
- * Test 1: Volume Estimation Equity Audit
+ * Multi-test platform with tab navigation
  */
 
 import * as echarts from 'echarts';
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
+import { Test3 } from './test3.js';
 import {
     createBarChartConfig,
     createScatterChartConfig,
@@ -18,13 +19,15 @@ class App {
         this.data = {};
         this.charts = {};
         this.map = null;
+        this.test3Instance = null;
+        this.currentTest = 'test1';
     }
 
     async initialize() {
         try {
-            console.log('Loading data...');
+            console.log('Loading Test 1 data...');
 
-            // Load all data in parallel
+            // Load Test 1 data
             const [report, choroplethData, counters] = await Promise.all([
                 api.getTest1Report(),
                 api.getChoroplethData(),
@@ -37,17 +40,20 @@ class App {
                 counters
             };
 
-            console.log('Data loaded:', this.data);
+            console.log('Test 1 data loaded:', this.data);
 
             // Hide loading, show app
             document.getElementById('loading').style.display = 'none';
             document.getElementById('app').style.display = 'block';
 
-            // Render components
+            // Render Test 1 components
             this.renderInterpretation();
             this.renderMetrics();
             this.renderMap();
             this.renderCharts();
+
+            // Setup tab navigation
+            this.setupTabs();
 
             console.log('App initialized successfully');
         } catch (error) {
@@ -289,6 +295,47 @@ class App {
         this.charts.histogram = chart;
 
         window.addEventListener('resize', () => chart.resize());
+    }
+
+    setupTabs() {
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', async (e) => {
+                const testId = e.target.dataset.test;
+                await this.switchTest(testId);
+            });
+        });
+    }
+
+    async switchTest(testId) {
+        if (testId === this.currentTest) return;
+
+        // Update tab active state
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.test === testId);
+        });
+
+        // Update content visibility
+        document.querySelectorAll('.test-content').forEach(content => {
+            content.classList.toggle('active', content.id === `${testId}-content`);
+        });
+
+        // Update description
+        const descriptions = {
+            test1: 'Evaluating AI tools for demographic bias in pedestrian and cyclist volume predictions',
+            test3: 'Evaluating AI infrastructure recommendations for equitable resource allocation'
+        };
+        document.getElementById('test-description').textContent = descriptions[testId];
+
+        // Load test-specific data
+        if (testId === 'test3' && !this.test3Instance) {
+            document.getElementById('loading').style.display = 'flex';
+            this.test3Instance = new Test3();
+            await this.test3Instance.initialize();
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        this.currentTest = testId;
     }
 }
 
