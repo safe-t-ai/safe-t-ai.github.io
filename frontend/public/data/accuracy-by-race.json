@@ -1,0 +1,41 @@
+{
+  "by_category": [
+    {
+      "category": "Low (<30%)",
+      "count": 7,
+      "mean_minority_pct": 25.97142857142857,
+      "mae": 6.857142857142857,
+      "mape": 18.58246001103144,
+      "bias": 18.58246001103144,
+      "mean_error_pct": 18.58246001103144
+    },
+    {
+      "category": "Medium (30-60%)",
+      "count": 30,
+      "mean_minority_pct": 42.533333333333346,
+      "mae": 3.2666666666666666,
+      "mape": 5.987629904959309,
+      "bias": 0.07178208434958577,
+      "mean_error_pct": 0.07178208434958577
+    },
+    {
+      "category": "High (>60%)",
+      "count": 15,
+      "mean_minority_pct": 66.67999999999998,
+      "mae": 13.2,
+      "mape": 33.43377674956623,
+      "bias": -33.43377674956623,
+      "mean_error_pct": -33.43377674956623
+    }
+  ],
+  "equity_gap": {
+    "best_group": "Low (<30%)",
+    "worst_group": "High (>60%)",
+    "best_group_mean": 18.58246001102857,
+    "worst_group_mean": -33.43377674956,
+    "gap": 52.01623676058857,
+    "gap_pct": -155.57990097924883,
+    "statistically_significant": true,
+    "p_value": 1.0242415162693996e-08
+  }
+}
