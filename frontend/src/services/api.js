@@ -54,6 +54,27 @@ class APIClient {
         return this.get(IS_GITHUB_PAGES ? '/error-distribution' : '/test1/error-distribution');
     }
 
+    // Test 2 endpoints
+    async getCrashReport() {
+        return this.get(IS_GITHUB_PAGES ? '/crash-report' : '/test2/report');
+    }
+
+    async getConfusionMatrices() {
+        return this.get(IS_GITHUB_PAGES ? '/confusion-matrices' : '/test2/confusion-matrices');
+    }
+
+    async getRocCurves() {
+        return this.get(IS_GITHUB_PAGES ? '/roc-curves' : '/test2/roc-curves');
+    }
+
+    async getCrashTimeSeries() {
+        return this.get(IS_GITHUB_PAGES ? '/crash-time-series' : '/test2/crash-time-series');
+    }
+
+    async getCrashGeoData() {
+        return this.get(IS_GITHUB_PAGES ? '/crash-geo-data' : '/test2/crash-geo-data');
+    }
+
     // Test 3 endpoints
     async getInfrastructureReport() {
         return this.get(IS_GITHUB_PAGES ? '/infrastructure-report' : '/test3/report');
@@ -69,6 +90,31 @@ class APIClient {
 
     async getRecommendations() {
         return this.get(IS_GITHUB_PAGES ? '/recommendations' : '/test3/recommendations');
+    }
+
+    // Test 4 endpoints
+    async getDemandReport() {
+        return this.get(IS_GITHUB_PAGES ? '/demand-report' : '/test4/report');
+    }
+
+    async getDemandFunnel() {
+        return this.get(IS_GITHUB_PAGES ? '/demand-funnel' : '/test4/funnel');
+    }
+
+    async getCorrelationMatrix() {
+        return this.get(IS_GITHUB_PAGES ? '/correlation-matrix' : '/test4/correlation-matrix');
+    }
+
+    async getDetectionScorecard() {
+        return this.get(IS_GITHUB_PAGES ? '/detection-scorecard' : '/test4/scorecard');
+    }
+
+    async getNetworkFlow() {
+        return this.get(IS_GITHUB_PAGES ? '/network-flow' : '/test4/network-flow');
+    }
+
+    async getDemandGeoData() {
+        return this.get(IS_GITHUB_PAGES ? '/demand-geo-data' : '/test4/demand-geo-data');
     }
 
     async healthCheck() {

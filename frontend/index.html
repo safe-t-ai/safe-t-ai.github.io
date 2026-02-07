@@ -232,7 +232,9 @@
         <p id="test-description">Evaluating AI-driven transportation safety systems for equity</p>
         <div class="tabs">
             <button class="tab active" data-test="test1">Test 1: Volume Estimation</button>
+            <button class="tab" data-test="test2">Test 2: Crash Prediction</button>
             <button class="tab" data-test="test3">Test 3: Infrastructure Allocation</button>
+            <button class="tab" data-test="test4">Test 4: Suppressed Demand</button>
         </div>
     </div>
 
@@ -274,6 +276,44 @@
             </div>
             <!-- End Test 1 Content -->
 
+            <!-- Test 2 Content -->
+            <div id="test2-content" class="test-content">
+                <div id="test2-interpretation"></div>
+
+                <div class="metrics-grid" id="test2-metrics"></div>
+
+                <div class="map-container">
+                    <h2>Crash Distribution Map</h2>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="margin-right: 1rem;">
+                            <input type="radio" name="crash-view" value="actual" checked> Actual Crashes
+                        </label>
+                        <label>
+                            <input type="radio" name="crash-view" value="predicted"> AI Predicted Crashes
+                        </label>
+                    </div>
+                    <div id="map-crashes" style="width: 100%; height: 500px; border-radius: 4px;"></div>
+                </div>
+
+                <div class="chart-grid">
+                    <div class="chart-container">
+                        <h2>Model Performance by Quintile</h2>
+                        <div id="chart-confusion" class="chart"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h2>Crashes Over Time</h2>
+                        <div id="chart-timeseries" class="chart"></div>
+                    </div>
+
+                    <div class="chart-container" style="grid-column: 1 / -1;">
+                        <h2>ROC Curves by Income Quintile</h2>
+                        <div id="chart-roc" class="chart"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Test 2 Content -->
+
             <!-- Test 3 Content -->
             <div id="test3-content" class="test-content">
                 <div id="test3-interpretation"></div>
@@ -306,6 +346,47 @@
                 </div>
             </div>
             <!-- End Test 3 Content -->
+
+            <!-- Test 4 Content -->
+            <div id="test4-content" class="test-content">
+                <div id="test4-interpretation"></div>
+
+                <div class="metrics-grid" id="test4-metrics"></div>
+
+                <div class="map-container">
+                    <h2>Demand Distribution Map</h2>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="margin-right: 1rem;">
+                            <input type="radio" name="demand-view" value="suppressed" checked> Suppressed Demand
+                        </label>
+                        <label style="margin-right: 1rem;">
+                            <input type="radio" name="demand-view" value="potential"> Potential Demand
+                        </label>
+                        <label>
+                            <input type="radio" name="demand-view" value="actual"> Actual Demand
+                        </label>
+                    </div>
+                    <div id="map-demand" style="width: 100%; height: 500px; border-radius: 4px;"></div>
+                </div>
+
+                <div class="chart-grid">
+                    <div class="chart-container">
+                        <h2>Demand Suppression Funnel (Q1 vs Q5)</h2>
+                        <div id="chart-funnel" class="chart"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h2>Variable Correlations</h2>
+                        <div id="chart-correlation" class="chart"></div>
+                    </div>
+
+                    <div class="chart-container" style="grid-column: 1 / -1;">
+                        <h2>AI Detection Capability</h2>
+                        <div id="chart-scorecard" class="chart"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Test 4 Content -->
         </div>
     </div>
 

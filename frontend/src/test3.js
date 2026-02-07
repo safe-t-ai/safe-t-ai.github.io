@@ -119,6 +119,43 @@ export class Test3 {
 
         // Add recommendations layer
         this.updateRecommendationsLayer();
+
+        // Add project type legend
+        this.addProjectLegend();
+    }
+
+    addProjectLegend() {
+        const legend = L.control({ position: 'bottomright' });
+
+        legend.onAdd = () => {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <h4>Project Types</h4>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #ffd700;"></span>
+                    Crosswalk
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #4CAF50;"></span>
+                    Bike Lane
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #2196F3;"></span>
+                    Traffic Signal
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #FF9800;"></span>
+                    Speed Reduction
+                </div>
+                <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
+                    <small>Marker size = project cost</small>
+                </div>
+            `;
+            return div;
+        };
+
+        legend.addTo(this.map.map);
+        this.legend = legend;
     }
 
     updateRecommendationsLayer() {

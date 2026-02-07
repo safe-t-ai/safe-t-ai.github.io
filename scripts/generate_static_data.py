@@ -151,6 +151,131 @@ def main():
         print(f"Warning: Infrastructure data not found at {infrastructure_file}")
         print("Run scripts/simulate_infrastructure_recommendations.py first")
 
+    # ===== TEST 2: Crash Prediction Bias =====
+    print("\n" + "=" * 60)
+    print("Generating Test 2 data (Crash Prediction Bias)...")
+    print("=" * 60)
+
+    # Load crash prediction data
+    crash_report_file = SIMULATED_DATA_DIR / 'crash_predictions.json'
+    if crash_report_file.exists():
+        print("Loading crash prediction data...")
+
+        # 13. Crash prediction report
+        print("Generating crash prediction report...")
+        with open(crash_report_file, 'r') as f:
+            crash_report = json.load(f)
+        with open(output_dir / 'crash-report.json', 'w') as f:
+            json.dump(crash_report, f, indent=2)
+
+        # 14. Confusion matrices
+        print("Generating confusion matrices...")
+        confusion_file = SIMULATED_DATA_DIR / 'confusion_matrices.json'
+        if confusion_file.exists():
+            with open(confusion_file, 'r') as f:
+                confusion_data = json.load(f)
+            with open(output_dir / 'confusion-matrices.json', 'w') as f:
+                json.dump(confusion_data, f, indent=2)
+
+        # 15. ROC curves
+        print("Generating ROC curves...")
+        roc_file = SIMULATED_DATA_DIR / 'roc_curves.json'
+        if roc_file.exists():
+            with open(roc_file, 'r') as f:
+                roc_data = json.load(f)
+            with open(output_dir / 'roc-curves.json', 'w') as f:
+                json.dump(roc_data, f, indent=2)
+
+        # 16. Time series
+        print("Generating crash time series...")
+        timeseries_file = SIMULATED_DATA_DIR / 'crash_time_series.json'
+        if timeseries_file.exists():
+            with open(timeseries_file, 'r') as f:
+                timeseries_data = json.load(f)
+            with open(output_dir / 'crash-time-series.json', 'w') as f:
+                json.dump(timeseries_data, f, indent=2)
+
+        # 17. Geospatial crash data (actual vs predicted)
+        print("Generating crash map data...")
+        crash_geo_file = SIMULATED_DATA_DIR / 'crash_geo_data.json'
+        if crash_geo_file.exists():
+            with open(crash_geo_file, 'r') as f:
+                crash_geo = json.load(f)
+            with open(output_dir / 'crash-geo-data.json', 'w') as f:
+                json.dump(crash_geo, f)
+
+        print("✓ Test 2 data generation complete!")
+    else:
+        print(f"Warning: Crash prediction data not found at {crash_report_file}")
+        print("Run scripts/simulate_crash_predictions.py first")
+
+    # ===== TEST 4: Suppressed Demand Analysis =====
+    print("\n" + "=" * 60)
+    print("Generating Test 4 data (Suppressed Demand Analysis)...")
+    print("=" * 60)
+
+    # Load suppressed demand data
+    demand_report_file = SIMULATED_DATA_DIR / 'demand_analysis.json'
+    if demand_report_file.exists():
+        print("Loading suppressed demand data...")
+
+        # 18. Demand analysis report
+        print("Generating demand analysis report...")
+        with open(demand_report_file, 'r') as f:
+            demand_report = json.load(f)
+        with open(output_dir / 'demand-report.json', 'w') as f:
+            json.dump(demand_report, f, indent=2)
+
+        # 19. Demand funnel
+        print("Generating demand funnel...")
+        funnel_file = SIMULATED_DATA_DIR / 'demand_funnel.json'
+        if funnel_file.exists():
+            with open(funnel_file, 'r') as f:
+                funnel_data = json.load(f)
+            with open(output_dir / 'demand-funnel.json', 'w') as f:
+                json.dump(funnel_data, f, indent=2)
+
+        # 20. Correlation matrix
+        print("Generating correlation matrix...")
+        corr_file = SIMULATED_DATA_DIR / 'correlation_matrix.json'
+        if corr_file.exists():
+            with open(corr_file, 'r') as f:
+                corr_data = json.load(f)
+            with open(output_dir / 'correlation-matrix.json', 'w') as f:
+                json.dump(corr_data, f, indent=2)
+
+        # 21. Detection scorecard
+        print("Generating detection scorecard...")
+        scorecard_file = SIMULATED_DATA_DIR / 'detection_scorecard.json'
+        if scorecard_file.exists():
+            with open(scorecard_file, 'r') as f:
+                scorecard_data = json.load(f)
+            with open(output_dir / 'detection-scorecard.json', 'w') as f:
+                json.dump(scorecard_data, f, indent=2)
+
+        # 22. Network flow
+        print("Generating network flow...")
+        network_file = SIMULATED_DATA_DIR / 'network_flow.json'
+        if network_file.exists():
+            with open(network_file, 'r') as f:
+                network_data = json.load(f)
+            with open(output_dir / 'network-flow.json', 'w') as f:
+                json.dump(network_data, f, indent=2)
+
+        # 23. Geospatial demand data
+        print("Generating demand map data...")
+        demand_geo_file = SIMULATED_DATA_DIR / 'demand_geo_data.json'
+        if demand_geo_file.exists():
+            with open(demand_geo_file, 'r') as f:
+                demand_geo = json.load(f)
+            with open(output_dir / 'demand-geo-data.json', 'w') as f:
+                json.dump(demand_geo, f)
+
+        print("✓ Test 4 data generation complete!")
+    else:
+        print(f"Warning: Suppressed demand data not found at {demand_report_file}")
+        print("Run scripts/analyze_suppressed_demand.py first")
+
     # Summary
     print("\n" + "=" * 60)
     print("✓ Static data generation complete!")
