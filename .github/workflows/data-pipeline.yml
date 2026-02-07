@@ -1,0 +1,313 @@
+name: Data Pipeline
+
+on:
+  schedule:
+    # Run weekly on Mondays at 6 AM UTC (census data doesn't change often)
+    - cron: '0 6 * * 1'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'scripts/**'
+      - '.github/workflows/data-pipeline.yml'
+  workflow_dispatch:
+    inputs:
+      force_regenerate:
+        description: 'Force regenerate all data'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  fetch-census-data:
+    runs-on: ubuntu-latest
+    outputs:
+      data-hash: ${{ steps.compute-hash.outputs.hash }}
+      should-skip: ${{ steps.check-changed.outputs.skip }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Restore previous data hash
+        if: github.event.inputs.force_regenerate != 'true'
+        id: cache-hash
+        uses: actions/cache/restore@v4
+        with:
+          path: .data-hash
+          key: durham-data-hash-${{ github.run_id }}
+          restore-keys: durham-data-hash-
+
+      - name: Fetch Durham census data
+        env:
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+        run: |
+          cd backend
+          python ../scripts/fetch_durham_data.py
+
+      - name: Compute data hash
+        id: compute-hash
+        run: |
+          HASH=$(sha256sum backend/data/raw/durham_census_tracts.geojson | cut -c1-16)
+          echo "$HASH" > .data-hash
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
+          if [ -f ".data-hash.prev" ] && [ "${{ github.event.inputs.force_regenerate }}" != "true" ]; then
+            PREV_HASH=$(cat .data-hash.prev)
+            echo "previous-hash=$PREV_HASH" >> $GITHUB_OUTPUT
+          else
+            echo "previous-hash=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if data changed
+        id: check-changed
+        run: |
+          CURRENT="${{ steps.compute-hash.outputs.hash }}"
+          PREVIOUS="${{ steps.compute-hash.outputs.previous-hash }}"
+          FORCE="${{ github.event.inputs.force_regenerate }}"
+
+          if [[ "${{ github.event_name }}" == "schedule" && "$CURRENT" == "$PREVIOUS" && -n "$PREVIOUS" && "$FORCE" != "true" ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "📊 Data unchanged: $CURRENT (scheduled run, skipping pipeline)"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            if [[ "${{ github.event_name }}" == "schedule" ]]; then
+              echo "📊 Data changed: $PREVIOUS -> $CURRENT"
+            elif [[ "$FORCE" == "true" ]]; then
+              echo "📊 Force regenerate requested"
+            else
+              echo "📊 Running pipeline (triggered by: ${{ github.event_name }})"
+            fi
+          fi
+
+      - name: Save data hash
+        if: steps.check-changed.outputs.skip != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .data-hash
+          key: durham-data-hash-${{ github.run_id }}
+
+      - name: Generate job summary
+        run: |
+          echo "## 📊 Durham Census Data" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f backend/data/raw/durham_census_tracts.geojson ]; then
+            TRACTS=$(python3 -c "import json; d=json.load(open('backend/data/raw/durham_census_tracts.geojson')); print(len(d['features']))" 2>/dev/null || echo "N/A")
+            SIZE=$(du -h backend/data/raw/durham_census_tracts.geojson | cut -f1)
+
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Census Tracts | $TRACTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| File Size | $SIZE |" >> $GITHUB_STEP_SUMMARY
+            echo "| Data Hash | ${{ steps.compute-hash.outputs.hash }} |" >> $GITHUB_STEP_SUMMARY
+
+            if [ "${{ steps.check-changed.outputs.skip }}" == "true" ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "> ⏭️ Skipping remaining pipeline: data unchanged" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+      - name: Upload census data artifact
+        if: steps.check-changed.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: census-data
+          path: backend/data/raw/durham_census_tracts.geojson
+          retention-days: 7
+
+  simulate-ai-predictions:
+    needs: fetch-census-data
+    if: needs.fetch-census-data.outputs.should-skip != 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Download census data
+        uses: actions/download-artifact@v4
+        with:
+          name: census-data
+          path: backend/data/raw
+
+      - name: Simulate AI predictions with bias
+        run: |
+          cd backend
+          python ../scripts/simulate_ai_predictions.py
+
+      - name: Generate job summary
+        run: |
+          echo "## 🤖 AI Predictions Simulation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f backend/data/simulated/ai_volume_predictions.json ]; then
+            PREDICTIONS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/ai_volume_predictions.json')); print(len(d))" 2>/dev/null || echo "N/A")
+            AVG_ERROR=$(python3 -c "import json; d=json.load(open('backend/data/simulated/ai_volume_predictions.json')); errors=[x['error_pct'] for x in d]; print(f'{sum(errors)/len(errors):.1f}%')" 2>/dev/null || echo "N/A")
+
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Counter Locations | $PREDICTIONS |" >> $GITHUB_STEP_SUMMARY
+            echo "| Average Bias | $AVG_ERROR |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload simulation data artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulation-data
+          path: backend/data/simulated/
+          retention-days: 7
+
+  generate-static-files:
+    needs: [fetch-census-data, simulate-ai-predictions]
+    if: needs.fetch-census-data.outputs.should-skip != 'true'
+    runs-on: ubuntu-latest
+    env:
+      DATA_HASH: ${{ needs.fetch-census-data.outputs.data-hash }}
+      GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+      GIT_SHA: ${{ github.sha }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Download census data
+        uses: actions/download-artifact@v4
+        with:
+          name: census-data
+          path: backend/data/raw
+
+      - name: Download simulation data
+        uses: actions/download-artifact@v4
+        with:
+          name: simulation-data
+          path: backend/data/simulated
+
+      - name: Generate static JSON files for gh-pages
+        run: |
+          mkdir -p frontend/public/data
+          python scripts/generate_static_data.py
+
+          # Add metadata
+          cat > frontend/public/data/metadata.json << EOF
+          {
+            "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "data_hash": "${{ env.DATA_HASH }}",
+            "github_run_url": "${{ env.GITHUB_RUN_URL }}",
+            "git_sha": "${{ env.GIT_SHA }}"
+          }
+          EOF
+
+      - name: Generate job summary
+        run: |
+          echo "## 📦 Static Files Generated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+
+          cd frontend/public/data
+          for file in *.json; do
+            SIZE=$(du -h "$file" | cut -f1)
+            echo "| $file | $SIZE |" >> $GITHUB_STEP_SUMMARY
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Verification" >> $GITHUB_STEP_SUMMARY
+          echo "- **Data Hash:** \`${{ env.DATA_HASH }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Generated:** $(date -u +%Y-%m-%d\ %H:%M:%S\ UTC)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** [\`${GITHUB_SHA:0:7}\`](${{ env.REPO_URL }}/commit/${{ env.GIT_SHA }})" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload static files artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-data-files
+          path: frontend/public/data/
+          retention-days: 30
+
+  commit-and-deploy:
+    needs: [fetch-census-data, generate-static-files]
+    if: needs.fetch-census-data.outputs.should-skip != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download static files
+        uses: actions/download-artifact@v4
+        with:
+          name: static-data-files
+          path: frontend/public/data
+
+      - name: Commit updated data files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add frontend/public/data/
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update static data files from pipeline
+
+            - Data hash: ${{ needs.fetch-census-data.outputs.data-hash }}
+            - Pipeline run: ${{ github.run_id }}
+            - Triggered by: ${{ github.event_name }}"
+
+            git push
+            echo "✅ Data files committed and pushed"
+          fi
+
+      - name: Generate final summary
+        run: |
+          echo "## ✅ Pipeline Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Static data files have been updated and committed." >> $GITHUB_STEP_SUMMARY
+          echo "The gh-pages deployment will be triggered automatically." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Live Site:** https://civic-ai-audits.github.io/durham-transport/" >> $GITHUB_STEP_SUMMARY
