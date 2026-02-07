@@ -107,7 +107,7 @@ export class Test2 {
     }
 
     renderMap() {
-        this.map = new DurhamMap('map-crashes');
+        this.map = new DurhamMap('map-crashes').initialize();
 
         // Add actual crashes layer (default view)
         this.updateCrashLayer();

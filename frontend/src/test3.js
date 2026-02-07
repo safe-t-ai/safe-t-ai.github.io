@@ -104,7 +104,7 @@ export class Test3 {
 
     renderMap() {
         const mapEl = document.getElementById('map-infrastructure');
-        this.map = new DurhamMap('map-infrastructure');
+        this.map = new DurhamMap('map-infrastructure').initialize();
 
         // Add danger scores layer
         this.map.addChoroplethLayer(
