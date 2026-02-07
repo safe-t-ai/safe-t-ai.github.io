@@ -4,7 +4,7 @@
  */
 
 const IS_GITHUB_PAGES = window.location.hostname.includes('github.io');
-const API_BASE = IS_GITHUB_PAGES ? '/durham-transport/data' : '/api';
+const API_BASE = IS_GITHUB_PAGES ? '/data' : '/api';
 
 class APIClient {
     async get(endpoint) {
