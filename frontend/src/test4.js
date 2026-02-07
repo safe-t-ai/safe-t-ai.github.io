@@ -106,7 +106,7 @@ export class Test4 {
     }
 
     renderMap() {
-        this.map = new DurhamMap('map-demand');
+        this.map = new DurhamMap('map-demand').initialize();
 
         // Add suppressed demand layer (default view)
         this.updateDemandLayer();
