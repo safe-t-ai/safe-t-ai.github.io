@@ -56,9 +56,28 @@ def main():
     with open(output_dir / 'report.json', 'w') as f:
         json.dump(report, f, indent=2)
 
-    # 4. Choropleth data
+    # 4. Choropleth data (use tract-level predictions for full coverage)
     print("Generating choropleth data...")
-    tract_errors_gdf = auditor.get_tract_level_errors()
+    tract_predictions_file = SIMULATED_DATA_DIR / 'tract_volume_predictions.json'
+    if tract_predictions_file.exists():
+        # Load tract-level predictions (all 238 tracts)
+        tract_predictions = pd.read_json(tract_predictions_file)
+
+        # Ensure tract_id is string in both dataframes
+        tract_predictions['tract_id'] = tract_predictions['tract_id'].astype(str)
+        census_gdf['tract_id'] = census_gdf['tract_id'].astype(str)
+
+        # Merge with census geometries
+        tract_errors_gdf = census_gdf[['tract_id', 'geometry']].merge(
+            tract_predictions[['tract_id', 'error_pct', 'error', 'true_volume', 'predicted_volume']],
+            on='tract_id',
+            how='left'
+        )
+    else:
+        # Fallback to counter-based errors (old method)
+        print("  Warning: tract_volume_predictions.json not found, using counter-based errors")
+        tract_errors_gdf = auditor.get_tract_level_errors()
+
     tract_errors_gdf = simplify_geometry(tract_errors_gdf, tolerance=0.001)
     choropleth_geojson = geojson_to_dict(tract_errors_gdf)
     with open(output_dir / 'choropleth-data.json', 'w') as f:

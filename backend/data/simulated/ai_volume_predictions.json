@@ -2,10 +2,10 @@
   {
     "counter_id":"CTR001",
     "tract_id":"37063001710",
-    "true_volume":42,
-    "predicted_volume":24,
-    "error":-18,
-    "error_pct":-42.8571428571,
+    "true_volume":53,
+    "predicted_volume":33,
+    "error":-20,
+    "error_pct":-37.7358490566,
     "income_quintile":2,
     "pct_minority":69.0,
     "bias_applied":0.6
@@ -13,10 +13,10 @@
   {
     "counter_id":"CTR002",
     "tract_id":"37063001604",
-    "true_volume":75,
-    "predicted_volume":76,
-    "error":1,
-    "error_pct":1.3333333333,
+    "true_volume":76,
+    "predicted_volume":87,
+    "error":11,
+    "error_pct":14.4736842105,
     "income_quintile":4,
     "pct_minority":41.5,
     "bias_applied":1.08
@@ -24,10 +24,10 @@
   {
     "counter_id":"CTR003",
     "tract_id":"37063000600",
-    "true_volume":49,
+    "true_volume":48,
     "predicted_volume":46,
-    "error":-3,
-    "error_pct":-6.1224489796,
+    "error":-2,
+    "error_pct":-4.1666666667,
     "income_quintile":3,
     "pct_minority":31.6,
     "bias_applied":1.0
@@ -35,10 +35,10 @@
   {
     "counter_id":"CTR004",
     "tract_id":"37063001810",
-    "true_volume":38,
-    "predicted_volume":21,
-    "error":-17,
-    "error_pct":-44.7368421053,
+    "true_volume":50,
+    "predicted_volume":30,
+    "error":-20,
+    "error_pct":-40.0,
     "income_quintile":2,
     "pct_minority":80.7,
     "bias_applied":0.6
@@ -46,10 +46,10 @@
   {
     "counter_id":"CTR005",
     "tract_id":"37063001505",
-    "true_volume":39,
-    "predicted_volume":21,
-    "error":-18,
-    "error_pct":-46.1538461538,
+    "true_volume":29,
+    "predicted_volume":18,
+    "error":-11,
+    "error_pct":-37.9310344828,
     "income_quintile":1,
     "pct_minority":63.1,
     "bias_applied":0.6
@@ -57,10 +57,10 @@
   {
     "counter_id":"CTR006",
     "tract_id":"37063002029",
-    "true_volume":36,
-    "predicted_volume":33,
-    "error":-3,
-    "error_pct":-8.3333333333,
+    "true_volume":47,
+    "predicted_volume":43,
+    "error":-4,
+    "error_pct":-8.5106382979,
     "income_quintile":3,
     "pct_minority":35.6,
     "bias_applied":1.0
@@ -68,10 +68,10 @@
   {
     "counter_id":"CTR007",
     "tract_id":"37063002030",
-    "true_volume":35,
-    "predicted_volume":44,
-    "error":9,
-    "error_pct":25.7142857143,
+    "true_volume":36,
+    "predicted_volume":37,
+    "error":1,
+    "error_pct":2.7777777778,
     "income_quintile":5,
     "pct_minority":26.4,
     "bias_applied":1.134
@@ -79,10 +79,10 @@
   {
     "counter_id":"CTR008",
     "tract_id":"37063002030",
-    "true_volume":40,
-    "predicted_volume":46,
-    "error":6,
-    "error_pct":15.0,
+    "true_volume":34,
+    "predicted_volume":38,
+    "error":4,
+    "error_pct":11.7647058824,
     "income_quintile":5,
     "pct_minority":26.4,
     "bias_applied":1.134
@@ -90,10 +90,10 @@
   {
     "counter_id":"CTR009",
     "tract_id":"37063002023",
-    "true_volume":27,
-    "predicted_volume":31,
+    "true_volume":33,
+    "predicted_volume":37,
     "error":4,
-    "error_pct":14.8148148148,
+    "error_pct":12.1212121212,
     "income_quintile":4,
     "pct_minority":36.3,
     "bias_applied":1.08
@@ -101,10 +101,10 @@
   {
     "counter_id":"CTR010",
     "tract_id":"37063002022",
-    "true_volume":38,
-    "predicted_volume":31,
-    "error":-7,
-    "error_pct":-18.4210526316,
+    "true_volume":45,
+    "predicted_volume":34,
+    "error":-11,
+    "error_pct":-24.4444444444,
     "income_quintile":3,
     "pct_minority":60.3,
     "bias_applied":0.8
@@ -112,10 +112,10 @@
   {
     "counter_id":"CTR011",
     "tract_id":"37063002022",
-    "true_volume":40,
-    "predicted_volume":34,
-    "error":-6,
-    "error_pct":-15.0,
+    "true_volume":43,
+    "predicted_volume":32,
+    "error":-11,
+    "error_pct":-25.5813953488,
     "income_quintile":3,
     "pct_minority":60.3,
     "bias_applied":0.8
@@ -123,10 +123,10 @@
   {
     "counter_id":"CTR012",
     "tract_id":"37063000302",
-    "true_volume":37,
+    "true_volume":38,
     "predicted_volume":43,
-    "error":6,
-    "error_pct":16.2162162162,
+    "error":5,
+    "error_pct":13.1578947368,
     "income_quintile":4,
     "pct_minority":25.4,
     "bias_applied":1.134
@@ -134,10 +134,10 @@
   {
     "counter_id":"CTR013",
     "tract_id":"37063001809",
-    "true_volume":54,
-    "predicted_volume":50,
-    "error":-4,
-    "error_pct":-7.4074074074,
+    "true_volume":77,
+    "predicted_volume":84,
+    "error":7,
+    "error_pct":9.0909090909,
     "income_quintile":3,
     "pct_minority":46.9,
     "bias_applied":1.0
@@ -145,10 +145,10 @@
   {
     "counter_id":"CTR014",
     "tract_id":"37063001808",
-    "true_volume":97,
-    "predicted_volume":106,
-    "error":9,
-    "error_pct":9.2783505155,
+    "true_volume":92,
+    "predicted_volume":95,
+    "error":3,
+    "error_pct":3.2608695652,
     "income_quintile":5,
     "pct_minority":51.5,
     "bias_applied":1.08
@@ -156,10 +156,10 @@
   {
     "counter_id":"CTR015",
     "tract_id":"37063001809",
-    "true_volume":60,
-    "predicted_volume":59,
-    "error":-1,
-    "error_pct":-1.6666666667,
+    "true_volume":75,
+    "predicted_volume":73,
+    "error":-2,
+    "error_pct":-2.6666666667,
     "income_quintile":3,
     "pct_minority":46.9,
     "bias_applied":1.0
