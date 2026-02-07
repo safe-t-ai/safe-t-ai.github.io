@@ -54,6 +54,23 @@ class APIClient {
         return this.get(IS_GITHUB_PAGES ? '/error-distribution' : '/test1/error-distribution');
     }
 
+    // Test 3 endpoints
+    async getInfrastructureReport() {
+        return this.get(IS_GITHUB_PAGES ? '/infrastructure-report' : '/test3/report');
+    }
+
+    async getDangerScores() {
+        return this.get(IS_GITHUB_PAGES ? '/danger-scores' : '/test3/danger-scores');
+    }
+
+    async getBudgetAllocation() {
+        return this.get(IS_GITHUB_PAGES ? '/budget-allocation' : '/test3/budget-allocation');
+    }
+
+    async getRecommendations() {
+        return this.get(IS_GITHUB_PAGES ? '/recommendations' : '/test3/recommendations');
+    }
+
     async healthCheck() {
         if (IS_GITHUB_PAGES) {
             return { status: 'healthy', mode: 'static' };
