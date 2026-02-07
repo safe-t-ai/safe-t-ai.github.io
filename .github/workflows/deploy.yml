@@ -1,22 +1,25 @@
 name: Deploy to GitHub Pages
 
 on:
+  schedule:
+    - cron: '0 7 * * 1'  # Weekly on Mondays at 7 AM UTC (1 hour after pipeline)
   push:
     branches:
       - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,23 +37,37 @@ jobs:
           cd frontend
           npm ci
 
+      - name: Download latest data from pipeline
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: data-pipeline.yml
+          name: static-data-files
+          path: frontend/public/data
+          if_no_artifact_found: warn
+
       - name: Build frontend
         run: |
           cd frontend
           GITHUB_PAGES=true npm run build
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          path: frontend/dist
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./frontend/dist
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Generate job summary
+        run: |
+          echo "## ✅ Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Live Site:** https://civic-ai-audits.github.io/durham-transport/" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f frontend/public/data/metadata.json ]; then
+            echo "### Data Metadata" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat frontend/public/data/metadata.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi

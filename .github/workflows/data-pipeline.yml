@@ -264,50 +264,12 @@ jobs:
           path: frontend/public/data/
           retention-days: 30
 
-  commit-and-deploy:
-    needs: [fetch-census-data, generate-static-files]
-    if: needs.fetch-census-data.outputs.should-skip != 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download static files
-        uses: actions/download-artifact@v4
-        with:
-          name: static-data-files
-          path: frontend/public/data
-
-      - name: Commit updated data files
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add frontend/public/data/
-
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Update static data files from pipeline
-
-            - Data hash: ${{ needs.fetch-census-data.outputs.data-hash }}
-            - Pipeline run: ${{ github.run_id }}
-            - Triggered by: ${{ github.event_name }}"
-
-            git push
-            echo "✅ Data files committed and pushed"
-          fi
-
       - name: Generate final summary
         run: |
           echo "## ✅ Pipeline Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Static data files have been updated and committed." >> $GITHUB_STEP_SUMMARY
-          echo "The gh-pages deployment will be triggered automatically." >> $GITHUB_STEP_SUMMARY
+          echo "Static data files generated and uploaded as artifacts." >> $GITHUB_STEP_SUMMARY
+          echo "Run the deploy workflow to update the live site." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Live Site:** https://civic-ai-audits.github.io/durham-transport/" >> $GITHUB_STEP_SUMMARY
+          echo "**Artifacts:** Available for 30 days" >> $GITHUB_STEP_SUMMARY
+          echo "**Data Hash:** ${{ env.DATA_HASH }}" >> $GITHUB_STEP_SUMMARY
