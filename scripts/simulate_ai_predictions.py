@@ -157,9 +157,20 @@ def generate_tract_level_predictions(census_gdf):
     for entire regions, not just where counters exist.
     """
 
+    # Aggregate block groups to unique census tracts first
+    # (census_gdf may contain block groups, not tracts)
+    tract_summary = census_gdf.groupby('tract_id').agg({
+        'total_population': 'sum',
+        'median_income': 'first',
+        'pct_minority': 'first',
+        'geometry': 'first'  # Take first geometry (will dissolve later if needed)
+    }).reset_index()
+
+    print(f"Generating predictions for {len(tract_summary)} unique census tracts...")
+
     predictions = []
 
-    for _, tract in census_gdf.iterrows():
+    for _, tract in tract_summary.iterrows():
         # Calculate "true" baseline active transportation volume
         # Based on population density, transit access, walkability
         population = tract['total_population']

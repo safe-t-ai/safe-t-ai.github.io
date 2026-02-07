@@ -60,19 +60,27 @@ def main():
     print("Generating choropleth data...")
     tract_predictions_file = SIMULATED_DATA_DIR / 'tract_volume_predictions.json'
     if tract_predictions_file.exists():
-        # Load tract-level predictions (all 238 tracts)
+        # Load tract-level predictions
         tract_predictions = pd.read_json(tract_predictions_file)
-
-        # Ensure tract_id is string in both dataframes
         tract_predictions['tract_id'] = tract_predictions['tract_id'].astype(str)
         census_gdf['tract_id'] = census_gdf['tract_id'].astype(str)
 
-        # Merge with census geometries
-        tract_errors_gdf = census_gdf[['tract_id', 'geometry']].merge(
-            tract_predictions[['tract_id', 'error_pct', 'error', 'true_volume', 'predicted_volume']],
+        # Aggregate block groups to census tracts (census_gdf has block groups, not tracts)
+        print("  Aggregating block groups to census tracts...")
+
+        # Dissolve block groups by tract_id to get tract-level geometries
+        tract_geoms = census_gdf.dissolve(by='tract_id', aggfunc='first')[['geometry']]
+        tract_geoms = tract_geoms.reset_index()
+
+        # Merge tract geometries with predictions
+        tract_errors_gdf = tract_geoms.merge(
+            tract_predictions[['tract_id', 'error_pct', 'error', 'true_volume', 'predicted_volume',
+                              'median_income', 'pct_minority', 'total_population']],
             on='tract_id',
             how='left'
         )
+
+        print(f"  Created {len(tract_errors_gdf)} census tract polygons")
     else:
         # Fallback to counter-based errors (old method)
         print("  Warning: tract_volume_predictions.json not found, using counter-based errors")
