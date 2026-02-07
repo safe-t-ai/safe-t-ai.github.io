@@ -222,10 +222,10 @@ jobs:
           fi
 
           if [ -f backend/data/simulated/crash_predictions.json ]; then
-            TOTAL_CRASHES=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(d['summary']['total_actual_crashes'])" 2>/dev/null || echo "N/A")
-            Q1_BIAS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(f\"{d['bias_by_quintile']['Q1 (Poorest)']['prediction_bias_pct']:.1f}%\")" 2>/dev/null || echo "N/A")
-            Q5_BIAS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(f\"{d['bias_by_quintile']['Q5 (Richest)']['prediction_bias_pct']:.1f}%\")" 2>/dev/null || echo "N/A")
-            REPORTING_RATE=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(f\"{d['summary']['overall_reporting_rate']:.1%}\")" 2>/dev/null || echo "N/A")
+            TOTAL_CRASHES=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(f\"{d['summary']['total_crashes_all_years']:,}\")" 2>/dev/null || echo "N/A")
+            Q1_MAE=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(f\"{d['error_by_quintile']['Q1 (Poorest)']['mae']:.1f}\")" 2>/dev/null || echo "N/A")
+            Q5_MAE=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(f\"{d['error_by_quintile']['Q5 (Richest)']['mae']:.1f}\")" 2>/dev/null || echo "N/A")
+            ERROR_DISPARITY=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); q1=d['error_by_quintile']['Q1 (Poorest)']['mae']; q5=d['error_by_quintile']['Q5 (Richest)']['mae']; print(f\"{((q1-q5)/q5*100):.0f}%\")" 2>/dev/null || echo "N/A")
 
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Test 2: Crash Prediction Bias" >> $GITHUB_STEP_SUMMARY
@@ -233,9 +233,9 @@ jobs:
             echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
             echo "| Total Crashes (5yr) | $TOTAL_CRASHES |" >> $GITHUB_STEP_SUMMARY
-            echo "| Q1 Prediction Bias | $Q1_BIAS |" >> $GITHUB_STEP_SUMMARY
-            echo "| Q5 Prediction Bias | $Q5_BIAS |" >> $GITHUB_STEP_SUMMARY
-            echo "| Overall Reporting Rate | $REPORTING_RATE |" >> $GITHUB_STEP_SUMMARY
+            echo "| Q1 Prediction Error (MAE) | $Q1_MAE crashes |" >> $GITHUB_STEP_SUMMARY
+            echo "| Q5 Prediction Error (MAE) | $Q5_MAE crashes |" >> $GITHUB_STEP_SUMMARY
+            echo "| Error Disparity (Q1 vs Q5) | $ERROR_DISPARITY |" >> $GITHUB_STEP_SUMMARY
           fi
 
           if [ -f backend/data/simulated/demand_analysis.json ]; then
