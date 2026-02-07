@@ -1,5 +1,5 @@
 /**
- * Durham Transportation Safety AI Audit - Main Application
+ * SAFE-T: Safety Algorithm Fairness Evaluation for Transportation
  * Multi-test platform with tab navigation
  */
 

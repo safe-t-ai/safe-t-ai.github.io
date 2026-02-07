@@ -1,4 +1,4 @@
-# Durham Transportation Safety AI Audit Tool
+# SAFE-T: Safety Algorithm Fairness Evaluation for Transportation
 
 [![Live Demo](https://img.shields.io/badge/demo-live-success?style=flat-square)](https://civic-ai-audits.github.io/durham-transport/)
 [![Deploy](https://img.shields.io/github/actions/workflow/status/civic-ai-audits/durham-transport/deploy.yml?branch=main&style=flat-square&label=deploy)](https://github.com/civic-ai-audits/durham-transport/actions/workflows/deploy.yml)
@@ -6,7 +6,7 @@
 [![Python](https://img.shields.io/badge/python-3.9+-blue?style=flat-square&logo=python)](https://www.python.org/)
 [![Node](https://img.shields.io/badge/node-18+-green?style=flat-square&logo=node.js)](https://nodejs.org/)
 
-Web-based tool to audit AI-driven transportation safety systems for equity in Durham, NC.
+Society-centered auditing framework for evaluating equity and fairness in AI-driven transportation safety systems.
 
 **[🚀 Live Demo](https://civic-ai-audits.github.io/durham-transport/)**
 
