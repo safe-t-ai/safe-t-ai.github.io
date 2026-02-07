@@ -111,6 +111,11 @@ export class Test2 {
 
         // Add actual crashes layer (default view)
         this.updateCrashLayer();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (this.map) this.map.invalidateSize();
+        });
     }
 
     updateCrashLayer() {

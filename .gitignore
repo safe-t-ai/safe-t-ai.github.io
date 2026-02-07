@@ -34,6 +34,21 @@ Thumbs.db
 frontend/dist/
 frontend/.vite/
 
+# Generated data files
+backend/data/raw/*
+!backend/data/raw/.gitkeep
+!backend/data/raw/README.md
+backend/data/simulated/*
+!backend/data/simulated/.gitkeep
+!backend/data/simulated/README.md
+frontend/public/data/*
+!frontend/public/data/.gitkeep
+!frontend/public/data/README.md
+
 # Temporary files
 *.log
 *.tmp
+
+# Package lock files (optional - uncomment if needed)
+# package-lock.json
+# yarn.lock

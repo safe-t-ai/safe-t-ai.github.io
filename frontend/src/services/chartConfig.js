@@ -3,6 +3,19 @@
  * Provides consistent styling across all visualizations
  */
 
+// Responsive helper
+const isMobile = () => window.innerWidth <= 768;
+
+const getResponsiveFontSize = (desktop, mobile) => {
+    return isMobile() ? mobile : desktop;
+};
+
+const getResponsiveGrid = () => {
+    return isMobile()
+        ? { left: '5%', right: '5%', bottom: '10%', top: '15%', containLabel: true }
+        : { left: '3%', right: '4%', bottom: '3%', containLabel: true };
+};
+
 export const COLORS = {
     primary: '#3182ce',
     secondary: '#805ad5',
@@ -29,7 +42,7 @@ export function createBarChartConfig(data, options = {}) {
             text: title,
             left: 'center',
             textStyle: {
-                fontSize: 16,
+                fontSize: getResponsiveFontSize(16, 12),
                 fontWeight: 'normal'
             }
         },
@@ -38,32 +51,29 @@ export function createBarChartConfig(data, options = {}) {
             axisPointer: {
                 type: 'shadow'
             },
+            confine: true,
             formatter: formatter || ((params) => {
                 const item = params[0];
                 return `${item.name}<br/>${item.seriesName}: ${item.value.toFixed(1)}%`;
             })
         },
-        grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
-        },
+        grid: getResponsiveGrid(),
         xAxis: {
             type: 'category',
             data: data.map(d => d[xField]),
             axisLabel: {
-                fontSize: 12
+                fontSize: getResponsiveFontSize(12, 10),
+                rotate: isMobile() ? 15 : 0
             }
         },
         yAxis: {
             type: 'value',
             name: yAxisLabel,
             nameTextStyle: {
-                fontSize: 12
+                fontSize: getResponsiveFontSize(12, 10)
             },
             axisLabel: {
-                fontSize: 11
+                fontSize: getResponsiveFontSize(11, 9)
             }
         },
         series: [{
@@ -95,7 +105,7 @@ export function createGroupedBarChartConfig(categories, series, options = {}) {
             text: title,
             left: 'center',
             textStyle: {
-                fontSize: 16,
+                fontSize: getResponsiveFontSize(16, 12),
                 fontWeight: 'normal'
             }
         },
@@ -104,26 +114,30 @@ export function createGroupedBarChartConfig(categories, series, options = {}) {
             axisPointer: {
                 type: 'shadow'
             },
+            confine: true,
             formatter: formatter
         },
         legend: {
             data: series.map(s => s.name),
             bottom: 0,
+            orient: isMobile() ? 'horizontal' : 'horizontal',
             textStyle: {
-                fontSize: 11
+                fontSize: getResponsiveFontSize(11, 9)
             }
         },
         grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '15%',
+            left: isMobile() ? '8%' : '3%',
+            right: isMobile() ? '5%' : '4%',
+            bottom: isMobile() ? '20%' : '15%',
+            top: isMobile() ? '15%' : '10%',
             containLabel: true
         },
         xAxis: {
             type: 'category',
             data: categories,
             axisLabel: {
-                fontSize: 12
+                fontSize: getResponsiveFontSize(12, 10),
+                rotate: isMobile() ? 15 : 0
             }
         },
         yAxis: {
@@ -195,12 +209,13 @@ export function createScatterChartConfig(data, options = {}) {
             text: title,
             left: 'center',
             textStyle: {
-                fontSize: 16,
+                fontSize: getResponsiveFontSize(16, 12),
                 fontWeight: 'normal'
             }
         },
         tooltip: {
             trigger: 'item',
+            confine: true,
             formatter: formatter || ((params) => {
                 const item = params.data[2];
                 return `Counter: ${item.counter_id}<br/>` +
@@ -211,14 +226,16 @@ export function createScatterChartConfig(data, options = {}) {
         legend: colorField ? {
             data: seriesData.map(s => s.name),
             bottom: 0,
+            orient: isMobile() ? 'horizontal' : 'horizontal',
             textStyle: {
-                fontSize: 11
+                fontSize: getResponsiveFontSize(11, 9)
             }
         } : {},
         grid: {
-            left: '3%',
-            right: '4%',
-            bottom: colorField ? '15%' : '3%',
+            left: isMobile() ? '8%' : '3%',
+            right: isMobile() ? '5%' : '4%',
+            bottom: colorField ? (isMobile() ? '20%' : '15%') : (isMobile() ? '10%' : '3%'),
+            top: isMobile() ? '15%' : '10%',
             containLabel: true
         },
         xAxis: {
@@ -270,7 +287,7 @@ export function createHistogramConfig(data, options = {}) {
             text: title,
             left: 'center',
             textStyle: {
-                fontSize: 16,
+                fontSize: getResponsiveFontSize(16, 12),
                 fontWeight: 'normal'
             }
         },
@@ -279,15 +296,17 @@ export function createHistogramConfig(data, options = {}) {
             axisPointer: {
                 type: 'shadow'
             },
+            confine: true,
             formatter: (params) => {
                 const item = params[0];
                 return `${item.name}<br/>Count: ${item.value}`;
             }
         },
         grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
+            left: isMobile() ? '8%' : '3%',
+            right: isMobile() ? '5%' : '4%',
+            bottom: isMobile() ? '15%' : '8%',
+            top: isMobile() ? '15%' : '10%',
             containLabel: true
         },
         xAxis: {
@@ -295,11 +314,11 @@ export function createHistogramConfig(data, options = {}) {
             data: data.map(d => d.bin_label),
             name: xAxisLabel,
             nameTextStyle: {
-                fontSize: 12
+                fontSize: getResponsiveFontSize(12, 10)
             },
             axisLabel: {
-                fontSize: 10,
-                rotate: 45
+                fontSize: getResponsiveFontSize(10, 8),
+                rotate: isMobile() ? 60 : 45
             }
         },
         yAxis: {

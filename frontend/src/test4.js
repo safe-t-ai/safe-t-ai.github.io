@@ -110,6 +110,11 @@ export class Test4 {
 
         // Add suppressed demand layer (default view)
         this.updateDemandLayer();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (this.map) this.map.invalidateSize();
+        });
     }
 
     updateDemandLayer() {

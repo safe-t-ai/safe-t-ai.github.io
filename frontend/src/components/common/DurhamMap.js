@@ -190,4 +190,19 @@ export class DurhamMap {
         this.map.fitBounds(layer.getBounds());
         return this;
     }
+
+    invalidateSize() {
+        if (this.map) {
+            this.map.invalidateSize();
+        }
+        return this;
+    }
+
+    cleanup() {
+        if (this.map) {
+            this.map.remove();
+            this.map = null;
+        }
+        this.layers = {};
+    }
 }

@@ -165,6 +165,11 @@ class App {
 
         // Fit to bounds
         this.map.fitBounds(this.data.choroplethData);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (this.map) this.map.invalidateSize();
+        });
     }
 
     renderCharts() {

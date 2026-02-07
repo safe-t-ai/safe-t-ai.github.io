@@ -122,6 +122,11 @@ export class Test3 {
 
         // Add project type legend
         this.addProjectLegend();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (this.map) this.map.invalidateSize();
+        });
     }
 
     addProjectLegend() {
@@ -273,6 +278,8 @@ export class Test3 {
 
         chart.setOption(option);
         this.charts.sankey = chart;
+
+        window.addEventListener('resize', () => chart.resize());
     }
 
     renderRadarChart() {
@@ -333,6 +340,8 @@ export class Test3 {
 
         chart.setOption(option);
         this.charts.radar = chart;
+
+        window.addEventListener('resize', () => chart.resize());
     }
 
     setupAllocationToggle() {
