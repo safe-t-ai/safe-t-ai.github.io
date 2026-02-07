@@ -119,8 +119,8 @@ jobs:
 
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Sources" >> $GITHUB_STEP_SUMMARY
-            echo "- US Census Bureau ACS 5-Year Estimates (2022)" >> $GITHUB_STEP_SUMMARY
-            echo "- Census TIGER/Line (2022)" >> $GITHUB_STEP_SUMMARY
+            echo "- [US Census Bureau ACS 5-Year Estimates (2022)](https://api.census.gov/data/2022/acs/acs5)" >> $GITHUB_STEP_SUMMARY
+            echo "- [Census TIGER/Line (2022)](https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2022/MapServer/8/query)" >> $GITHUB_STEP_SUMMARY
 
             if [ "${{ steps.check-changed.outputs.skip }}" == "true" ]; then
               echo "" >> $GITHUB_STEP_SUMMARY
