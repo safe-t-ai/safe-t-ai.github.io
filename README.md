@@ -24,45 +24,36 @@ AI tools like Strava Metro and StreetLight Data used by cities for infrastructur
 
 ## Quick Start
 
-### Prerequisites
+### View Live Site
 
+Visit **[civic-ai-audits.github.io/durham-transport](https://civic-ai-audits.github.io/durham-transport/)**
+
+The site updates automatically via scheduled data pipeline (Mondays 6 AM UTC).
+
+### Local Development
+
+#### Prerequisites
 - Python 3.9+
-- Node.js 18+
+- Node.js 20+
 
-### Installation
-
-1. Install Python dependencies:
+#### Setup
 
 ```bash
-cd backend
-pip install -r requirements.txt
+# Install dependencies
+cd backend && pip install -r requirements.txt
+cd ../frontend && npm install
 ```
 
-2. Install frontend dependencies:
+#### Generate Data Locally
 
 ```bash
-cd frontend
-npm install
+# Run data pipeline
+python scripts/fetch_durham_data.py
+python scripts/simulate_ai_predictions.py
+python scripts/generate_static_data.py
 ```
 
-### Generate Data
-
-```bash
-cd backend
-python ../scripts/fetch_durham_data.py
-python ../scripts/simulate_ai_predictions.py
-```
-
-### Run Application
-
-Terminal 1 - Start backend API:
-
-```bash
-cd backend
-python app.py
-```
-
-Terminal 2 - Start frontend dev server:
+#### Run Frontend Dev Server
 
 ```bash
 cd frontend
@@ -71,11 +62,40 @@ npm run dev
 
 Open browser to: http://localhost:5173
 
+#### Build for Production
+
+```bash
+cd frontend
+npm run build
+```
+
+Static files output to `frontend/dist/`
+
 ## Architecture
 
-- **Backend:** Python + Flask + GeoPandas
+### Static Site with Automated Pipeline
+
+- **Data Pipeline:** Python + GeoPandas (runs weekly via GitHub Actions)
 - **Frontend:** Vanilla JS + Vite + Apache ECharts + Leaflet.js
+- **Deployment:** GitHub Pages (gh-pages branch)
 - **Data:** Durham census data + simulated AI predictions with documented bias
+
+### How It Works
+
+1. **Data Pipeline** (`data-pipeline.yml`) runs weekly:
+   - Fetches Durham census data (238 tracts)
+   - Simulates AI predictions with documented bias patterns
+   - Generates static JSON files (8 files, ~680 KB total)
+   - Uploads as artifacts (30-day retention)
+
+2. **Deploy Workflow** (`deploy.yml`) runs after pipeline:
+   - Downloads latest data artifacts
+   - Builds Vite frontend with data
+   - Deploys to gh-pages branch
+
+**Benefits:** Always-available static site, no runtime costs, automatic updates, clean git history.
+
+See [DATA_PIPELINE.md](DATA_PIPELINE.md) for details.
 
 ## Test 1: Volume Estimation Equity Audit
 
@@ -131,18 +151,23 @@ durham-transport-safety-audit/
     └── simulate_ai_predictions.py
 ```
 
-## API Endpoints
+## Data Files
 
-### Test 1
+All data is pre-generated and served as static JSON files from `frontend/public/data/`:
 
-- `GET /api/test1/census-tracts` - Durham census tract geometries with demographics
-- `GET /api/test1/counter-locations` - Ground truth counter locations
-- `GET /api/test1/report` - Complete audit report
-- `GET /api/test1/choropleth-data` - Tract-level error data for map
-- `GET /api/test1/accuracy-by-income` - Accuracy metrics by income quintile
-- `GET /api/test1/accuracy-by-race` - Accuracy metrics by racial composition
-- `GET /api/test1/scatter-data` - Predicted vs actual data points
-- `GET /api/test1/error-distribution` - Error distribution histogram data
+### Test 1 Files
+
+- `census-tracts.json` - 238 Durham census tracts with geometries (~313 KB)
+- `counter-locations.json` - 15 counter locations with predictions (~3.3 KB)
+- `report.json` - Complete audit report with findings (~17 KB)
+- `choropleth-data.json` - Tract-level error data for map (~332 KB)
+- `accuracy-by-income.json` - Income quintile analysis (~1.5 KB)
+- `accuracy-by-race.json` - Racial composition analysis (~1.1 KB)
+- `scatter-data.json` - Predicted vs actual data points (~11 KB)
+- `error-distribution.json` - Error histogram data (~2 KB)
+- `metadata.json` - Generation metadata with verification hash (~300 B)
+
+**Total:** ~680 KB (uncompressed), ~180 KB (gzipped)
 
 ## Data Sources
 
@@ -156,6 +181,44 @@ Bias calibrated to research literature:
 - High-income overcount: 8%
 - High-minority undercount: 20%
 
+## Contributing
+
+### Running the Data Pipeline Locally
+
+```bash
+# Generate census data
+python scripts/fetch_durham_data.py
+
+# Simulate AI predictions
+python scripts/simulate_ai_predictions.py
+
+# Generate static files
+python scripts/generate_static_data.py
+```
+
+### Triggering GitHub Actions
+
+```bash
+# Manually run data pipeline
+gh workflow run data-pipeline.yml --repo civic-ai-audits/durham-transport
+
+# Manually deploy to gh-pages
+gh workflow run deploy.yml --repo civic-ai-audits/durham-transport
+
+# Check workflow status
+gh run list --repo civic-ai-audits/durham-transport --limit 5
+```
+
+### Adding New Tests
+
+1. Create backend model in `backend/models/`
+2. Add data generation script in `scripts/`
+3. Update `scripts/generate_static_data.py` to export new data
+4. Create frontend visualizations in `frontend/src/`
+5. Update this README
+
+See the implementation plan for Test 2-4 specifications.
+
 ## License
 
-MIT
+MIT License - see [LICENSE](LICENSE) file for details.
