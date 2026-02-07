@@ -1,0 +1,72 @@
+.PHONY: help setup install install-backend install-frontend clean clean-all dev dev-backend dev-frontend build deploy test data fetch-data generate-data
+
+.DEFAULT_GOAL := help
+
+##@ Help
+
+help: ## Display this help
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+
+##@ Setup
+
+setup: install data ## Complete setup (install dependencies and generate data)
+
+install: install-backend install-frontend ## Install all dependencies
+
+install-backend: ## Install Python backend dependencies
+	pip install -r backend/requirements.txt
+
+install-frontend: ## Install Node.js frontend dependencies
+	cd frontend && npm install
+
+##@ Development
+
+dev: ## Start both backend and frontend servers
+	./start.sh
+
+dev-backend: ## Start backend API server only
+	cd backend && python3 app.py
+
+dev-frontend: ## Start frontend dev server only
+	cd frontend && npm run dev
+
+##@ Data
+
+data: fetch-data generate-data ## Fetch and generate all data
+
+fetch-data: ## Fetch Durham census and geographic data
+	python3 scripts/fetch_durham_data.py
+
+generate-data: ## Generate static data files for frontend
+	python3 scripts/simulate_ai_predictions.py
+	python3 scripts/generate_static_data.py
+
+##@ Build & Deploy
+
+build: ## Build frontend for production
+	cd frontend && GITHUB_PAGES=true npm run build
+
+preview: build ## Preview production build locally
+	cd frontend && npm run preview
+
+deploy: build ## Deploy to GitHub Pages
+	cd frontend && npm run deploy
+
+##@ Testing
+
+test: ## Run test setup validation
+	python3 test_setup.py
+
+##@ Cleanup
+
+clean: ## Remove build artifacts and caches
+	rm -rf frontend/dist
+	rm -rf frontend/.vite
+	rm -rf frontend/node_modules/.vite
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type f -name "*.pyc" -delete
+
+clean-all: clean ## Remove all generated files including dependencies
+	rm -rf frontend/node_modules
+	rm -rf backend/data/raw
+	rm -rf backend/data/simulated
