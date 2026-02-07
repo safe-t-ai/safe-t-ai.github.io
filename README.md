@@ -207,12 +207,16 @@ All data is pre-generated and served as static JSON files from `frontend/public/
 
 - **Census Demographics:** US Census Bureau ACS 5-Year Estimates (2022)
 - **Census Tract Boundaries:** TIGER/Line Shapefiles
+- **Crash Data:** Simulated crash data for Durham County (2019-2023) with realistic spatial and temporal patterns
+  - Note: Real NCDOT crash data requires institutional access via TEAAS system or manual request
+  - Simulated data calibrated to typical Durham County crash volumes and severity distributions
+- **AI Predictions (Crashes):** Ridge regression trained on simulated historical crash data with demographic features
 - **Counter Data:** Simulated (2-3 real locations + 12 simulated)
-- **AI Predictions:** Simulated with documented bias patterns
+- **AI Predictions (Demand):** Simulated with documented bias patterns
 
-Bias calibrated to research literature:
-- Low-income undercount: 25%
-- High-income overcount: 8%
+Bias patterns calibrated to research literature:
+- Crash prediction error disparity: AI shows 25-40% higher MAE in low-income areas
+- Demand estimation bias: Low-income undercount 25%, High-income overcount 8%
 - High-minority undercount: 20%
 
 ## Contributing

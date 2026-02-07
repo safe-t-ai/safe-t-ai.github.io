@@ -60,6 +60,11 @@ jobs:
           cd backend
           python ../scripts/fetch_durham_data.py
 
+      - name: Generate crash data
+        run: |
+          cd backend
+          python ../scripts/fetch_ncdot_crash_data.py
+
       - name: Compute data hash
         id: compute-hash
         run: |
@@ -121,6 +126,7 @@ jobs:
             echo "### Sources" >> $GITHUB_STEP_SUMMARY
             echo "- [US Census Bureau ACS 5-Year Estimates (2022)](https://api.census.gov/data/2022/acs/acs5)" >> $GITHUB_STEP_SUMMARY
             echo "- [Census TIGER/Line (2022)](https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2022/MapServer/8/query)" >> $GITHUB_STEP_SUMMARY
+            echo "- Crash Data: Simulated (2019-2023) for demonstration" >> $GITHUB_STEP_SUMMARY
 
             if [ "${{ steps.check-changed.outputs.skip }}" == "true" ]; then
               echo "" >> $GITHUB_STEP_SUMMARY

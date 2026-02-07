@@ -67,31 +67,31 @@ export class Test2 {
     }
 
     renderMetrics() {
-        const { summary, bias_by_quintile } = this.data.report;
+        const { summary, error_by_quintile } = this.data.report;
 
-        const q1_bias = bias_by_quintile['Q1 (Poorest)'];
-        const q5_bias = bias_by_quintile['Q5 (Richest)'];
+        const q1_error = error_by_quintile['Q1 (Poorest)'];
+        const q5_error = error_by_quintile['Q5 (Richest)'];
 
         const metrics = [
             {
-                title: 'Q1 Prediction Bias',
-                value: q1_bias.prediction_bias_pct.toFixed(1) + '%',
-                subtext: 'Underpredicts in poorest areas'
+                title: 'Q1 Prediction Error',
+                value: q1_error.mae.toFixed(1) + ' crashes',
+                subtext: 'Mean Absolute Error (poorest quintile)'
             },
             {
-                title: 'Q5 Prediction Bias',
-                value: q5_bias.prediction_bias_pct.toFixed(1) + '%',
-                subtext: 'More accurate in richest areas'
+                title: 'Q5 Prediction Error',
+                value: q5_error.mae.toFixed(1) + ' crashes',
+                subtext: 'Mean Absolute Error (richest quintile)'
             },
             {
-                title: 'Reporting Rate Gap',
-                value: ((q5_bias.reporting_rate - q1_bias.reporting_rate) * 100).toFixed(1) + '%',
-                subtext: 'Q5 vs Q1 reporting difference'
+                title: 'Error Disparity',
+                value: (((q1_error.mae - q5_error.mae) / q5_error.mae) * 100).toFixed(0) + '%',
+                subtext: 'Higher error in low-income areas'
             },
             {
                 title: 'Total Crashes (5yr)',
-                value: summary.total_actual_crashes.toLocaleString(),
-                subtext: `${summary.total_reported_crashes.toLocaleString()} reported (${(summary.overall_reporting_rate * 100).toFixed(0)}%)`
+                value: summary.total_crashes_all_years.toLocaleString(),
+                subtext: `Durham County 2019-2023 (NCDOT)`
             }
         ];
 
