@@ -123,7 +123,7 @@ export class Test2 {
         }
 
         // Add choropleth layer
-        this.map.addChoropleth(
+        this.map.addChoroplethLayer(
             this.data.crashGeoData,
             field,
             {

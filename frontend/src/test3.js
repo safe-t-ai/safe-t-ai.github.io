@@ -107,7 +107,7 @@ export class Test3 {
         this.map = new DurhamMap('map-infrastructure');
 
         // Add danger scores layer
-        this.map.addChoropleth(
+        this.map.addChoroplethLayer(
             this.data.dangerScores,
             'danger_score',
             {
