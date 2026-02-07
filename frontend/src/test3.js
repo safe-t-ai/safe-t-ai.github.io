@@ -188,7 +188,7 @@ export class Test3 {
                 <strong>${props.project_type.replace('_', ' ').toUpperCase()}</strong><br>
                 Cost: $${props.cost.toLocaleString()}<br>
                 Safety Impact: ${(props.safety_impact * 100).toFixed(0)}%<br>
-                Median Income: $${props.median_income.toLocaleString()}
+                Median Income: $${props.median_income_y.toLocaleString()}
             `);
 
             this.map.markers.push(marker);
