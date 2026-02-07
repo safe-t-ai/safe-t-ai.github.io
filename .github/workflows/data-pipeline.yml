@@ -163,6 +163,21 @@ jobs:
           cd backend
           python ../scripts/simulate_ai_predictions.py
 
+      - name: Simulate infrastructure recommendations
+        run: |
+          cd backend
+          python ../scripts/simulate_infrastructure_recommendations.py
+
+      - name: Simulate crash predictions
+        run: |
+          cd backend
+          python ../scripts/simulate_crash_predictions.py
+
+      - name: Analyze suppressed demand
+        run: |
+          cd backend
+          python ../scripts/analyze_suppressed_demand.py
+
       - name: Generate job summary
         run: |
           echo "## 🤖 AI Predictions Simulation" >> $GITHUB_STEP_SUMMARY
@@ -172,10 +187,61 @@ jobs:
             PREDICTIONS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/ai_volume_predictions.json')); print(len(d))" 2>/dev/null || echo "N/A")
             AVG_ERROR=$(python3 -c "import json; d=json.load(open('backend/data/simulated/ai_volume_predictions.json')); errors=[x['error_pct'] for x in d]; print(f'{sum(errors)/len(errors):.1f}%')" 2>/dev/null || echo "N/A")
 
+            echo "### Test 1: Volume Predictions" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
             echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
             echo "| Counter Locations | $PREDICTIONS |" >> $GITHUB_STEP_SUMMARY
             echo "| Average Bias | $AVG_ERROR |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f backend/data/simulated/infrastructure_recommendations.json ]; then
+            AI_PROJECTS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(d['summary']['ai_projects'])" 2>/dev/null || echo "N/A")
+            NEED_PROJECTS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(d['summary']['need_based_projects'])" 2>/dev/null || echo "N/A")
+            AI_IMPACT=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(f\"{d['summary']['ai_disparate_impact']:.1%}\")" 2>/dev/null || echo "N/A")
+            NEED_IMPACT=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(f\"{d['summary']['need_based_disparate_impact']:.1%}\")" 2>/dev/null || echo "N/A")
+
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Test 3: Infrastructure Recommendations" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | AI Allocation | Need-Based |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|---------------|------------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Projects | $AI_PROJECTS | $NEED_PROJECTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| Disparate Impact | $AI_IMPACT | $NEED_IMPACT |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f backend/data/simulated/crash_predictions.json ]; then
+            TOTAL_CRASHES=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(d['summary']['total_actual_crashes'])" 2>/dev/null || echo "N/A")
+            Q1_BIAS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(f\"{d['bias_by_quintile']['Q1 (Poorest)']['prediction_bias_pct']:.1f}%\")" 2>/dev/null || echo "N/A")
+            Q5_BIAS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(f\"{d['bias_by_quintile']['Q5 (Richest)']['prediction_bias_pct']:.1f}%\")" 2>/dev/null || echo "N/A")
+            REPORTING_RATE=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(f\"{d['summary']['overall_reporting_rate']:.1%}\")" 2>/dev/null || echo "N/A")
+
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Test 2: Crash Prediction Bias" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Crashes (5yr) | $TOTAL_CRASHES |" >> $GITHUB_STEP_SUMMARY
+            echo "| Q1 Prediction Bias | $Q1_BIAS |" >> $GITHUB_STEP_SUMMARY
+            echo "| Q5 Prediction Bias | $Q5_BIAS |" >> $GITHUB_STEP_SUMMARY
+            echo "| Overall Reporting Rate | $REPORTING_RATE |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f backend/data/simulated/demand_analysis.json ]; then
+            SUPPRESSED_DEMAND=$(python3 -c "import json; d=json.load(open('backend/data/simulated/demand_analysis.json')); print(f\"{d['summary']['total_suppressed_demand']:,}\")" 2>/dev/null || echo "N/A")
+            SUPPRESSION_RATE=$(python3 -c "import json; d=json.load(open('backend/data/simulated/demand_analysis.json')); print(f\"{d['summary']['suppression_rate']:.1f}%\")" 2>/dev/null || echo "N/A")
+            NAIVE_AI_CORR=$(python3 -c "import json; d=json.load(open('backend/data/simulated/demand_analysis.json')); print(f\"{d['summary']['naive_ai_correlation']:.3f}\")" 2>/dev/null || echo "N/A")
+            SOPH_AI_CORR=$(python3 -c "import json; d=json.load(open('backend/data/simulated/demand_analysis.json')); print(f\"{d['summary']['sophisticated_ai_correlation']:.3f}\")" 2>/dev/null || echo "N/A")
+
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Test 4: Suppressed Demand Analysis" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Suppressed Demand | $SUPPRESSED_DEMAND trips/day |" >> $GITHUB_STEP_SUMMARY
+            echo "| Suppression Rate | $SUPPRESSION_RATE |" >> $GITHUB_STEP_SUMMARY
+            echo "| Naive AI Correlation | $NAIVE_AI_CORR |" >> $GITHUB_STEP_SUMMARY
+            echo "| Sophisticated AI Correlation | $SOPH_AI_CORR |" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Upload simulation data artifact

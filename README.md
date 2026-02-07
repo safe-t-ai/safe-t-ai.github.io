@@ -16,11 +16,12 @@ AI tools like Strava Metro and StreetLight Data used by cities for infrastructur
 
 ## Current Status
 
-**Phase 1 Complete:** Test 1 - Volume Estimation Equity Audit
+**Phase 2 Complete:** Tests 1 & 3 Deployed
 
-- Durham map with census tract demographic overlays
-- Compare AI estimates vs ground truth counter data
-- 4 ECharts visualizations showing bias by income and race
+- **Test 1:** Volume Estimation Equity Audit - Evaluates bias in AI volume predictions
+- **Test 3:** Infrastructure Recommendation Audit - Evaluates equity in AI resource allocation
+- Tab-based navigation between tests
+- 8 ECharts visualizations + 2 interactive maps
 
 ## Quick Start
 
@@ -84,8 +85,8 @@ Static files output to `frontend/dist/`
 
 1. **Data Pipeline** (`data-pipeline.yml`) runs weekly:
    - Fetches Durham census data (238 tracts)
-   - Simulates AI predictions with documented bias patterns
-   - Generates static JSON files (8 files, ~680 KB total)
+   - Simulates AI predictions with documented bias patterns (Tests 1 & 3)
+   - Generates static JSON files (13 files, ~3.1 MB total)
    - Uploads as artifacts (30-day retention)
 
 2. **Deploy Workflow** (`deploy.yml`) runs after pipeline:
@@ -115,10 +116,29 @@ Evaluates whether AI volume estimation tools (like Strava Metro) accurately pred
 - High-income areas (Q4-Q5) overcounted by ~8% on average
 - High-minority areas (>60%) have 20% worse accuracy
 
+## Test 3: Infrastructure Recommendation Audit
+
+Evaluates whether AI-driven infrastructure recommendation systems allocate safety improvement budgets equitably across demographic groups.
+
+**Visualizations:**
+
+1. **Infrastructure Map** - Danger scores with AI/need-based project recommendations (toggleable)
+2. **Budget Flow (Sankey)** - $5M allocation across income quintiles
+3. **Equity Radar** - Multi-dimensional comparison of AI vs need-based allocation
+4. **Metrics Cards** - Disparate impact, Gini coefficient, equity gap
+
+**Key Findings:**
+
+- AI disparate impact: 29.5% (Q1 receives 29.5% as much per-capita as Q5)
+- Need-based disparate impact: 3.8% (more equitable baseline)
+- Equity gap: 25.7% worse with AI vs need-based allocation
+- AI Gini coefficient: 0.302 (higher inequality)
+
+See [.docs/TEST3_METHODOLOGY.md](.docs/TEST3_METHODOLOGY.md) for detailed methodology.
+
 ## Future Tests
 
 - **Test 2:** Crash Prediction Bias Audit
-- **Test 3:** Infrastructure Recommendation Audit
 - **Test 4:** Suppressed Demand Analysis
 
 ## Project Structure
@@ -126,18 +146,20 @@ Evaluates whether AI volume estimation tools (like Strava Metro) accurately pred
 ```
 durham-transport-safety-audit/
 ├── backend/
-│   ├── app.py                    # Flask API server
+│   ├── app.py                              # Flask API server
 │   ├── config.py
 │   ├── api/
-│   │   └── routes_test1.py      # Test 1 endpoints
+│   │   └── routes_test1.py                # Test 1 endpoints
 │   ├── models/
-│   │   └── volume_estimator.py  # Test 1 analysis
+│   │   ├── volume_estimator.py            # Test 1 analysis
+│   │   └── infrastructure_auditor.py      # Test 3 analysis
 │   └── utils/
 │       ├── demographic_analysis.py
 │       └── geospatial.py
 ├── frontend/
 │   ├── src/
-│   │   ├── main.js
+│   │   ├── main.js                        # Tab navigation
+│   │   ├── test3.js                       # Test 3 implementation
 │   │   ├── components/
 │   │   │   └── common/
 │   │   │       └── DurhamMap.js
@@ -148,7 +170,9 @@ durham-transport-safety-audit/
 │       └── index.html
 └── scripts/
     ├── fetch_durham_data.py
-    └── simulate_ai_predictions.py
+    ├── simulate_ai_predictions.py
+    ├── simulate_infrastructure_recommendations.py
+    └── generate_static_data.py
 ```
 
 ## Data Files
@@ -165,9 +189,19 @@ All data is pre-generated and served as static JSON files from `frontend/public/
 - `accuracy-by-race.json` - Racial composition analysis (~1.1 KB)
 - `scatter-data.json` - Predicted vs actual data points (~11 KB)
 - `error-distribution.json` - Error histogram data (~2 KB)
+
+### Test 3 Files
+
+- `infrastructure-report.json` - Complete infrastructure audit report (~55 KB)
+- `danger-scores.json` - Census tract danger scores with geometry (~1.4 MB)
+- `budget-allocation.json` - AI vs need-based equity metrics (~1 KB)
+- `recommendations.json` - Project recommendations (AI/need-based) with geometry (~940 KB)
+
+### Shared Files
+
 - `metadata.json` - Generation metadata with verification hash (~300 B)
 
-**Total:** ~680 KB (uncompressed), ~180 KB (gzipped)
+**Total:** ~3.1 MB (uncompressed), ~780 KB (gzipped)
 
 ## Data Sources
 
@@ -189,8 +223,11 @@ Bias calibrated to research literature:
 # Generate census data
 python scripts/fetch_durham_data.py
 
-# Simulate AI predictions
+# Simulate AI predictions (Test 1)
 python scripts/simulate_ai_predictions.py
+
+# Simulate infrastructure recommendations (Test 3)
+python scripts/simulate_infrastructure_recommendations.py
 
 # Generate static files
 python scripts/generate_static_data.py

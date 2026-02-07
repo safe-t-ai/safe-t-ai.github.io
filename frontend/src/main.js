@@ -6,7 +6,9 @@
 import * as echarts from 'echarts';
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
+import { Test2 } from './test2.js';
 import { Test3 } from './test3.js';
+import { Test4 } from './test4.js';
 import {
     createBarChartConfig,
     createScatterChartConfig,
@@ -19,7 +21,9 @@ class App {
         this.data = {};
         this.charts = {};
         this.map = null;
+        this.test2Instance = null;
         this.test3Instance = null;
+        this.test4Instance = null;
         this.currentTest = 'test1';
     }
 
@@ -323,15 +327,31 @@ class App {
         // Update description
         const descriptions = {
             test1: 'Evaluating AI tools for demographic bias in pedestrian and cyclist volume predictions',
-            test3: 'Evaluating AI infrastructure recommendations for equitable resource allocation'
+            test2: 'Evaluating AI crash prediction models for enforcement bias',
+            test3: 'Evaluating AI infrastructure recommendations for equitable resource allocation',
+            test4: 'Evaluating AI capability to detect suppressed demand in underserved areas'
         };
         document.getElementById('test-description').textContent = descriptions[testId];
 
         // Load test-specific data
+        if (testId === 'test2' && !this.test2Instance) {
+            document.getElementById('loading').style.display = 'flex';
+            this.test2Instance = new Test2();
+            await this.test2Instance.initialize();
+            document.getElementById('loading').style.display = 'none';
+        }
+
         if (testId === 'test3' && !this.test3Instance) {
             document.getElementById('loading').style.display = 'flex';
             this.test3Instance = new Test3();
             await this.test3Instance.initialize();
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        if (testId === 'test4' && !this.test4Instance) {
+            document.getElementById('loading').style.display = 'flex';
+            this.test4Instance = new Test4();
+            await this.test4Instance.initialize();
             document.getElementById('loading').style.display = 'none';
         }
 
