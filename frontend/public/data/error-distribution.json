@@ -2,7 +2,7 @@
   {
     "bin_start": -50.0,
     "bin_end": -45.0,
-    "count": 3,
+    "count": 0,
     "bin_label": "-50% to -45%"
   },
   {
@@ -14,7 +14,7 @@
   {
     "bin_start": -40.0,
     "bin_end": -35.0,
-    "count": 0,
+    "count": 3,
     "bin_label": "-40% to -35%"
   },
   {
@@ -26,61 +26,61 @@
   {
     "bin_start": -30.0,
     "bin_end": -25.0,
-    "count": 0,
+    "count": 3,
     "bin_label": "-30% to -25%"
   },
   {
     "bin_start": -25.0,
     "bin_end": -20.0,
-    "count": 0,
+    "count": 3,
     "bin_label": "-25% to -20%"
   },
   {
     "bin_start": -20.0,
     "bin_end": -15.0,
-    "count": 3,
+    "count": 0,
     "bin_label": "-20% to -15%"
   },
   {
     "bin_start": -15.0,
     "bin_end": -10.0,
-    "count": 3,
+    "count": 0,
     "bin_label": "-15% to -10%"
   },
   {
     "bin_start": -10.0,
     "bin_end": -5.0,
-    "count": 11,
+    "count": 0,
     "bin_label": "-10% to -5%"
   },
   {
     "bin_start": -5.0,
     "bin_end": 0.0,
-    "count": 5,
+    "count": 11,
     "bin_label": "-5% to 0%"
   },
   {
     "bin_start": 0.0,
     "bin_end": 5.0,
-    "count": 7,
+    "count": 0,
     "bin_label": "0% to 5%"
   },
   {
     "bin_start": 5.0,
     "bin_end": 10.0,
-    "count": 4,
+    "count": 14,
     "bin_label": "5% to 10%"
   },
   {
     "bin_start": 10.0,
     "bin_end": 15.0,
-    "count": 3,
+    "count": 7,
     "bin_label": "10% to 15%"
   },
   {
     "bin_start": 15.0,
     "bin_end": 20.0,
-    "count": 5,
+    "count": 2,
     "bin_label": "15% to 20%"
   },
   {
@@ -92,7 +92,7 @@
   {
     "bin_start": 25.0,
     "bin_end": 30.0,
-    "count": 2,
+    "count": 3,
     "bin_label": "25% to 30%"
   },
   {

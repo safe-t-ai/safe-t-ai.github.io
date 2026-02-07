@@ -4,7 +4,7 @@
     "tract_id": 37063001710,
     "lat": 36.0578635504,
     "lon": -78.907324057,
-    "daily_volume": 42,
+    "daily_volume": 55,
     "median_income": 58563,
     "pct_minority": 69.0,
     "type": "real"
@@ -14,7 +14,7 @@
     "tract_id": 37063001604,
     "lat": 36.0781295503,
     "lon": -78.937269125,
-    "daily_volume": 75,
+    "daily_volume": 53,
     "median_income": 94313,
     "pct_minority": 41.5,
     "type": "real"
@@ -24,7 +24,7 @@
     "tract_id": 37063000600,
     "lat": 35.9872291282,
     "lon": -78.9485491207,
-    "daily_volume": 49,
+    "daily_volume": 46,
     "median_income": 73615,
     "pct_minority": 31.6,
     "type": "real"
@@ -34,7 +34,7 @@
     "tract_id": 37063001810,
     "lat": 35.9805077306,
     "lon": -78.8363546507,
-    "daily_volume": 38,
+    "daily_volume": 52,
     "median_income": 60570,
     "pct_minority": 80.7,
     "type": "simulated"
@@ -44,7 +44,7 @@
     "tract_id": 37063001505,
     "lat": 36.0116669886,
     "lon": -78.9467034607,
-    "daily_volume": 39,
+    "daily_volume": 40,
     "median_income": 30858,
     "pct_minority": 63.1,
     "type": "simulated"
@@ -64,7 +64,7 @@
     "tract_id": 37063002030,
     "lat": 35.9951360765,
     "lon": -78.9789677358,
-    "daily_volume": 35,
+    "daily_volume": 46,
     "median_income": 174087,
     "pct_minority": 26.4,
     "type": "simulated"
@@ -74,7 +74,7 @@
     "tract_id": 37063002030,
     "lat": 35.9798258251,
     "lon": -78.9599075007,
-    "daily_volume": 40,
+    "daily_volume": 44,
     "median_income": 174087,
     "pct_minority": 26.4,
     "type": "simulated"
@@ -84,7 +84,7 @@
     "tract_id": 37063002023,
     "lat": 35.9191458929,
     "lon": -78.9467914554,
-    "daily_volume": 27,
+    "daily_volume": 31,
     "median_income": 86513,
     "pct_minority": 36.3,
     "type": "simulated"
@@ -94,7 +94,7 @@
     "tract_id": 37063002022,
     "lat": 35.913016599,
     "lon": -78.9234024033,
-    "daily_volume": 38,
+    "daily_volume": 44,
     "median_income": 68395,
     "pct_minority": 60.3,
     "type": "simulated"
@@ -104,7 +104,7 @@
     "tract_id": 37063002022,
     "lat": 35.9218472165,
     "lon": -78.9194426668,
-    "daily_volume": 40,
+    "daily_volume": 47,
     "median_income": 68395,
     "pct_minority": 60.3,
     "type": "simulated"
@@ -114,7 +114,7 @@
     "tract_id": 37063000302,
     "lat": 36.0150112126,
     "lon": -78.9030236077,
-    "daily_volume": 37,
+    "daily_volume": 32,
     "median_income": 83977,
     "pct_minority": 25.4,
     "type": "simulated"
@@ -124,7 +124,7 @@
     "tract_id": 37063001809,
     "lat": 35.9362554117,
     "lon": -78.8219597231,
-    "daily_volume": 54,
+    "daily_volume": 64,
     "median_income": 75777,
     "pct_minority": 46.9,
     "type": "simulated"
@@ -134,7 +134,7 @@
     "tract_id": 37063001808,
     "lat": 35.9512531223,
     "lon": -78.8098262476,
-    "daily_volume": 97,
+    "daily_volume": 107,
     "median_income": 124528,
     "pct_minority": 51.5,
     "type": "simulated"
@@ -144,7 +144,7 @@
     "tract_id": 37063001809,
     "lat": 35.9370219647,
     "lon": -78.8467153664,
-    "daily_volume": 60,
+    "daily_volume": 67,
     "median_income": 75777,
     "pct_minority": 46.9,
     "type": "simulated"
