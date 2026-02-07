@@ -197,7 +197,7 @@ export class Test3 {
 
     getPolygonCenter(coords) {
         // Simple centroid calculation
-        const ring = coords[0][0]; // First ring of first polygon
+        const ring = coords[0]; // First ring (outer boundary)
         let sumLat = 0, sumLon = 0;
         ring.forEach(([lon, lat]) => {
             sumLon += lon;
