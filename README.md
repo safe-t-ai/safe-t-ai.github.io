@@ -208,8 +208,10 @@ All data is pre-generated and served as static JSON files from `frontend/public/
 - **Census Demographics:** US Census Bureau ACS 5-Year Estimates (2022)
 - **Census Tract Boundaries:** TIGER/Line Shapefiles
 - **Crash Data:** Simulated crash data for Durham County (2019-2023) with realistic spatial and temporal patterns
-  - Note: Real NCDOT crash data requires institutional access via TEAAS system or manual request
-  - Simulated data calibrated to typical Durham County crash volumes and severity distributions
+  - ✅ **Validated against real NCDOT data** via [NC Vision Zero API](https://ncvisionzero.org)
+  - Real NCDOT data accessible but lacks geocoding (lat/long) for tract-level analysis
+  - Simulated data calibrated to Durham County volumes and demographics
+  - See [NCDOT Data Access Documentation](docs/NCDOT_DATA_ACCESS.md) for details
 - **AI Predictions (Crashes):** Ridge regression trained on simulated historical crash data with demographic features
 - **Counter Data:** Simulated (2-3 real locations + 12 simulated)
 - **AI Predictions (Demand):** Simulated with documented bias patterns

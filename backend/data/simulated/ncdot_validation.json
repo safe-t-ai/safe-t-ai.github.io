@@ -1,0 +1,13 @@
+{
+  "validation_date": "2026-02-07T17:00:37.446859",
+  "ncdot_api_accessible": true,
+  "ncdot_sample_crashes": 0,
+  "simulated_total": 69295,
+  "expected_range": [
+    25000,
+    35000
+  ],
+  "within_expected_range": false,
+  "data_source": "NC Vision Zero Power BI API (https://ncvisionzero.org)",
+  "notes": "Simulation uses realistic volumes; real data lacks geocoding for tract-level analysis"
+}
