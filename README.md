@@ -8,7 +8,7 @@
 
 Web-based tool to audit AI-driven transportation safety systems for equity in Durham, NC.
 
-**[🚀 Live Demo](https://civic-ai-audits.github.io/durham-transport/)** | **[📖 Documentation](QUICKSTART.md)** | **[🎯 Hackathon Context](HACKATHON_FACTS.md)**
+**[🚀 Live Demo](https://civic-ai-audits.github.io/durham-transport/)**
 
 ## Problem Statement
 
@@ -95,7 +95,7 @@ Static files output to `frontend/dist/`
 
 **Benefits:** Always-available static site, no runtime costs, automatic updates, clean git history.
 
-See [DATA_PIPELINE.md](DATA_PIPELINE.md) for details.
+See [.docs/DATA_PIPELINE.md](.docs/DATA_PIPELINE.md) for pipeline details.
 
 ## Test 1: Volume Estimation Equity Audit
 
