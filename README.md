@@ -1,6 +1,14 @@
 # Durham Transportation Safety AI Audit Tool
 
+[![Live Demo](https://img.shields.io/badge/demo-live-success?style=flat-square)](https://jonasneves.github.io/durham-transport-safety-audit/)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/jonasneves/durham-transport-safety-audit/deploy.yml?branch=main&style=flat-square&label=deploy)](https://github.com/jonasneves/durham-transport-safety-audit/actions/workflows/deploy.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.9+-blue?style=flat-square&logo=python)](https://www.python.org/)
+[![Node](https://img.shields.io/badge/node-18+-green?style=flat-square&logo=node.js)](https://nodejs.org/)
+
 Web-based tool to audit AI-driven transportation safety systems for equity in Durham, NC.
+
+**[🚀 Live Demo](https://jonasneves.github.io/durham-transport-safety-audit/)** | **[📖 Documentation](QUICKSTART.md)** | **[🎯 Hackathon Context](HACKATHON_FACTS.md)**
 
 ## Problem Statement
 
