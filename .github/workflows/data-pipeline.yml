@@ -532,20 +532,39 @@ jobs:
           echo "Files in frontend/dist/data:"
           ls -lah frontend/dist/data/ || echo "Directory not found"
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./frontend/dist
-          commit_message: "Deploy from data pipeline run ${{ github.run_id }} [skip ci]"
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
+          path: frontend/dist
 
-      - name: Generate final summary
+      - name: Generate build summary
         run: |
-          echo "## ✅ Pipeline Complete & Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "## 📦 Build Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Static data files generated and **deployed to GitHub Pages**." >> $GITHUB_STEP_SUMMARY
+          echo "Static data files generated and ready for deployment." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Data Hash:** ${{ env.DATA_HASH }}" >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    needs: generate-static-files
+    if: needs.fetch-census-data.outputs.should-skip != 'true'
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Generate deployment summary
+        run: |
+          echo "## ✅ Deployed to GitHub Pages" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Live Site:** https://safe-t-ai.github.io/" >> $GITHUB_STEP_SUMMARY
-          echo "**Data Hash:** ${{ env.DATA_HASH }}" >> $GITHUB_STEP_SUMMARY
