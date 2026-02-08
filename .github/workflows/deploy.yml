@@ -10,8 +10,10 @@ on:
       - 'frontend/**'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
-  repository_dispatch:
-    types: [data-pipeline-complete]
+  workflow_run:
+    workflows: ["Data Pipeline"]
+    types:
+      - completed
 
 permissions:
   contents: read
@@ -25,6 +27,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
