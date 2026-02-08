@@ -188,7 +188,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: volume-predictions
-          path: backend/data/simulated/ai_volume_predictions.json
+          path: |
+            backend/data/simulated/ai_volume_predictions.json
+            backend/data/simulated/ground_truth_counters.json
+            backend/data/simulated/tract_volume_predictions.json
           retention-days: 7
 
   simulate-crash-predictions:
