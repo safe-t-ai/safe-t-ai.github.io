@@ -515,13 +515,6 @@ jobs:
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Upload static files artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: static-data-files
-          path: frontend/public/data/
-          retention-days: 30
-
       - name: Generate final summary
         run: |
           echo "## ✅ Pipeline Complete & Deployed" >> $GITHUB_STEP_SUMMARY
@@ -530,4 +523,3 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Live Site:** https://safe-t-ai.github.io/" >> $GITHUB_STEP_SUMMARY
           echo "**Data Hash:** ${{ env.DATA_HASH }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Artifacts:** Available for 30 days" >> $GITHUB_STEP_SUMMARY
