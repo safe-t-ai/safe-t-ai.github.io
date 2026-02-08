@@ -339,82 +339,6 @@ jobs:
             backend/data/simulated/demand_geo_data.json
           retention-days: 7
 
-  generate-summaries:
-    needs: [simulate-volume-predictions, simulate-crash-predictions, simulate-infrastructure, analyze-suppressed-demand]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Generate combined summary
-        run: |
-          echo "## 🤖 AI Predictions & Analysis Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          if [ -f artifacts/volume-predictions/ai_volume_predictions.json ]; then
-            PREDICTIONS=$(python3 -c "import json; d=json.load(open('artifacts/volume-predictions/ai_volume_predictions.json')); print(len(d))" 2>/dev/null || echo "N/A")
-            AVG_ERROR=$(python3 -c "import json; d=json.load(open('artifacts/volume-predictions/ai_volume_predictions.json')); errors=[x['error_pct'] for x in d]; print(f'{sum(errors)/len(errors):.1f}%')" 2>/dev/null || echo "N/A")
-
-            echo "### Test 1: Volume Predictions" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Counter Locations | $PREDICTIONS |" >> $GITHUB_STEP_SUMMARY
-            echo "| Average Bias | $AVG_ERROR |" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          if [ -f artifacts/infrastructure-recommendations/infrastructure_recommendations.json ]; then
-            AI_PROJECTS=$(python3 -c "import json; d=json.load(open('artifacts/infrastructure-recommendations/infrastructure_recommendations.json')); print(d['summary']['ai_projects'])" 2>/dev/null || echo "N/A")
-            NEED_PROJECTS=$(python3 -c "import json; d=json.load(open('artifacts/infrastructure-recommendations/infrastructure_recommendations.json')); print(d['summary']['need_based_projects'])" 2>/dev/null || echo "N/A")
-            AI_IMPACT=$(python3 -c "import json; d=json.load(open('artifacts/infrastructure-recommendations/infrastructure_recommendations.json')); print(f\"{d['equity_metrics']['ai_allocation']['disparate_impact_ratio']:.1%}\")" 2>/dev/null || echo "N/A")
-            NEED_IMPACT=$(python3 -c "import json; d=json.load(open('artifacts/infrastructure-recommendations/infrastructure_recommendations.json')); print(f\"{d['equity_metrics']['need_based_allocation']['disparate_impact_ratio']:.1%}\")" 2>/dev/null || echo "N/A")
-
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Test 3: Infrastructure Recommendations" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Metric | AI Allocation | Need-Based |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|---------------|------------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Projects | $AI_PROJECTS | $NEED_PROJECTS |" >> $GITHUB_STEP_SUMMARY
-            echo "| Disparate Impact | $AI_IMPACT | $NEED_IMPACT |" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          if [ -f artifacts/crash-predictions/crash_predictions.json ]; then
-            TOTAL_CRASHES=$(python3 -c "import json; d=json.load(open('artifacts/crash-predictions/crash_predictions.json')); print(f\"{d['summary']['total_crashes_all_years']:,}\")" 2>/dev/null || echo "N/A")
-            Q1_MAE=$(python3 -c "import json; d=json.load(open('artifacts/crash-predictions/crash_predictions.json')); print(f\"{d['error_by_quintile']['Q1 (Poorest)']['mae']:.1f}\")" 2>/dev/null || echo "N/A")
-            Q5_MAE=$(python3 -c "import json; d=json.load(open('artifacts/crash-predictions/crash_predictions.json')); print(f\"{d['error_by_quintile']['Q5 (Richest)']['mae']:.1f}\")" 2>/dev/null || echo "N/A")
-            ERROR_DISPARITY=$(python3 -c "import json; d=json.load(open('artifacts/crash-predictions/crash_predictions.json')); q1=d['error_by_quintile']['Q1 (Poorest)']['mae']; q5=d['error_by_quintile']['Q5 (Richest)']['mae']; print(f\"{((q1-q5)/q5*100):.0f}%\")" 2>/dev/null || echo "N/A")
-
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Test 2: Crash Prediction Bias" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Total Crashes (5yr) | $TOTAL_CRASHES |" >> $GITHUB_STEP_SUMMARY
-            echo "| Q1 Prediction Error (MAE) | $Q1_MAE crashes |" >> $GITHUB_STEP_SUMMARY
-            echo "| Q5 Prediction Error (MAE) | $Q5_MAE crashes |" >> $GITHUB_STEP_SUMMARY
-            echo "| Error Disparity (Q1 vs Q5) | $ERROR_DISPARITY |" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          if [ -f artifacts/demand-analysis/demand_analysis.json ]; then
-            SUPPRESSED_DEMAND=$(python3 -c "import json; d=json.load(open('artifacts/demand-analysis/demand_analysis.json')); print(f\"{d['summary']['total_suppressed_demand']:,}\")" 2>/dev/null || echo "N/A")
-            SUPPRESSION_RATE=$(python3 -c "import json; d=json.load(open('artifacts/demand-analysis/demand_analysis.json')); print(f\"{d['summary']['suppression_rate']:.1f}%\")" 2>/dev/null || echo "N/A")
-            NAIVE_AI_CORR=$(python3 -c "import json; d=json.load(open('artifacts/demand-analysis/demand_analysis.json')); print(f\"{d['summary']['naive_ai_correlation']:.3f}\")" 2>/dev/null || echo "N/A")
-            SOPH_AI_CORR=$(python3 -c "import json; d=json.load(open('artifacts/demand-analysis/demand_analysis.json')); print(f\"{d['summary']['sophisticated_ai_correlation']:.3f}\")" 2>/dev/null || echo "N/A")
-
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Test 4: Suppressed Demand Analysis" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Suppressed Demand | $SUPPRESSED_DEMAND trips/day |" >> $GITHUB_STEP_SUMMARY
-            echo "| Suppression Rate | $SUPPRESSION_RATE |" >> $GITHUB_STEP_SUMMARY
-            echo "| Naive AI Correlation | $NAIVE_AI_CORR |" >> $GITHUB_STEP_SUMMARY
-            echo "| Sophisticated AI Correlation | $SOPH_AI_CORR |" >> $GITHUB_STEP_SUMMARY
-          fi
-
   generate-static-files:
     needs: [fetch-census-data, simulate-volume-predictions, simulate-crash-predictions, simulate-infrastructure, analyze-suppressed-demand]
     if: needs.fetch-census-data.outputs.should-skip != 'true'
@@ -517,20 +441,10 @@ jobs:
           cd frontend
           npm ci
 
-      - name: List generated data files
-        run: |
-          echo "Files in frontend/public/data:"
-          ls -lah frontend/public/data/ || echo "Directory not found"
-
       - name: Build frontend with data
         run: |
           cd frontend
           GITHUB_PAGES=true npm run build
-
-      - name: List built dist files
-        run: |
-          echo "Files in frontend/dist/data:"
-          ls -lah frontend/dist/data/ || echo "Directory not found"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

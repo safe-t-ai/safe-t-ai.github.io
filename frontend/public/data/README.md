@@ -20,4 +20,3 @@ This script:
 3. Outputs optimized JSON files to this directory
 
 The files are used by the GitHub Pages deployment for a backend-free experience.
-# Data files deployed: Sun Feb  8 00:43:31 EST 2026

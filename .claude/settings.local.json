@@ -21,7 +21,12 @@
       "Bash(gh run view:*)",
       "Bash(git ls-tree:*)",
       "Bash(python scripts/generate_static_data.py:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(for file in report crash-report demand-report infrastructure-report census-tracts)",
+      "Bash(do echo -n \"$file.json: \")",
+      "Bash(done)",
+      "Bash(for file in confusion-matrices roc-curves crash-time-series demand-funnel)",
+      "Bash(do echo -n \"$file: \")"
     ]
   }
 }
