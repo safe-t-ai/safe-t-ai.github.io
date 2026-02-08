@@ -50,7 +50,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .data-hash
-          key: durham-data-hash-${{ github.run_id }}
+          key: durham-data-hash-latest
           restore-keys: durham-data-hash-
 
       - name: Fetch Durham census data
@@ -68,48 +68,56 @@ jobs:
       - name: Compute data hash
         id: compute-hash
         run: |
-          HASH=$(sha256sum backend/data/raw/durham_census_tracts.geojson | cut -c1-16)
-          echo "$HASH" > .data-hash
+          # Hash both census and crash data
+          HASH=$(cat \
+            backend/data/raw/durham_census_tracts.geojson \
+            backend/data/raw/ncdot_powerbi_response.json \
+            2>/dev/null | sha256sum | cut -d' ' -f1 | cut -c1-16)
           echo "hash=$HASH" >> $GITHUB_OUTPUT
+          echo "$HASH" > .data-hash
 
-          if [ -f ".data-hash.prev" ] && [ "${{ github.event.inputs.force_regenerate }}" != "true" ]; then
-            PREV_HASH=$(cat .data-hash.prev)
-            echo "previous-hash=$PREV_HASH" >> $GITHUB_OUTPUT
-          else
-            echo "previous-hash=" >> $GITHUB_OUTPUT
+          # Compare with previous hash
+          if [ -f .data-hash ]; then
+            cp .data-hash .data-hash.prev
           fi
 
       - name: Check if data changed
         id: check-changed
         run: |
           CURRENT="${{ steps.compute-hash.outputs.hash }}"
-          PREVIOUS="${{ steps.compute-hash.outputs.previous-hash }}"
+          PREVIOUS="${{ steps.cache-hash.outputs.cache-hit == 'true' && 'cached' || 'none' }}"
           FORCE="${{ github.event.inputs.force_regenerate }}"
 
-          if [[ "${{ github.event_name }}" == "schedule" && "$CURRENT" == "$PREVIOUS" && -n "$PREVIOUS" && "$FORCE" != "true" ]]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-            echo "📊 Data unchanged: $CURRENT (scheduled run, skipping pipeline)"
-          else
-            echo "skip=false" >> $GITHUB_OUTPUT
-            if [[ "${{ github.event_name }}" == "schedule" ]]; then
-              echo "📊 Data changed: $PREVIOUS -> $CURRENT"
-            elif [[ "$FORCE" == "true" ]]; then
-              echo "📊 Force regenerate requested"
-            else
-              echo "📊 Running pipeline (triggered by: ${{ github.event_name }})"
+          # Check for code changes in backend/scripts
+          git fetch origin main --depth=1 2>/dev/null || true
+          CODE_CHANGED=$(git diff --quiet HEAD origin/main -- backend/ scripts/ 2>/dev/null && echo "false" || echo "true")
+
+          DATA_CHANGED="true"
+          if [ -f .data-hash.prev ]; then
+            PREV_HASH=$(cat .data-hash.prev)
+            if [ "$CURRENT" == "$PREV_HASH" ]; then
+              DATA_CHANGED="false"
             fi
           fi
 
+          if [[ "${{ github.event_name }}" == "schedule" && "$DATA_CHANGED" == "false" && "$CODE_CHANGED" == "false" && "$FORCE" != "true" ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "📊 Skipping pipeline: data unchanged, no code changes, scheduled run"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "📊 Running pipeline: data_changed=$DATA_CHANGED, code_changed=$CODE_CHANGED, force=$FORCE"
+          fi
+
       - name: Save data hash
-        if: steps.check-changed.outputs.skip != 'true'
+        if: steps.check-changed.outputs.skip != 'true' && always()
         uses: actions/cache/save@v4
         with:
           path: .data-hash
-          key: durham-data-hash-${{ github.run_id }}
+          key: durham-data-hash-latest
 
       - name: Generate job summary
         run: |
-          echo "## 📊 Durham Census Data" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 Durham Census Data Fetch" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ -f backend/data/raw/durham_census_tracts.geojson ]; then
@@ -120,17 +128,19 @@ jobs:
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
             echo "| Census Tracts | $TRACTS |" >> $GITHUB_STEP_SUMMARY
             echo "| File Size | $SIZE |" >> $GITHUB_STEP_SUMMARY
-            echo "| Data Hash | ${{ steps.compute-hash.outputs.hash }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Data Hash | \`${{ steps.compute-hash.outputs.hash }}\` |" >> $GITHUB_STEP_SUMMARY
+            echo "| Timestamp | $(date -u +"%Y-%m-%d %H:%M:%S UTC") |" >> $GITHUB_STEP_SUMMARY
+            echo "| Commit | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
 
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Sources" >> $GITHUB_STEP_SUMMARY
+            echo "### Data Sources" >> $GITHUB_STEP_SUMMARY
             echo "- [US Census Bureau ACS 5-Year Estimates (2022)](https://api.census.gov/data/2022/acs/acs5)" >> $GITHUB_STEP_SUMMARY
             echo "- [Census TIGER/Line (2022)](https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2022/MapServer/8/query)" >> $GITHUB_STEP_SUMMARY
-            echo "- Crash Data: Simulated (2019-2023) for demonstration" >> $GITHUB_STEP_SUMMARY
+            echo "- [NCDOT Vision Zero Crash Data](https://analytics.ncdot.gov/t/NCDOT/views/NC_Vision_Zero_Safety/VisionZero)" >> $GITHUB_STEP_SUMMARY
 
             if [ "${{ steps.check-changed.outputs.skip }}" == "true" ]; then
               echo "" >> $GITHUB_STEP_SUMMARY
-              echo "> ⏭️ Skipping remaining pipeline: data unchanged" >> $GITHUB_STEP_SUMMARY
+              echo "> ⏭️ **Skipping remaining pipeline:** Data unchanged, no code changes" >> $GITHUB_STEP_SUMMARY
             fi
           fi
 
@@ -142,7 +152,7 @@ jobs:
           path: backend/data/raw/
           retention-days: 7
 
-  simulate-ai-predictions:
+  simulate-volume-predictions:
     needs: fetch-census-data
     if: needs.fetch-census-data.outputs.should-skip != 'true'
     runs-on: ubuntu-latest
@@ -169,34 +179,165 @@ jobs:
           name: census-data
           path: backend/data/raw
 
-      - name: Simulate AI predictions with bias
+      - name: Simulate volume predictions
         run: |
           cd backend
           python ../scripts/simulate_ai_predictions.py
 
-      - name: Simulate infrastructure recommendations
+      - name: Upload volume predictions
+        uses: actions/upload-artifact@v4
+        with:
+          name: volume-predictions
+          path: backend/data/simulated/ai_volume_predictions.json
+          retention-days: 7
+
+  simulate-crash-predictions:
+    needs: fetch-census-data
+    if: needs.fetch-census-data.outputs.should-skip != 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
         run: |
           cd backend
-          python ../scripts/simulate_infrastructure_recommendations.py
+          pip install -r requirements.txt
+
+      - name: Download census data
+        uses: actions/download-artifact@v4
+        with:
+          name: census-data
+          path: backend/data/raw
 
       - name: Simulate crash predictions
         run: |
           cd backend
           python ../scripts/simulate_crash_predictions.py
 
+      - name: Upload crash predictions
+        uses: actions/upload-artifact@v4
+        with:
+          name: crash-predictions
+          path: backend/data/simulated/crash_predictions.json
+          retention-days: 7
+
+  simulate-infrastructure:
+    needs: fetch-census-data
+    if: needs.fetch-census-data.outputs.should-skip != 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Download census data
+        uses: actions/download-artifact@v4
+        with:
+          name: census-data
+          path: backend/data/raw
+
+      - name: Simulate infrastructure recommendations
+        run: |
+          cd backend
+          python ../scripts/simulate_infrastructure_recommendations.py
+
+      - name: Upload infrastructure recommendations
+        uses: actions/upload-artifact@v4
+        with:
+          name: infrastructure-recommendations
+          path: backend/data/simulated/infrastructure_recommendations.json
+          retention-days: 7
+
+  analyze-suppressed-demand:
+    needs: [simulate-volume-predictions, simulate-crash-predictions, simulate-infrastructure]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Download census data
+        uses: actions/download-artifact@v4
+        with:
+          name: census-data
+          path: backend/data/raw
+
+      - name: Download all prediction artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-predictions'
+          path: backend/data/simulated
+          merge-multiple: true
+
+      - name: Download infrastructure recommendations
+        uses: actions/download-artifact@v4
+        with:
+          name: infrastructure-recommendations
+          path: backend/data/simulated
+
       - name: Analyze suppressed demand
         run: |
           cd backend
           python ../scripts/analyze_suppressed_demand.py
 
-      - name: Generate job summary
+      - name: Upload demand analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: demand-analysis
+          path: backend/data/simulated/demand_analysis.json
+          retention-days: 7
+
+  generate-summaries:
+    needs: [simulate-volume-predictions, simulate-crash-predictions, simulate-infrastructure, analyze-suppressed-demand]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Generate combined summary
         run: |
-          echo "## 🤖 AI Predictions Simulation" >> $GITHUB_STEP_SUMMARY
+          echo "## 🤖 AI Predictions & Analysis Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          if [ -f backend/data/simulated/ai_volume_predictions.json ]; then
-            PREDICTIONS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/ai_volume_predictions.json')); print(len(d))" 2>/dev/null || echo "N/A")
-            AVG_ERROR=$(python3 -c "import json; d=json.load(open('backend/data/simulated/ai_volume_predictions.json')); errors=[x['error_pct'] for x in d]; print(f'{sum(errors)/len(errors):.1f}%')" 2>/dev/null || echo "N/A")
+          if [ -f artifacts/volume-predictions/ai_volume_predictions.json ]; then
+            PREDICTIONS=$(python3 -c "import json; d=json.load(open('artifacts/volume-predictions/ai_volume_predictions.json')); print(len(d))" 2>/dev/null || echo "N/A")
+            AVG_ERROR=$(python3 -c "import json; d=json.load(open('artifacts/volume-predictions/ai_volume_predictions.json')); errors=[x['error_pct'] for x in d]; print(f'{sum(errors)/len(errors):.1f}%')" 2>/dev/null || echo "N/A")
 
             echo "### Test 1: Volume Predictions" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
@@ -206,11 +347,11 @@ jobs:
             echo "| Average Bias | $AVG_ERROR |" >> $GITHUB_STEP_SUMMARY
           fi
 
-          if [ -f backend/data/simulated/infrastructure_recommendations.json ]; then
-            AI_PROJECTS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(d['summary']['ai_projects'])" 2>/dev/null || echo "N/A")
-            NEED_PROJECTS=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(d['summary']['need_based_projects'])" 2>/dev/null || echo "N/A")
-            AI_IMPACT=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(f\"{d['equity_metrics']['ai_allocation']['disparate_impact_ratio']:.1%}\")" 2>/dev/null || echo "N/A")
-            NEED_IMPACT=$(python3 -c "import json; d=json.load(open('backend/data/simulated/infrastructure_recommendations.json')); print(f\"{d['equity_metrics']['need_based_allocation']['disparate_impact_ratio']:.1%}\")" 2>/dev/null || echo "N/A")
+          if [ -f artifacts/infrastructure-recommendations/infrastructure_recommendations.json ]; then
+            AI_PROJECTS=$(python3 -c "import json; d=json.load(open('artifacts/infrastructure-recommendations/infrastructure_recommendations.json')); print(d['summary']['ai_projects'])" 2>/dev/null || echo "N/A")
+            NEED_PROJECTS=$(python3 -c "import json; d=json.load(open('artifacts/infrastructure-recommendations/infrastructure_recommendations.json')); print(d['summary']['need_based_projects'])" 2>/dev/null || echo "N/A")
+            AI_IMPACT=$(python3 -c "import json; d=json.load(open('artifacts/infrastructure-recommendations/infrastructure_recommendations.json')); print(f\"{d['equity_metrics']['ai_allocation']['disparate_impact_ratio']:.1%}\")" 2>/dev/null || echo "N/A")
+            NEED_IMPACT=$(python3 -c "import json; d=json.load(open('artifacts/infrastructure-recommendations/infrastructure_recommendations.json')); print(f\"{d['equity_metrics']['need_based_allocation']['disparate_impact_ratio']:.1%}\")" 2>/dev/null || echo "N/A")
 
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Test 3: Infrastructure Recommendations" >> $GITHUB_STEP_SUMMARY
@@ -221,11 +362,11 @@ jobs:
             echo "| Disparate Impact | $AI_IMPACT | $NEED_IMPACT |" >> $GITHUB_STEP_SUMMARY
           fi
 
-          if [ -f backend/data/simulated/crash_predictions.json ]; then
-            TOTAL_CRASHES=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(f\"{d['summary']['total_crashes_all_years']:,}\")" 2>/dev/null || echo "N/A")
-            Q1_MAE=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(f\"{d['error_by_quintile']['Q1 (Poorest)']['mae']:.1f}\")" 2>/dev/null || echo "N/A")
-            Q5_MAE=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); print(f\"{d['error_by_quintile']['Q5 (Richest)']['mae']:.1f}\")" 2>/dev/null || echo "N/A")
-            ERROR_DISPARITY=$(python3 -c "import json; d=json.load(open('backend/data/simulated/crash_predictions.json')); q1=d['error_by_quintile']['Q1 (Poorest)']['mae']; q5=d['error_by_quintile']['Q5 (Richest)']['mae']; print(f\"{((q1-q5)/q5*100):.0f}%\")" 2>/dev/null || echo "N/A")
+          if [ -f artifacts/crash-predictions/crash_predictions.json ]; then
+            TOTAL_CRASHES=$(python3 -c "import json; d=json.load(open('artifacts/crash-predictions/crash_predictions.json')); print(f\"{d['summary']['total_crashes_all_years']:,}\")" 2>/dev/null || echo "N/A")
+            Q1_MAE=$(python3 -c "import json; d=json.load(open('artifacts/crash-predictions/crash_predictions.json')); print(f\"{d['error_by_quintile']['Q1 (Poorest)']['mae']:.1f}\")" 2>/dev/null || echo "N/A")
+            Q5_MAE=$(python3 -c "import json; d=json.load(open('artifacts/crash-predictions/crash_predictions.json')); print(f\"{d['error_by_quintile']['Q5 (Richest)']['mae']:.1f}\")" 2>/dev/null || echo "N/A")
+            ERROR_DISPARITY=$(python3 -c "import json; d=json.load(open('artifacts/crash-predictions/crash_predictions.json')); q1=d['error_by_quintile']['Q1 (Poorest)']['mae']; q5=d['error_by_quintile']['Q5 (Richest)']['mae']; print(f\"{((q1-q5)/q5*100):.0f}%\")" 2>/dev/null || echo "N/A")
 
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Test 2: Crash Prediction Bias" >> $GITHUB_STEP_SUMMARY
@@ -238,11 +379,11 @@ jobs:
             echo "| Error Disparity (Q1 vs Q5) | $ERROR_DISPARITY |" >> $GITHUB_STEP_SUMMARY
           fi
 
-          if [ -f backend/data/simulated/demand_analysis.json ]; then
-            SUPPRESSED_DEMAND=$(python3 -c "import json; d=json.load(open('backend/data/simulated/demand_analysis.json')); print(f\"{d['summary']['total_suppressed_demand']:,}\")" 2>/dev/null || echo "N/A")
-            SUPPRESSION_RATE=$(python3 -c "import json; d=json.load(open('backend/data/simulated/demand_analysis.json')); print(f\"{d['summary']['suppression_rate']:.1f}%\")" 2>/dev/null || echo "N/A")
-            NAIVE_AI_CORR=$(python3 -c "import json; d=json.load(open('backend/data/simulated/demand_analysis.json')); print(f\"{d['summary']['naive_ai_correlation']:.3f}\")" 2>/dev/null || echo "N/A")
-            SOPH_AI_CORR=$(python3 -c "import json; d=json.load(open('backend/data/simulated/demand_analysis.json')); print(f\"{d['summary']['sophisticated_ai_correlation']:.3f}\")" 2>/dev/null || echo "N/A")
+          if [ -f artifacts/demand-analysis/demand_analysis.json ]; then
+            SUPPRESSED_DEMAND=$(python3 -c "import json; d=json.load(open('artifacts/demand-analysis/demand_analysis.json')); print(f\"{d['summary']['total_suppressed_demand']:,}\")" 2>/dev/null || echo "N/A")
+            SUPPRESSION_RATE=$(python3 -c "import json; d=json.load(open('artifacts/demand-analysis/demand_analysis.json')); print(f\"{d['summary']['suppression_rate']:.1f}%\")" 2>/dev/null || echo "N/A")
+            NAIVE_AI_CORR=$(python3 -c "import json; d=json.load(open('artifacts/demand-analysis/demand_analysis.json')); print(f\"{d['summary']['naive_ai_correlation']:.3f}\")" 2>/dev/null || echo "N/A")
+            SOPH_AI_CORR=$(python3 -c "import json; d=json.load(open('artifacts/demand-analysis/demand_analysis.json')); print(f\"{d['summary']['sophisticated_ai_correlation']:.3f}\")" 2>/dev/null || echo "N/A")
 
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Test 4: Suppressed Demand Analysis" >> $GITHUB_STEP_SUMMARY
@@ -255,15 +396,8 @@ jobs:
             echo "| Sophisticated AI Correlation | $SOPH_AI_CORR |" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Upload simulation data artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: simulation-data
-          path: backend/data/simulated/
-          retention-days: 7
-
   generate-static-files:
-    needs: [fetch-census-data, simulate-ai-predictions]
+    needs: [fetch-census-data, simulate-volume-predictions, simulate-crash-predictions, simulate-infrastructure, analyze-suppressed-demand]
     if: needs.fetch-census-data.outputs.should-skip != 'true'
     runs-on: ubuntu-latest
     env:
@@ -294,10 +428,28 @@ jobs:
           name: census-data
           path: backend/data/raw
 
-      - name: Download simulation data
+      - name: Download volume predictions
         uses: actions/download-artifact@v4
         with:
-          name: simulation-data
+          name: volume-predictions
+          path: backend/data/simulated
+
+      - name: Download crash predictions
+        uses: actions/download-artifact@v4
+        with:
+          name: crash-predictions
+          path: backend/data/simulated
+
+      - name: Download infrastructure recommendations
+        uses: actions/download-artifact@v4
+        with:
+          name: infrastructure-recommendations
+          path: backend/data/simulated
+
+      - name: Download demand analysis
+        uses: actions/download-artifact@v4
+        with:
+          name: demand-analysis
           path: backend/data/simulated
 
       - name: Generate static JSON files for gh-pages
