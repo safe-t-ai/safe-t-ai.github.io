@@ -17,7 +17,11 @@
       "Bash(find:*)",
       "Bash(ls:*)",
       "Bash(git checkout:*)",
-      "Bash(git cherry-pick:*)"
+      "Bash(git cherry-pick:*)",
+      "Bash(gh run view:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(python scripts/generate_static_data.py:*)",
+      "Bash(cat:*)"
     ]
   }
 }
