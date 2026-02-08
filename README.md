@@ -10,18 +10,47 @@ Society-centered auditing framework for evaluating equity and fairness in AI-dri
 
 **[🚀 Live Demo](https://safe-t-ai.github.io/)**
 
-## Problem Statement
+## Overview
 
-AI tools like Strava Metro and StreetLight Data used by cities for infrastructure planning have documented demographic biases that undercount vulnerable populations. This tool provides a "transparency scorecard" through benchmark tests to evaluate whether these AI tools serve all residents equitably.
+AI tools like Strava Metro and StreetLight Data are increasingly used by cities for infrastructure planning, but have documented demographic biases that undercount vulnerable populations. SAFE-T provides a "transparency scorecard" through benchmark tests to evaluate whether these AI tools serve all residents equitably.
 
-## Current Status
+The framework currently includes two active tests evaluating bias in volume prediction and infrastructure allocation, with comprehensive visualizations showing equity gaps across demographic groups.
 
-**Phase 2 Complete:** Tests 1 & 3 Deployed
+## Features
 
-- **Test 1:** Volume Estimation Equity Audit - Evaluates bias in AI volume predictions
-- **Test 3:** Infrastructure Recommendation Audit - Evaluates equity in AI resource allocation
-- Tab-based navigation between tests
-- 8 ECharts visualizations + 2 interactive maps
+### Test 1: Volume Estimation Equity Audit
+
+Evaluates whether AI volume estimation tools accurately predict pedestrian and cyclist volumes across all demographic groups.
+
+**Visualizations:**
+- Geographic distribution map showing prediction errors by census tract
+- Accuracy comparisons across income quintiles
+- Accuracy comparisons by racial composition
+- Predicted vs actual scatter plot with bias regression
+- Error distribution histogram
+
+**Key Findings:**
+- Low-income areas undercounted by ~25%
+- High-income areas overcounted by ~8%
+- High-minority areas show 20% worse accuracy
+
+### Test 3: Infrastructure Recommendation Audit
+
+Evaluates whether AI-driven infrastructure recommendation systems allocate safety improvement budgets equitably.
+
+**Visualizations:**
+- Interactive map with danger scores and project recommendations
+- Budget allocation Sankey diagram ($5M across income quintiles)
+- Equity radar comparing AI vs need-based allocation
+- Metrics cards showing disparate impact, Gini coefficient, equity gap
+
+**Key Findings:**
+- AI disparate impact: 29.5% (Q1 receives 29.5% as much per-capita as Q5)
+- Need-based disparate impact: 83.8% (more equitable baseline)
+- Equity gap: 25.7 percentage points worse with AI allocation
+- AI Gini coefficient: 0.302 (higher inequality)
+
+See [.docs/TEST3_METHODOLOGY.md](.docs/TEST3_METHODOLOGY.md) for detailed methodology.
 
 ## Quick Start
 
@@ -31,237 +60,160 @@ Visit **[safe-t-ai.github.io](https://safe-t-ai.github.io/)**
 
 The site updates automatically via scheduled data pipeline (Mondays 6 AM UTC).
 
-### Local Development
-
-#### Prerequisites
-- Python 3.9+
-- Node.js 20+
-
-#### Setup
+### Run Locally
 
 ```bash
 # Install dependencies
-cd backend && pip install -r requirements.txt
-cd ../frontend && npm install
+make install
+
+# Generate data and start dev server
+make setup
+make dev
+
+# Open http://localhost:5173
 ```
 
-#### Generate Data Locally
-
-```bash
-# Run data pipeline
-python scripts/fetch_durham_data.py
-python scripts/simulate_ai_predictions.py
-python scripts/generate_static_data.py
-```
-
-#### Run Frontend Dev Server
-
-```bash
-cd frontend
-npm run dev
-```
-
-Open browser to: http://localhost:5173
-
-#### Build for Production
-
-```bash
-cd frontend
-npm run build
-```
-
-Static files output to `frontend/dist/`
+For detailed development instructions, see [.docs/DEVELOPMENT.md](.docs/DEVELOPMENT.md).
 
 ## Architecture
 
-### Static Site with Automated Pipeline
+### Technology Stack
 
-- **Data Pipeline:** Python + GeoPandas (runs weekly via GitHub Actions)
-- **Frontend:** Vanilla JS + Vite + Apache ECharts + Leaflet.js
-- **Deployment:** GitHub Pages (gh-pages branch)
-- **Data:** Durham census data + simulated AI predictions with documented bias
+- **Backend:** Python 3.9+ with GeoPandas, Pandas, scikit-learn
+- **Frontend:** Vanilla JavaScript with Vite, ECharts, Leaflet.js
+- **Deployment:** GitHub Pages (static site)
+- **CI/CD:** GitHub Actions (automated weekly updates)
 
-### How It Works
+### Data Pipeline
 
-1. **Data Pipeline** (`data-pipeline.yml`) runs weekly:
-   - Fetches Durham census data (238 tracts)
-   - Simulates AI predictions with documented bias patterns (Tests 1 & 3)
-   - Generates static JSON files (13 files, ~3.1 MB total)
-   - Uploads as artifacts (30-day retention)
+The data pipeline runs weekly via GitHub Actions:
 
-2. **Deploy Workflow** (`deploy.yml`) runs after pipeline:
-   - Downloads latest data artifacts
-   - Builds Vite frontend with data
-   - Deploys to gh-pages branch
+1. **Fetch Data:** Downloads Durham census demographics (238 tracts)
+2. **Simulate AI:** Generates AI predictions with documented bias patterns
+3. **Generate Static Files:** Exports 13 JSON files (~3.1 MB total)
+4. **Deploy:** Automatically triggers deployment to GitHub Pages
 
 **Benefits:** Always-available static site, no runtime costs, automatic updates, clean git history.
 
 See [.docs/DATA_PIPELINE.md](.docs/DATA_PIPELINE.md) for pipeline details.
 
-## Test 1: Volume Estimation Equity Audit
-
-Evaluates whether AI volume estimation tools (like Strava Metro) accurately predict pedestrian and cyclist volumes across all demographic groups.
-
-**Visualizations:**
-
-1. **Geographic Distribution Map** - Choropleth showing prediction errors by census tract
-2. **Accuracy by Income** - Bar chart comparing error rates across income quintiles
-3. **Accuracy by Race** - Bar chart comparing error rates by minority percentage
-4. **Predicted vs Actual** - Scatter plot with bias regression line
-5. **Error Distribution** - Histogram of prediction errors
-
-**Key Findings:**
-
-- Low-income areas (Q1-Q2) undercounted by ~25% on average
-- High-income areas (Q4-Q5) overcounted by ~8% on average
-- High-minority areas (>60%) have 20% worse accuracy
-
-## Test 3: Infrastructure Recommendation Audit
-
-Evaluates whether AI-driven infrastructure recommendation systems allocate safety improvement budgets equitably across demographic groups.
-
-**Visualizations:**
-
-1. **Infrastructure Map** - Danger scores with AI/need-based project recommendations (toggleable)
-2. **Budget Flow (Sankey)** - $5M allocation across income quintiles
-3. **Equity Radar** - Multi-dimensional comparison of AI vs need-based allocation
-4. **Metrics Cards** - Disparate impact, Gini coefficient, equity gap
-
-**Key Findings:**
-
-- AI disparate impact: 29.5% (Q1 receives 29.5% as much per-capita as Q5)
-- Need-based disparate impact: 3.8% (more equitable baseline)
-- Equity gap: 25.7% worse with AI vs need-based allocation
-- AI Gini coefficient: 0.302 (higher inequality)
-
-See [.docs/TEST3_METHODOLOGY.md](.docs/TEST3_METHODOLOGY.md) for detailed methodology.
-
-## Future Tests
-
-- **Test 2:** Crash Prediction Bias Audit
-- **Test 4:** Suppressed Demand Analysis
-
 ## Project Structure
 
 ```
-durham-transport-safety-audit/
+durham-transport/
+├── .docs/                         # Documentation
+│   ├── DEVELOPMENT.md            # Development guide
+│   ├── ROADMAP.md                # Future plans
+│   ├── DATA_PIPELINE.md          # Pipeline details
+│   └── TEST3_METHODOLOGY.md      # Test 3 methodology
+├── .github/workflows/            # CI/CD workflows
+│   ├── data-pipeline.yml         # Weekly data generation
+│   └── deploy.yml                # GitHub Pages deployment
 ├── backend/
-│   ├── app.py                              # Flask API server
-│   ├── config.py
-│   ├── api/
-│   │   └── routes_test1.py                # Test 1 endpoints
-│   ├── models/
-│   │   ├── volume_estimator.py            # Test 1 analysis
-│   │   └── infrastructure_auditor.py      # Test 3 analysis
-│   └── utils/
-│       ├── demographic_analysis.py
-│       └── geospatial.py
+│   ├── models/                   # Analysis models
+│   │   ├── volume_estimator.py   # Test 1
+│   │   ├── crash_predictor.py    # Test 2 (backend ready)
+│   │   ├── infrastructure_auditor.py  # Test 3
+│   │   └── demand_analyzer.py    # Test 4 (backend ready)
+│   ├── tests/                    # Pytest test suite
+│   ├── utils/                    # Shared utilities
+│   └── config.py                 # Centralized configuration
 ├── frontend/
 │   ├── src/
-│   │   ├── main.js                        # Tab navigation
-│   │   ├── test3.js                       # Test 3 implementation
-│   │   ├── components/
-│   │   │   └── common/
-│   │   │       └── DurhamMap.js
-│   │   └── services/
-│   │       ├── api.js
-│   │       └── chartConfig.js
+│   │   ├── main.js               # Tab navigation
+│   │   ├── test1.js              # Test 1 implementation
+│   │   ├── test3.js              # Test 3 implementation
+│   │   ├── components/           # Reusable components
+│   │   └── services/             # API & chart config
 │   └── public/
-│       └── index.html
+│       ├── index.html
+│       └── data/                 # Static JSON files (gitignored)
 └── scripts/
     ├── fetch_durham_data.py
     ├── simulate_ai_predictions.py
+    ├── simulate_crash_predictions.py
     ├── simulate_infrastructure_recommendations.py
+    ├── analyze_suppressed_demand.py
     └── generate_static_data.py
 ```
 
 ## Data Files
 
-All data is pre-generated and served as static JSON files from `frontend/public/data/`:
+All data is pre-generated and served as static JSON files:
 
 ### Test 1 Files
-
-- `census-tracts.json` - 238 Durham census tracts with geometries (~313 KB)
-- `counter-locations.json` - 15 counter locations with predictions (~3.3 KB)
-- `report.json` - Complete audit report with findings (~17 KB)
-- `choropleth-data.json` - Tract-level error data for map (~332 KB)
-- `accuracy-by-income.json` - Income quintile analysis (~1.5 KB)
-- `accuracy-by-race.json` - Racial composition analysis (~1.1 KB)
-- `scatter-data.json` - Predicted vs actual data points (~11 KB)
-- `error-distribution.json` - Error histogram data (~2 KB)
+- `census-tracts.json` - Durham census tracts with geometries (313 KB)
+- `counter-locations.json` - 15 counter locations with predictions (3.3 KB)
+- `report.json` - Complete audit report (17 KB)
+- `choropleth-data.json` - Tract-level error data (332 KB)
+- `accuracy-by-income.json` - Income quintile analysis (1.5 KB)
+- `accuracy-by-race.json` - Racial composition analysis (1.1 KB)
+- `scatter-data.json` - Predicted vs actual data (11 KB)
+- `error-distribution.json` - Error histogram (2 KB)
 
 ### Test 3 Files
+- `infrastructure-report.json` - Infrastructure audit report (55 KB)
+- `danger-scores.json` - Census tract danger scores (1.4 MB)
+- `budget-allocation.json` - Equity metrics (1 KB)
+- `recommendations.json` - Project recommendations (940 KB)
 
-- `infrastructure-report.json` - Complete infrastructure audit report (~55 KB)
-- `danger-scores.json` - Census tract danger scores with geometry (~1.4 MB)
-- `budget-allocation.json` - AI vs need-based equity metrics (~1 KB)
-- `recommendations.json` - Project recommendations (AI/need-based) with geometry (~940 KB)
-
-### Shared Files
-
-- `metadata.json` - Generation metadata with verification hash (~300 B)
-
-**Total:** ~3.1 MB (uncompressed), ~780 KB (gzipped)
+**Total:** ~3.1 MB uncompressed, ~780 KB gzipped
 
 ## Data Sources
 
 - **Census Demographics:** US Census Bureau ACS 5-Year Estimates (2022)
-- **Census Tract Boundaries:** TIGER/Line Shapefiles
-- **Crash Data:** Simulated crash data for Durham County (2019-2023) with realistic spatial and temporal patterns
-  - ✅ **Validated against real NCDOT data** via [NC Vision Zero API](https://ncvisionzero.org)
-  - Real NCDOT data accessible but lacks geocoding (lat/long) for tract-level analysis
-  - Simulated data calibrated to Durham County volumes and demographics
-  - See [NCDOT Data Access Documentation](docs/NCDOT_DATA_ACCESS.md) for details
-- **AI Predictions (Crashes):** Ridge regression trained on simulated historical crash data with demographic features
-- **Counter Data:** Simulated (2-3 real locations + 12 simulated)
-- **AI Predictions (Demand):** Simulated with documented bias patterns
+- **Census Boundaries:** TIGER/Line Shapefiles (2022)
+- **Crash Data:** Simulated crash data calibrated to Durham County
+  - ✅ Validated against real NCDOT data via [NC Vision Zero API](https://ncvisionzero.org)
+  - Real NCDOT data accessible but lacks geocoding for tract-level analysis
+  - See [NCDOT Data Access Documentation](docs/NCDOT_DATA_ACCESS.md)
+- **AI Predictions:** Simulated with documented bias patterns from research literature
+  - Crash prediction: 25-40% higher error in low-income areas
+  - Volume estimation: 25% undercount (low-income), 8% overcount (high-income)
+  - Minority areas: 20% worse accuracy
 
-Bias patterns calibrated to research literature:
-- Crash prediction error disparity: AI shows 25-40% higher MAE in low-income areas
-- Demand estimation bias: Low-income undercount 25%, High-income overcount 8%
-- High-minority undercount: 20%
+## Testing
+
+The project includes comprehensive test coverage:
+
+```bash
+# Run backend tests
+make test
+
+# Run with coverage report
+cd backend && pytest tests/ -v --cov
+
+# Run frontend linting
+cd frontend && npm run lint
+```
+
+**Test Suite:** 48 tests covering demographic analysis, geospatial operations, temporal validation, and all model implementations.
 
 ## Contributing
 
-### Running the Data Pipeline Locally
+We welcome contributions! See [.docs/DEVELOPMENT.md](.docs/DEVELOPMENT.md) for:
+- Setup instructions
+- Development workflow
+- Testing guidelines
+- Code quality standards
 
-```bash
-# Generate census data
-python scripts/fetch_durham_data.py
+For future plans and roadmap, see [.docs/ROADMAP.md](.docs/ROADMAP.md).
 
-# Simulate AI predictions (Test 1)
-python scripts/simulate_ai_predictions.py
+## Documentation
 
-# Simulate infrastructure recommendations (Test 3)
-python scripts/simulate_infrastructure_recommendations.py
-
-# Generate static files
-python scripts/generate_static_data.py
-```
-
-### Triggering GitHub Actions
-
-```bash
-# Manually run data pipeline
-gh workflow run data-pipeline.yml --repo safe-t-ai/safe-t-ai.github.io
-
-# Manually deploy to gh-pages
-gh workflow run deploy.yml --repo safe-t-ai/safe-t-ai.github.io
-
-# Check workflow status
-gh run list --repo safe-t-ai/safe-t-ai.github.io --limit 5
-```
-
-### Adding New Tests
-
-1. Create backend model in `backend/models/`
-2. Add data generation script in `scripts/`
-3. Update `scripts/generate_static_data.py` to export new data
-4. Create frontend visualizations in `frontend/src/`
-5. Update this README
-
-See the implementation plan for Test 2-4 specifications.
+- **[.docs/DEVELOPMENT.md](.docs/DEVELOPMENT.md)** - Development guide
+- **[.docs/ROADMAP.md](.docs/ROADMAP.md)** - Project roadmap and future tests
+- **[.docs/DATA_PIPELINE.md](.docs/DATA_PIPELINE.md)** - Data pipeline architecture
+- **[.docs/TEST3_METHODOLOGY.md](.docs/TEST3_METHODOLOGY.md)** - Test 3 methodology
 
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+Built with:
+- [Apache ECharts](https://echarts.apache.org/) - Data visualization
+- [Leaflet.js](https://leafletjs.com/) - Interactive maps
+- [Vite](https://vitejs.dev/) - Frontend tooling
+- [GeoPandas](https://geopandas.org/) - Geospatial analysis
