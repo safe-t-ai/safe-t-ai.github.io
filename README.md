@@ -1,10 +1,9 @@
 # SAFE-T: Safety Algorithm Fairness Evaluation for Transportation
 
-[![Live Demo](https://img.shields.io/badge/demo-live-success?style=flat-square)](https://safe-t-ai.github.io/)
-[![Deploy](https://img.shields.io/github/actions/workflow/status/safe-t-ai/safe-t-ai.github.io/deploy.yml?branch=main&style=flat-square&label=deploy)](https://github.com/safe-t-ai/safe-t-ai.github.io/actions/workflows/deploy.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.9+-blue?style=flat-square&logo=python)](https://www.python.org/)
-[![Node](https://img.shields.io/badge/node-18+-green?style=flat-square&logo=node.js)](https://nodejs.org/)
+[![Pipeline Status](https://img.shields.io/github/actions/workflow/status/safe-t-ai/safe-t-ai.github.io/data-pipeline.yml?branch=main&label=pipeline)](https://github.com/safe-t-ai/safe-t-ai.github.io/actions/workflows/data-pipeline.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.9+-blue?logo=python)](https://www.python.org/)
+[![Node](https://img.shields.io/badge/node-18+-green?logo=node.js)](https://nodejs.org/)
 
 Auditing framework for evaluating equity and fairness in AI-driven transportation safety systems.
 
@@ -22,21 +21,25 @@ Evaluates whether AI volume estimation tools accurately predict pedestrian and c
 
 **Finding:** Low-income areas undercounted by ~25%, high-income areas overcounted by ~8%, with high-minority areas showing 20% worse accuracy overall.
 
+### Test 2: Crash Prediction Bias
+
+Evaluates whether AI crash prediction models maintain consistent accuracy across income levels when forecasting safety outcomes.
+
+**Finding:** AI prediction error significantly higher in low-income areas, with poorest quintile showing systematically worse model performance, leading to underallocation of safety resources.
+
 ### Test 3: Infrastructure Recommendation Audit
 
 Evaluates whether AI-driven infrastructure recommendation systems allocate safety budgets equitably.
 
 **Finding:** AI allocation shows 29.5% disparate impact ratio (Q1 receives 29.5% as much per-capita as Q5), failing the 80% threshold. Need-based allocation achieves 83.8%, demonstrating feasible equity improvements.
 
+### Test 4: Suppressed Demand Analysis
+
+Evaluates whether AI tools detect latent transportation demand in areas with poor infrastructure that suppresses observed usage.
+
+**Finding:** Standard AI tools fail to detect suppressed demand, showing low correlation with potential need. Poor infrastructure in low-income areas masks actual demand, perpetuating underinvestment.
+
 ## Quick Start
-
-### View Live Site
-
-Visit **[safe-t-ai.github.io](https://safe-t-ai.github.io/)**
-
-Updates automatically via scheduled data pipeline (Mondays 6 AM UTC).
-
-### Run Locally
 
 ```bash
 # Install dependencies
@@ -51,9 +54,9 @@ make dev
 
 ## Architecture
 
-**Stack:** Python + GeoPandas + Vite + ECharts + Leaflet.js
-**Deployment:** Static site on GitHub Pages
-**Data Pipeline:** Automated weekly via GitHub Actions
+- **Stack:** Python + GeoPandas + Vite + ECharts + Leaflet.js
+- **Deployment:** Static site on GitHub Pages
+- **Data Pipeline:** Automated via GitHub Actions
 
 The data pipeline fetches Durham census data (238 tracts), simulates AI predictions with documented bias patterns, generates static JSON files, and automatically deploys.
 
@@ -63,7 +66,7 @@ The data pipeline fetches Durham census data (238 tracts), simulates AI predicti
 durham-transport/
 ├── backend/
 │   ├── models/           # Analysis models (4 tests)
-│   ├── tests/            # Pytest suite (48 tests, >70% coverage)
+│   ├── tests/            # Pytest suite (48 tests, 64% coverage)
 │   ├── utils/            # Demographic & geospatial analysis
 │   └── config.py         # Centralized configuration
 ├── frontend/
@@ -82,16 +85,37 @@ durham-transport/
 
 ## Development
 
+### Quality Checks
+
 ```bash
-# Run tests
+# Run tests with coverage (fails if <60%)
 make test
 
 # Run linting
-cd frontend && npm run lint
+make lint
 
-# Trigger workflows
+# Auto-fix lint issues
+make lint-fix
+
+# Run all pre-commit hooks
+make hooks
+```
+
+### Pre-commit Hooks
+
+Hooks run automatically on `git commit`:
+- Pytest with coverage enforcement
+- ESLint
+- Trailing whitespace removal
+- YAML/JSON validation
+
+Install: `make install-hooks` (included in `make setup`)
+
+### CI/CD
+
+```bash
+# Trigger data pipeline manually
 gh workflow run data-pipeline.yml
-gh workflow run deploy.yml
 ```
 
 ## License

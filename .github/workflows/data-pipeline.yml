@@ -1,9 +1,6 @@
 name: Data Pipeline
 
 on:
-  schedule:
-    # Run weekly on Mondays at 6 AM UTC (census data doesn't change often)
-    - cron: '0 6 * * 1'
   push:
     branches: [main]
     paths:

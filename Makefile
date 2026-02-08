@@ -9,7 +9,7 @@ help: ## Display this help
 
 ##@ Setup
 
-setup: install data ## Complete setup (install dependencies and generate data)
+setup: install install-hooks data ## Complete setup (install dependencies, hooks, and generate data)
 
 install: install-backend install-frontend ## Install all dependencies
 
@@ -18,6 +18,10 @@ install-backend: ## Install Python backend dependencies
 
 install-frontend: ## Install Node.js frontend dependencies
 	cd frontend && npm install
+
+install-hooks: ## Install pre-commit hooks
+	pre-commit install
+	@echo "✓ Pre-commit hooks installed"
 
 ##@ Development
 
@@ -52,13 +56,24 @@ preview: build ## Preview production build locally
 deploy: build ## Deploy to GitHub Pages
 	cd frontend && npm run deploy
 
-##@ Testing
+##@ Testing & Quality
 
 test: ## Run pytest test suite with coverage
-	cd backend && pytest tests/ -v --cov=. --cov-report=term-missing
+	cd backend && pytest
 
 test-quick: ## Run pytest without coverage
-	cd backend && pytest tests/ -v
+	cd backend && pytest -v --no-cov
+
+lint: ## Run all linters
+	cd frontend && npm run lint
+	@echo "✓ ESLint passed"
+
+lint-fix: ## Run linters with auto-fix
+	cd frontend && npm run lint:fix
+	@echo "✓ Auto-fixed lint issues"
+
+hooks: ## Run pre-commit hooks manually
+	pre-commit run --all-files
 
 test-setup: ## Run original setup validation
 	python3 test_setup.py
