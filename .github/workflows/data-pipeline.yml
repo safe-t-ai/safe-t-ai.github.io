@@ -470,6 +470,28 @@ jobs:
           }
           EOF
 
+      - name: Commit and push data files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Force add files that are in .gitignore
+          git add -f frontend/public/data/*.json
+
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update static data files [skip ci]
+
+            Generated from data pipeline run ${{ github.run_id }}
+            Data hash: ${{ env.DATA_HASH }}
+
+            Co-Authored-By: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+
+            git push
+          fi
+
       - name: Generate job summary
         run: |
           echo "## 📦 Static Files Generated" >> $GITHUB_STEP_SUMMARY
