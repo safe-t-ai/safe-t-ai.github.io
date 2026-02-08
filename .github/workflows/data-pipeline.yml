@@ -18,6 +18,11 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 env:
   PYTHON_VERSION: '3.9'
 
