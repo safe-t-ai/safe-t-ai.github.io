@@ -506,10 +506,20 @@ jobs:
           cd frontend
           npm ci
 
+      - name: List generated data files
+        run: |
+          echo "Files in frontend/public/data:"
+          ls -lah frontend/public/data/ || echo "Directory not found"
+
       - name: Build frontend with data
         run: |
           cd frontend
           GITHUB_PAGES=true npm run build
+
+      - name: List built dist files
+        run: |
+          echo "Files in frontend/dist/data:"
+          ls -lah frontend/dist/data/ || echo "Directory not found"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
