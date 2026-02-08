@@ -54,7 +54,13 @@ deploy: build ## Deploy to GitHub Pages
 
 ##@ Testing
 
-test: ## Run test setup validation
+test: ## Run pytest test suite with coverage
+	cd backend && pytest tests/ -v --cov=. --cov-report=term-missing
+
+test-quick: ## Run pytest without coverage
+	cd backend && pytest tests/ -v
+
+test-setup: ## Run original setup validation
 	python3 test_setup.py
 
 ##@ Cleanup

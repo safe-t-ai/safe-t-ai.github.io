@@ -13,6 +13,7 @@ from pathlib import Path
 from shapely.geometry import Point
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, roc_curve, auc, mean_absolute_error
 from sklearn.linear_model import Ridge
+from config import CRASH_ANALYSIS_YEARS, DEFAULT_RANDOM_SEED
 
 
 class CrashPredictionAuditor:
@@ -32,7 +33,7 @@ class CrashPredictionAuditor:
             census_gdf: GeoDataFrame with census tracts and demographics
         """
         self.census_gdf = census_gdf.copy()
-        self.years = [2019, 2020, 2021, 2022, 2023]
+        self.years = CRASH_ANALYSIS_YEARS
         self.ai_model = None
 
     def load_real_crash_data(self, crash_csv_path: Path) -> pd.DataFrame:
