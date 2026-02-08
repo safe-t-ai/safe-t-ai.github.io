@@ -235,7 +235,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: crash-predictions
-          path: backend/data/simulated/crash_predictions.json
+          path: |
+            backend/data/simulated/crash_predictions.json
+            backend/data/simulated/confusion_matrices.json
+            backend/data/simulated/roc_curves.json
+            backend/data/simulated/crash_time_series.json
+            backend/data/simulated/crash_geo_data.json
           retention-days: 7
 
   simulate-infrastructure:
@@ -325,7 +330,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: demand-analysis
-          path: backend/data/simulated/demand_analysis.json
+          path: |
+            backend/data/simulated/demand_analysis.json
+            backend/data/simulated/demand_funnel.json
+            backend/data/simulated/correlation_matrix.json
+            backend/data/simulated/detection_scorecard.json
+            backend/data/simulated/network_flow.json
+            backend/data/simulated/demand_geo_data.json
           retention-days: 7
 
   generate-summaries:
