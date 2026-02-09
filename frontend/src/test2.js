@@ -72,33 +72,39 @@ export class Test2 {
         const q1_error = error_by_quintile['Q1 (Poorest)'];
         const q5_error = error_by_quintile['Q5 (Richest)'];
 
+        const errorDisparity = ((q1_error.mae - q5_error.mae) / q5_error.mae) * 100;
+
         const metrics = [
             {
                 title: 'Q1 Prediction Error',
                 value: q1_error.mae.toFixed(1) + ' crashes',
-                subtext: 'Mean Absolute Error (poorest quintile)'
+                subtext: 'Mean Absolute Error (poorest quintile)',
+                sentiment: 'value-danger'
             },
             {
                 title: 'Q5 Prediction Error',
                 value: q5_error.mae.toFixed(1) + ' crashes',
-                subtext: 'Mean Absolute Error (richest quintile)'
+                subtext: 'Mean Absolute Error (richest quintile)',
+                sentiment: 'value-success'
             },
             {
                 title: 'Error Disparity',
-                value: (((q1_error.mae - q5_error.mae) / q5_error.mae) * 100).toFixed(0) + '%',
-                subtext: 'Higher error in low-income areas'
+                value: errorDisparity.toFixed(0) + '%',
+                subtext: 'Higher error in low-income areas',
+                sentiment: 'value-danger'
             },
             {
                 title: 'Total Crashes (5yr)',
                 value: summary.total_crashes_all_years.toLocaleString(),
-                subtext: `Durham County 2019-2023 (NCDOT)`
+                subtext: `Durham County 2019-2023 (NCDOT)`,
+                sentiment: 'value-info'
             }
         ];
 
         const html = metrics.map(m => `
             <div class="metric-card">
                 <h3>${m.title}</h3>
-                <div class="value">${m.value}</div>
+                <div class="value ${m.sentiment}">${m.value}</div>
                 <div class="subtext">${m.subtext}</div>
             </div>
         `).join('');

@@ -72,29 +72,33 @@ export class Test3 {
             {
                 title: 'AI Disparate Impact',
                 value: (ai_allocation.disparate_impact_ratio * 100).toFixed(1) + '%',
-                subtext: 'Q1 vs Q5 per capita'
+                subtext: 'Q1 vs Q5 per capita',
+                sentiment: 'value-danger'
             },
             {
                 title: 'Need-Based Impact',
                 value: (need_based_allocation.disparate_impact_ratio * 100).toFixed(1) + '%',
-                subtext: 'More equitable baseline'
+                subtext: 'More equitable baseline',
+                sentiment: 'value-success'
             },
             {
                 title: 'AI Gini Coefficient',
                 value: ai_allocation.gini_coefficient.toFixed(3),
-                subtext: 'Budget inequality (0=equal)'
+                subtext: 'Budget inequality (0=equal)',
+                sentiment: 'value-warning'
             },
             {
                 title: 'Equity Gap',
                 value: (comparison.equity_gap * 100).toFixed(1) + '%',
-                subtext: 'AI vs need-based difference'
+                subtext: 'AI vs need-based difference',
+                sentiment: 'value-danger'
             }
         ];
 
         const html = metrics.map(m => `
             <div class="metric-card">
                 <h3>${m.title}</h3>
-                <div class="value">${m.value}</div>
+                <div class="value ${m.sentiment}">${m.value}</div>
                 <div class="subtext">${m.subtext}</div>
             </div>
         `).join('');

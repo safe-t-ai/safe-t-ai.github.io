@@ -75,29 +75,33 @@ export class Test4 {
             {
                 title: 'Suppressed Demand',
                 value: summary.total_suppressed_demand.toLocaleString() + ' trips/day',
-                subtext: `${summary.suppression_rate.toFixed(1)}% of potential lost`
+                subtext: `${summary.suppression_rate.toFixed(1)}% of potential lost`,
+                sentiment: 'value-danger'
             },
             {
                 title: 'High-Suppression Areas',
                 value: summary.high_suppression_tracts.toString(),
-                subtext: 'Tracts with >70% suppression'
+                subtext: 'Tracts with >70% suppression',
+                sentiment: 'value-warning'
             },
             {
                 title: 'Naive AI Accuracy',
                 value: (summary.naive_ai_correlation * 100).toFixed(1) + '%',
-                subtext: 'Fails to detect suppressed demand'
+                subtext: 'Fails to detect suppressed demand',
+                sentiment: 'value-danger'
             },
             {
                 title: 'Sophisticated AI',
                 value: (summary.sophisticated_ai_correlation * 100).toFixed(1) + '%',
-                subtext: 'Partial detection capability'
+                subtext: 'Partial detection capability',
+                sentiment: 'value-warning'
             }
         ];
 
         const html = metrics.map(m => `
             <div class="metric-card">
                 <h3>${m.title}</h3>
-                <div class="value">${m.value}</div>
+                <div class="value ${m.sentiment}">${m.value}</div>
                 <div class="subtext">${m.subtext}</div>
             </div>
         `).join('');

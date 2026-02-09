@@ -1,4 +1,4 @@
-.PHONY: help setup install install-backend install-frontend clean clean-all dev dev-backend dev-frontend build deploy test data fetch-data generate-data
+.PHONY: help setup install install-backend install-frontend clean clean-all dev build deploy test data fetch-data generate-data
 
 .DEFAULT_GOAL := help
 
@@ -25,30 +25,28 @@ install-hooks: ## Install pre-commit hooks
 
 ##@ Development
 
-dev: ## Start both backend and frontend servers
-	./start.sh
-
-dev-backend: ## Start backend API server only
-	cd backend && python3 app.py
-
-dev-frontend: ## Start frontend dev server only
+dev: ## Start frontend dev server (data served from frontend/public/data/)
 	cd frontend && npm run dev
 
 ##@ Data
 
 data: fetch-data generate-data ## Fetch and generate all data
 
-fetch-data: ## Fetch Durham census and geographic data
+fetch-data: ## Fetch Durham census, geographic, and crash data
 	python3 scripts/fetch_durham_data.py
+	python3 scripts/fetch_ncdot_crash_data.py
 
 generate-data: ## Generate static data files for frontend
 	python3 scripts/simulate_ai_predictions.py
+	python3 scripts/simulate_crash_predictions.py
+	python3 scripts/simulate_infrastructure_recommendations.py
+	python3 scripts/analyze_suppressed_demand.py
 	python3 scripts/generate_static_data.py
 
 ##@ Build & Deploy
 
 build: ## Build frontend for production
-	cd frontend && GITHUB_PAGES=true npm run build
+	cd frontend && npm run build
 
 preview: build ## Preview production build locally
 	cd frontend && npm run preview

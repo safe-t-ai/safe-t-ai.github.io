@@ -6,11 +6,7 @@
     <title>SAFE-T: Safety Algorithm Fairness Evaluation for Transportation</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
@@ -19,61 +15,107 @@
             line-height: 1.6;
         }
 
+        /* Header */
         .header {
-            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            background: #0f172a;
             color: white;
-            padding: 2rem 2rem 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 1.75rem 2rem 1.5rem;
         }
 
-        .header h1 {
-            font-size: 1.75rem;
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+
+        .header-text h1 {
+            font-size: 1.5rem;
             font-weight: 600;
-            margin-bottom: 0.5rem;
+            line-height: 1.3;
         }
 
-        .header p {
-            font-size: 0.95rem;
-            opacity: 0.85;
-            max-width: 900px;
-            margin-bottom: 1.5rem;
+        .header-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .header-meta span { white-space: nowrap; }
+
+        /* Tabs — same dark surface, seamless with header */
+        .tabs-bar {
+            background: #0f172a;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .tabs-bar-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
         }
 
         .tabs {
             display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
+            gap: 0.25rem;
         }
 
         .tab {
-            background: rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.7);
+            background: rgba(255,255,255,0.07);
+            color: rgba(255,255,255,0.65);
             border: none;
-            padding: 0.75rem 1.5rem;
-            font-size: 0.95rem;
+            padding: 0.7rem 1.25rem;
+            font-size: 0.9rem;
+            font-family: inherit;
             cursor: pointer;
             border-radius: 8px 8px 0 0;
             transition: all 0.2s;
+            white-space: nowrap;
         }
 
         .tab:hover {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.12);
             color: rgba(255,255,255,0.9);
         }
 
         .tab.active {
             background: #f5f7fa;
-            color: #2d3748;
+            color: #0f172a;
             font-weight: 500;
         }
 
-        .test-content {
-            display: none;
+        .tabs-description {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.35);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .test-content.active {
-            display: block;
-        }
+        /* Layout */
+        .test-content { display: none; }
+        .test-content.active { display: block; }
 
         .container {
             max-width: 1400px;
@@ -81,6 +123,15 @@
             padding: 2rem;
         }
 
+        .intro {
+            margin-bottom: 2rem;
+            color: #4a5568;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            max-width: 860px;
+        }
+
+        /* Metric Cards */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -96,11 +147,11 @@
         }
 
         .metric-card h3 {
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-weight: 500;
             color: #718096;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.04em;
             margin-bottom: 0.5rem;
         }
 
@@ -110,12 +161,18 @@
             color: #2d3748;
         }
 
+        .metric-card .value-danger { color: #c53030; }
+        .metric-card .value-warning { color: #b7791f; }
+        .metric-card .value-success { color: #276749; }
+        .metric-card .value-info { color: #2b6cb0; }
+
         .metric-card .subtext {
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             color: #718096;
             margin-top: 0.25rem;
         }
 
+        /* Charts */
         .chart-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(min(100%, 600px), 1fr));
@@ -131,17 +188,31 @@
         }
 
         .chart-container h2 {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 600;
             margin-bottom: 1rem;
             color: #2d3748;
         }
 
-        .chart {
-            width: 100%;
-            height: 400px;
+        .chart { width: 100%; height: 400px; }
+
+        .chart-header {
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
         }
 
+        .chart-header h2 { margin-bottom: 0; }
+
+        .chart-description {
+            font-size: 0.9rem;
+            color: #4a5568;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Map */
         .map-container {
             background: white;
             border-radius: 8px;
@@ -151,18 +222,15 @@
         }
 
         .map-container h2 {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 600;
             margin-bottom: 1rem;
             color: #2d3748;
         }
 
-        #map {
-            width: 100%;
-            height: 500px;
-            border-radius: 4px;
-        }
+        #map { width: 100%; height: 500px; border-radius: 4px; }
 
+        /* Loading */
         .loading {
             display: flex;
             align-items: center;
@@ -172,6 +240,7 @@
             color: #718096;
         }
 
+        /* Key Findings */
         .interpretation {
             background: linear-gradient(to bottom, #f0f9ff, #e0f2fe);
             border-left: 4px solid #0891b2;
@@ -182,79 +251,52 @@
         }
 
         .interpretation h3 {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 600;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             color: #0c4a6e;
         }
 
-        .interpretation ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+        .interpretation ul { list-style: none; padding: 0; margin: 0; }
 
         .interpretation li {
-            padding: 0.35rem 0;
+            padding: 0.3rem 0;
             color: #0c4a6e;
             line-height: 1.6;
             display: flex;
             align-items: flex-start;
             gap: 0.5rem;
+            font-size: 0.9rem;
         }
 
         .interpretation li::before {
-            content: "•";
-            font-size: 1.5rem;
+            content: "\2022";
+            font-size: 1.25rem;
             color: #0891b2;
             flex-shrink: 0;
             line-height: 1.4;
         }
 
+        /* Legend */
         .legend {
             background: white;
             padding: 1rem;
             border-radius: 4px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            font-size: 0.875rem;
+            font-size: 0.85rem;
         }
 
-        .legend h4 {
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
+        .legend h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .legend-item { display: flex; align-items: center; margin: 0.25rem 0; }
+        .legend-color { width: 18px; height: 18px; border-radius: 2px; margin-right: 0.5rem; }
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin: 0.25rem 0;
-        }
-
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 2px;
-            margin-right: 0.5rem;
-        }
-
-        .chart-header {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .chart-header h2 {
-            margin-bottom: 0;
-        }
-
+        /* Data Source Badges */
         .data-source-badge {
             position: relative;
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-            padding: 0.25rem 0.65rem;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
             background: #f0f9ff;
             border: 1px solid #bae6fd;
             border-radius: 4px;
@@ -276,9 +318,7 @@
             color: #065f46;
         }
 
-        .data-source-badge .icon {
-            font-size: 0.85rem;
-        }
+        .data-source-badge .icon { font-size: 0.8rem; }
 
         .data-source-badge .tooltip {
             visibility: hidden;
@@ -289,7 +329,7 @@
             margin-bottom: 0.5rem;
             width: 280px;
             padding: 0.75rem;
-            background: #1a202c;
+            background: #0f172a;
             color: white;
             font-size: 0.8rem;
             font-weight: 400;
@@ -306,254 +346,115 @@
             left: 50%;
             transform: translateX(-50%);
             border: 6px solid transparent;
-            border-top-color: #1a202c;
+            border-top-color: #0f172a;
         }
 
-        .data-source-badge:hover .tooltip {
-            visibility: visible;
-        }
+        .data-source-badge:hover .tooltip { visibility: visible; }
 
-        .chart-description {
-            font-size: 0.9rem;
-            color: #4a5568;
-            margin-bottom: 1rem;
-            line-height: 1.5;
-        }
-
-        /* Mobile Responsive Styles */
+        /* Responsive */
         @media (max-width: 768px) {
-            .header {
-                padding: 1.5rem 1rem 0;
-            }
+            .header { padding: 1.25rem 1rem 1rem; }
+            .header-text h1 { font-size: 1.2rem; }
+            .header-logo { width: 36px; height: 36px; }
 
-            .header h1 {
-                font-size: 1.25rem;
-            }
-
-            .header p {
-                font-size: 0.875rem;
-            }
-
-            .tabs {
-                flex-wrap: wrap;
-                gap: 0.25rem;
-            }
-
+            .tabs-bar { padding: 0 1rem; }
+            .tabs-bar-inner { flex-direction: column; align-items: stretch; gap: 0; }
+            .tabs { flex-wrap: wrap; gap: 0.25rem; }
             .tab {
                 padding: 0.6rem 1rem;
-                font-size: 0.875rem;
+                font-size: 0.85rem;
                 flex: 1 1 auto;
                 min-width: calc(50% - 0.25rem);
+                text-align: center;
             }
+            .tabs-description { display: none; }
 
-            .container {
-                padding: 1rem;
-            }
+            .container { padding: 1rem; }
+            .intro { font-size: 0.85rem; }
+            .metrics-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+            .metric-card { padding: 1rem; }
+            .metric-card .value { font-size: 1.5rem; }
+            .metric-card h3 { font-size: 0.7rem; }
+            .metric-card .subtext { font-size: 0.75rem; }
 
-            .metrics-grid {
-                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-                gap: 1rem;
-            }
+            .chart-grid { gap: 1rem; }
+            .chart-container { padding: 1rem; }
+            .chart-container h2 { font-size: 1rem; }
+            .chart { height: 300px; }
 
-            .metric-card {
-                padding: 1rem;
-            }
+            .map-container { padding: 1rem; }
+            .map-container h2 { font-size: 1rem; }
+            #map, #map-crashes, #map-infrastructure, #map-demand { height: 350px; }
 
-            .metric-card .value {
-                font-size: 1.5rem;
-            }
+            .interpretation { padding: 1rem; font-size: 0.9rem; }
+            .interpretation h3 { font-size: 1rem; }
 
-            .metric-card h3 {
-                font-size: 0.75rem;
-            }
+            .chart-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .chart-description { font-size: 0.85rem; }
+            .data-source-badge .tooltip { width: 220px; font-size: 0.75rem; }
+            .legend { font-size: 0.75rem; padding: 0.75rem; }
+            .legend h4 { font-size: 0.75rem; }
 
-            .metric-card .subtext {
-                font-size: 0.75rem;
-            }
-
-            .chart-grid {
-                gap: 1rem;
-            }
-
-            .chart-container {
-                padding: 1rem;
-            }
-
-            .chart-container h2 {
-                font-size: 1rem;
-            }
-
-            .chart {
-                height: 300px;
-            }
-
-            .map-container {
-                padding: 1rem;
-            }
-
-            .map-container h2 {
-                font-size: 1rem;
-            }
-
-            #map,
-            #map-crashes,
-            #map-infrastructure,
-            #map-demand {
-                height: 350px;
-            }
-
-            .interpretation {
-                padding: 1rem;
-                font-size: 0.9rem;
-            }
-
-            .interpretation h3 {
-                font-size: 1rem;
-            }
-
-            .chart-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-
-            .chart-description {
-                font-size: 0.85rem;
-            }
-
-            .data-source-badge .tooltip {
-                width: 220px;
-                font-size: 0.75rem;
-            }
-
-            .legend {
-                font-size: 0.75rem;
-                padding: 0.75rem;
-            }
-
-            .legend h4 {
-                font-size: 0.75rem;
-            }
+            .leaflet-control-zoom { transform: scale(0.9); }
+            .leaflet-popup-content { font-size: 0.85rem; }
+            input[type="radio"] { width: 20px; height: 20px; margin-right: 0.5rem; }
+            label { display: inline-flex; align-items: center; padding: 0.5rem; cursor: pointer; }
+            body { font-size: 14px; }
         }
 
         @media (max-width: 480px) {
-            .header h1 {
-                font-size: 1.1rem;
-            }
-
-            .tab {
-                font-size: 0.8rem;
-                padding: 0.5rem 0.75rem;
-            }
-
-            .container {
-                padding: 0.75rem;
-            }
-
-            .metrics-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .chart {
-                height: 250px;
-            }
-
-            #map,
-            #map-crashes,
-            #map-infrastructure,
-            #map-demand {
-                height: 300px;
-            }
-
-            .metric-card .value {
-                font-size: 1.25rem;
-            }
+            .header-text h1 { font-size: 1.05rem; }
+            .header-meta { display: none; }
+            .tab { font-size: 0.8rem; padding: 0.5rem 0.75rem; }
+            .tab-prefix { display: none; }
+            .container { padding: 0.75rem; }
+            .metrics-grid { grid-template-columns: 1fr; }
+            .chart { height: 250px; }
+            #map, #map-crashes, #map-infrastructure, #map-demand { height: 300px; }
+            .metric-card .value { font-size: 1.25rem; }
         }
 
-        /* Ensure charts resize properly */
-        .chart-container > div[id^="chart-"] {
-            width: 100% !important;
-        }
-
-        /* Responsive map controls */
-        @media (max-width: 768px) {
-            .leaflet-control-zoom {
-                transform: scale(0.9);
-            }
-
-            .leaflet-popup-content {
-                font-size: 0.85rem;
-            }
-
-            /* Better touch targets for radio buttons */
-            input[type="radio"] {
-                width: 20px;
-                height: 20px;
-                margin-right: 0.5rem;
-            }
-
-            label {
-                display: inline-flex;
-                align-items: center;
-                padding: 0.5rem;
-                cursor: pointer;
-            }
-        }
-
-        /* Improve text readability on mobile */
-        @media (max-width: 768px) {
-            body {
-                font-size: 14px;
-            }
-
-            .interpretation li {
-                font-size: 0.9rem;
-            }
-        }
-
-        /* Ensure long content doesn't overflow */
-        .chart-container,
-        .map-container,
-        .metric-card,
-        .interpretation {
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-        }
-
-        /* Smooth scrolling for better UX */
-        html {
-            scroll-behavior: smooth;
-        }
-
-        /* Better touch feedback */
-        .tab,
-        button,
-        label {
-            -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
-        }
-
-        /* Prevent zoom on double-tap for iOS */
-        button,
-        .tab,
-        input,
-        label {
-            touch-action: manipulation;
-        }
+        /* Utility */
+        .chart-container > div[id^="chart-"] { width: 100% !important; }
+        .chart-container, .map-container, .metric-card, .interpretation { overflow-wrap: break-word; }
+        html { scroll-behavior: smooth; }
+        .tab, button, label { -webkit-tap-highlight-color: rgba(0,0,0,0.1); }
+        button, .tab, input, label { touch-action: manipulation; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>SAFE-T: Safety Algorithm Fairness Evaluation for Transportation</h1>
-        <p id="test-description">Society-centered audits for equitable transportation AI systems</p>
-        <div class="tabs">
-            <button class="tab active" data-test="test1">Test 1: Volume Estimation</button>
-            <button class="tab" data-test="test2">Test 2: Crash Prediction</button>
-            <button class="tab" data-test="test3">Test 3: Infrastructure Allocation</button>
-            <button class="tab" data-test="test4">Test 4: Suppressed Demand</button>
+        <div class="header-inner">
+            <div class="header-top">
+                <img src="/logo.png" alt="SAFE-T" class="header-logo">
+                <div class="header-text">
+                    <h1>SAFE-T <span style="font-weight:400;opacity:0.5;">/</span> Safety Algorithm Fairness Evaluation for Transportation</h1>
+                    <div class="header-meta">
+                        <span>Durham, NC</span>
+                        <span>&middot;</span>
+                        <span>Census Tract Level</span>
+                        <span>&middot;</span>
+                        <span>Strava Metro &amp; StreetLight Data</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs-bar">
+        <div class="tabs-bar-inner">
+            <div class="tabs">
+                <button class="tab active" data-test="test1"><span class="tab-prefix">Test 1: </span>Volume Estimation</button>
+                <button class="tab" data-test="test2"><span class="tab-prefix">Test 2: </span>Crash Prediction</button>
+                <button class="tab" data-test="test3"><span class="tab-prefix">Test 3: </span>Infrastructure</button>
+                <button class="tab" data-test="test4"><span class="tab-prefix">Test 4: </span>Suppressed Demand</button>
+            </div>
+            <span class="tabs-description" id="test-description">Evaluating AI tools for demographic bias in pedestrian and cyclist volume predictions</span>
         </div>
     </div>
 
     <div class="container">
+        <p class="intro">Benchmarking AI tools used by cities for transportation planning to measure whether they serve all communities equitably. Each test quantifies a specific dimension of algorithmic bias using Durham, NC census tract data and US Census ACS 2022 demographics.</p>
         <div id="loading" class="loading">Loading data...</div>
         <div id="app" style="display: none;">
             <!-- Test 1 Content -->
@@ -566,7 +467,6 @@
                 <div class="chart-header">
                     <h2>Geographic Distribution of AI Prediction Errors</h2>
                     <span class="data-source-badge simulated">
-                        <span class="icon">🔬</span>
                         Simulated
                         <span class="tooltip">Data based on simulated counter locations with documented bias patterns. Real counter data (Strava Metro, StreetLight) requires vendor access.</span>
                     </span>
@@ -580,7 +480,6 @@
                     <div class="chart-header">
                         <h2>Accuracy by Income Quintile</h2>
                         <span class="data-source-badge simulated">
-                            <span class="icon">🔬</span>
                             Simulated
                             <span class="tooltip">Census demographics are real (US Census ACS 2022). Volume predictions are simulated to demonstrate bias patterns documented in research literature.</span>
                         </span>
@@ -593,7 +492,6 @@
                     <div class="chart-header">
                         <h2>Accuracy by Minority Percentage</h2>
                         <span class="data-source-badge simulated">
-                            <span class="icon">🔬</span>
                             Simulated
                             <span class="tooltip">Racial composition data from US Census ACS 2022. AI predictions simulated with documented bias patterns showing worse accuracy in high-minority areas.</span>
                         </span>
@@ -606,7 +504,6 @@
                     <div class="chart-header">
                         <h2>Predicted vs Actual Volume</h2>
                         <span class="data-source-badge simulated">
-                            <span class="icon">🔬</span>
                             Simulated
                             <span class="tooltip">Simulated counter data demonstrating systematic bias. Red line shows AI underprediction in low-income areas and overprediction in high-income areas.</span>
                         </span>
@@ -619,7 +516,6 @@
                     <div class="chart-header">
                         <h2>Error Distribution</h2>
                         <span class="data-source-badge simulated">
-                            <span class="icon">🔬</span>
                             Simulated
                             <span class="tooltip">Distribution of prediction errors across all counter locations. Simulated to show realistic error patterns with documented demographic bias.</span>
                         </span>
@@ -711,7 +607,6 @@
                     <div class="chart-header">
                         <h2>Infrastructure Recommendations Map</h2>
                         <span class="data-source-badge simulated">
-                            <span class="icon">🔬</span>
                             Simulated
                             <span class="tooltip">Infrastructure recommendations simulated using crash data + census demographics. Demonstrates how AI-driven allocation systematically favors wealthier areas.</span>
                         </span>
@@ -733,8 +628,7 @@
                         <div class="chart-header">
                             <h2>Budget Flow (Sankey Diagram)</h2>
                             <span class="data-source-badge simulated">
-                                <span class="icon">🔬</span>
-                                Simulated
+                                    Simulated
                                 <span class="tooltip">$5M budget allocation simulated across income quintiles. Shows AI allocates 29.5% as much per-capita to Q1 as Q5 (disparate impact).</span>
                             </span>
                         </div>
@@ -746,8 +640,7 @@
                         <div class="chart-header">
                             <h2>Equity Dimensions (Radar Chart)</h2>
                             <span class="data-source-badge simulated">
-                                <span class="icon">🔬</span>
-                                Simulated
+                                    Simulated
                                 <span class="tooltip">Multi-metric equity comparison: disparate impact, Gini coefficient, coverage rate, and per-capita spending. All metrics show AI allocation is less equitable.</span>
                             </span>
                         </div>
@@ -768,7 +661,6 @@
                     <div class="chart-header">
                         <h2>Demand Distribution Map</h2>
                         <span class="data-source-badge simulated">
-                            <span class="icon">🔬</span>
                             Simulated
                             <span class="tooltip">Demand suppression analysis simulated using infrastructure quality, safety perception, and demographic factors. Shows latent demand invisible to naive AI tools.</span>
                         </span>
@@ -793,8 +685,7 @@
                         <div class="chart-header">
                             <h2>Demand Suppression Funnel (Q1 vs Q5)</h2>
                             <span class="data-source-badge simulated">
-                                <span class="icon">🔬</span>
-                                Simulated
+                                    Simulated
                                 <span class="tooltip">Funnel analysis comparing potential → actual demand conversion in Q1 (poorest) vs Q5 (richest) areas. Q1 shows 70%+ suppression.</span>
                             </span>
                         </div>
@@ -806,8 +697,7 @@
                         <div class="chart-header">
                             <h2>Variable Correlations</h2>
                             <span class="data-source-badge simulated">
-                                <span class="icon">🔬</span>
-                                Simulated
+                                    Simulated
                                 <span class="tooltip">Correlation matrix between demographic factors, infrastructure quality, and demand metrics. Shows suppression correlates with poverty and poor infrastructure.</span>
                             </span>
                         </div>
@@ -819,8 +709,7 @@
                         <div class="chart-header">
                             <h2>AI Detection Capability</h2>
                             <span class="data-source-badge simulated">
-                                <span class="icon">🔬</span>
-                                Simulated
+                                    Simulated
                                 <span class="tooltip">Scorecard comparing naive AI (actual demand only) vs sophisticated AI (demographics + infrastructure). Even advanced AI misses 30-40% of suppressed demand.</span>
                             </span>
                         </div>

@@ -26,7 +26,8 @@
       "Bash(do echo -n \"$file.json: \")",
       "Bash(done)",
       "Bash(for file in confusion-matrices roc-curves crash-time-series demand-funnel)",
-      "Bash(do echo -n \"$file: \")"
+      "Bash(do echo -n \"$file: \")",
+      "Bash(npx vite build:*)"
     ]
   }
 }

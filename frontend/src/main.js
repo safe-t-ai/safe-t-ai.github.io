@@ -63,7 +63,7 @@ class App {
         } catch (error) {
             console.error('Failed to initialize app:', error);
             document.getElementById('loading').textContent =
-                'Error loading data. Make sure the backend API is running on port 5000.';
+                'Error loading data. Run "make data" to generate static data files.';
         }
     }
 
@@ -91,30 +91,36 @@ class App {
     renderMetrics() {
         const { overall_accuracy } = this.data.report;
 
+        const volumeBias = (overall_accuracy.total_predicted_volume - overall_accuracy.total_true_volume) / overall_accuracy.total_true_volume * 100;
+
         const metrics = [
             {
                 title: 'Mean Absolute Error',
                 value: `${overall_accuracy.metrics.mae.toFixed(0)} trips/day`,
-                subtext: `Across ${overall_accuracy.total_counters} locations`
+                subtext: `Across ${overall_accuracy.total_counters} locations`,
+                sentiment: 'value-warning'
             },
             {
                 title: 'Mean Error',
                 value: `${overall_accuracy.metrics.mean_pct_error.toFixed(1)}%`,
                 subtext: overall_accuracy.metrics.mean_pct_error > 0
                     ? 'AI overcounts on average'
-                    : 'AI undercounts on average'
+                    : 'AI undercounts on average',
+                sentiment: Math.abs(overall_accuracy.metrics.mean_pct_error) > 10 ? 'value-danger' : 'value-warning'
             },
             {
                 title: 'R² (Correlation)',
                 value: overall_accuracy.metrics.r_squared.toFixed(3),
                 subtext: overall_accuracy.metrics.r_squared > 0.7
                     ? 'Strong correlation'
-                    : 'Weak correlation'
+                    : 'Weak correlation',
+                sentiment: overall_accuracy.metrics.r_squared > 0.7 ? 'value-success' : 'value-danger'
             },
             {
                 title: 'Total Volume Bias',
-                value: `${((overall_accuracy.total_predicted_volume - overall_accuracy.total_true_volume) / overall_accuracy.total_true_volume * 100).toFixed(1)}%`,
-                subtext: `${overall_accuracy.total_predicted_volume.toLocaleString()} vs ${overall_accuracy.total_true_volume.toLocaleString()} actual`
+                value: `${volumeBias.toFixed(1)}%`,
+                subtext: `${overall_accuracy.total_predicted_volume.toLocaleString()} vs ${overall_accuracy.total_true_volume.toLocaleString()} actual`,
+                sentiment: Math.abs(volumeBias) > 10 ? 'value-danger' : 'value-warning'
             }
         ];
 
@@ -123,7 +129,7 @@ class App {
         const html = metrics.map(m => `
             <div class="metric-card">
                 <h3>${m.title}</h3>
-                <div class="value">${m.value}</div>
+                <div class="value ${m.sentiment}">${m.value}</div>
                 <div class="subtext">${m.subtext}</div>
             </div>
         `).join('');
