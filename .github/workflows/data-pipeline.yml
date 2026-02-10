@@ -61,13 +61,68 @@ jobs:
       - name: Generate crash data
         run: python scripts/fetch_ncdot_crash_data.py
 
+      - name: Validate source data
+        run: |
+          python3 -c "
+          import json, csv, sys
+
+          errors = []
+
+          # Census tracts
+          with open('backend/data/raw/durham_census_tracts.geojson') as f:
+              tracts = json.load(f)
+          features = tracts['features']
+          count = len(features)
+          if not (60 <= count <= 75):
+              errors.append(f'Census tract count {count} outside expected range 60-75')
+
+          for feat in features:
+              props = feat['properties']
+              income = props.get('median_household_income')
+              if income is not None and income < 0:
+                  errors.append(f'Negative income {income} in tract {props.get(\"GEOID\", \"?\")}')
+              pop = props.get('total_population', 0)
+              if pop == 0:
+                  errors.append(f'Zero population in tract {props.get(\"GEOID\", \"?\")}')
+
+          # Crash CSV
+          with open('backend/data/raw/ncdot_crashes_durham.csv') as f:
+              reader = csv.DictReader(f)
+              rows = list(reader)
+          if len(rows) < 1000:
+              errors.append(f'Crash CSV has only {len(rows)} records, expected >1000')
+
+          years = set()
+          severities = set()
+          for row in rows:
+              years.add(int(row['year']))
+              severities.add(row['severity'])
+
+          expected_years = set(range(2019, 2024))
+          missing_years = expected_years - years
+          if missing_years:
+              errors.append(f'Missing crash years: {sorted(missing_years)}')
+
+          expected_severities = {'Fatal', 'Injury', 'Property Damage'}
+          missing_sev = expected_severities - severities
+          if missing_sev:
+              errors.append(f'Missing severity categories: {missing_sev}')
+
+          if errors:
+              print('Source data validation failed:')
+              for e in errors:
+                  print(f'  - {e}')
+              sys.exit(1)
+          print(f'Source data valid: {count} tracts, {len(rows)} crashes, years {min(years)}-{max(years)}')
+          "
+
       - name: Compute data hash
         id: compute-hash
         run: |
           HASH=$(cat \
             backend/data/raw/durham_census_tracts.geojson \
-            backend/data/raw/ncdot_powerbi_response.json \
-            2>/dev/null | sha256sum | cut -d' ' -f1 | cut -c1-16)
+            backend/data/raw/ncdot_crashes_durham.csv \
+            | sha256sum | cut -d' ' -f1 | cut -c1-16)
           echo "hash=$HASH" >> $GITHUB_OUTPUT
           echo "$HASH" > .data-hash
 
@@ -110,21 +165,50 @@ jobs:
           echo "## Durham Census Data Fetch" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          if [ -f backend/data/raw/durham_census_tracts.geojson ]; then
-            TRACTS=$(python3 -c "import json; d=json.load(open('backend/data/raw/durham_census_tracts.geojson')); print(len(d['features']))" 2>/dev/null || echo "N/A")
-            SIZE=$(du -h backend/data/raw/durham_census_tracts.geojson | cut -f1)
+          TRACTS=$(python3 -c "import json; d=json.load(open('backend/data/raw/durham_census_tracts.geojson')); print(len(d['features']))")
+          CENSUS_SIZE=$(du -h backend/data/raw/durham_census_tracts.geojson | cut -f1)
 
-            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Census Tracts | $TRACTS |" >> $GITHUB_STEP_SUMMARY
-            echo "| File Size | $SIZE |" >> $GITHUB_STEP_SUMMARY
-            echo "| Data Hash | \`${{ steps.compute-hash.outputs.hash }}\` |" >> $GITHUB_STEP_SUMMARY
-            echo "| Timestamp | $(date -u +"%Y-%m-%d %H:%M:%S UTC") |" >> $GITHUB_STEP_SUMMARY
+          echo "### Census Data" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Census Tracts | $TRACTS |" >> $GITHUB_STEP_SUMMARY
+          echo "| File Size | $CENSUS_SIZE |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
 
-            if [ "${{ steps.check-changed.outputs.skip }}" == "true" ]; then
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "> Skipping remaining pipeline: data unchanged, no code changes" >> $GITHUB_STEP_SUMMARY
-            fi
+          python3 -c "
+          import csv
+          with open('backend/data/raw/ncdot_crashes_durham.csv') as f:
+              rows = list(csv.DictReader(f))
+          years = sorted(set(r['year'] for r in rows))
+          sevs = {}
+          for r in rows:
+              sevs[r['severity']] = sevs.get(r['severity'], 0) + 1
+          print(f'TOTAL={len(rows)}')
+          print(f'YEARS={years[0]}-{years[-1]}')
+          sev_str = ', '.join(f'{k}: {v}' for k, v in sorted(sevs.items()))
+          print(f'SEVERITY={sev_str}')
+          " > /tmp/crash_stats.txt
+
+          source /tmp/crash_stats.txt
+          CRASH_SIZE=$(du -h backend/data/raw/ncdot_crashes_durham.csv | cut -f1)
+
+          echo "### Crash Data" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Crashes | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+          echo "| Year Range | $YEARS |" >> $GITHUB_STEP_SUMMARY
+          echo "| Severity | $SEVERITY |" >> $GITHUB_STEP_SUMMARY
+          echo "| File Size | $CRASH_SIZE |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Data Hash | \`${{ steps.compute-hash.outputs.hash }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Timestamp | $(date -u +"%Y-%m-%d %H:%M:%S UTC") |" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.check-changed.outputs.skip }}" == "true" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "> Skipping remaining pipeline: data unchanged, no code changes" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Upload source data artifact
@@ -191,6 +275,94 @@ jobs:
           }
           EOF
 
+      - name: Validate generated data
+        run: |
+          python3 -c "
+          import json, os, sys
+
+          errors = []
+          data_dir = 'frontend/public/data'
+
+          expected_files = [
+              'census-tracts.json',
+              'counter-locations.json',
+              'report.json',
+              'choropleth-data.json',
+              'accuracy-by-income.json',
+              'accuracy-by-race.json',
+              'scatter-data.json',
+              'error-distribution.json',
+              'crash-report.json',
+              'confusion-matrices.json',
+              'roc-curves.json',
+              'crash-time-series.json',
+              'crash-geo-data.json',
+              'infrastructure-report.json',
+              'danger-scores.json',
+              'budget-allocation.json',
+              'recommendations.json',
+              'demand-report.json',
+              'demand-funnel.json',
+              'correlation-matrix.json',
+              'detection-scorecard.json',
+              'network-flow.json',
+              'demand-geo-data.json',
+              'metadata.json',
+          ]
+
+          # Check all files exist and parse as JSON
+          for fname in expected_files:
+              path = os.path.join(data_dir, fname)
+              if not os.path.exists(path):
+                  errors.append(f'Missing file: {fname}')
+                  continue
+              try:
+                  with open(path) as f:
+                      json.load(f)
+              except json.JSONDecodeError as e:
+                  errors.append(f'Invalid JSON in {fname}: {e}')
+
+          # Check crash-geo-data.json uses actual_crashes (not stale actual_crashes_5yr)
+          crash_path = os.path.join(data_dir, 'crash-geo-data.json')
+          if os.path.exists(crash_path):
+              with open(crash_path) as f:
+                  crash_data = json.load(f)
+              props = crash_data['features'][0]['properties']
+              if 'actual_crashes' not in props:
+                  errors.append('crash-geo-data.json missing actual_crashes field')
+              if 'actual_crashes_5yr' in props:
+                  errors.append('crash-geo-data.json contains stale actual_crashes_5yr field')
+
+          # Check budget by_quintile sums to expected range
+          report_path = os.path.join(data_dir, 'infrastructure-report.json')
+          if os.path.exists(report_path):
+              with open(report_path) as f:
+                  report = json.load(f)
+              for alloc_key in ['ai_allocation', 'need_based_allocation']:
+                  by_q = report['equity_metrics'][alloc_key]['by_quintile']
+                  total = sum(by_q.values())
+                  if not (4_500_000 <= total <= 5_500_000):
+                      errors.append(f'{alloc_key} by_quintile sum {total} outside 4.5M-5.5M range')
+
+          # Check danger-scores feature count matches census-tracts
+          tracts_path = os.path.join(data_dir, 'census-tracts.json')
+          danger_path = os.path.join(data_dir, 'danger-scores.json')
+          if os.path.exists(tracts_path) and os.path.exists(danger_path):
+              with open(tracts_path) as f:
+                  tract_count = len(json.load(f)['features'])
+              with open(danger_path) as f:
+                  danger_count = len(json.load(f)['features'])
+              if tract_count != danger_count:
+                  errors.append(f'Feature count mismatch: census-tracts has {tract_count}, danger-scores has {danger_count}')
+
+          if errors:
+              print('Generated data validation failed:')
+              for e in errors:
+                  print(f'  - {e}')
+              sys.exit(1)
+          print(f'Generated data valid: {len(expected_files)} files, {tract_count} tracts, feature counts match')
+          "
+
       - name: Generate data summary
         run: |
           echo "## Static Files Generated" >> $GITHUB_STEP_SUMMARY
@@ -203,6 +375,42 @@ jobs:
             SIZE=$(du -h "$file" | cut -f1)
             echo "| $file | $SIZE |" >> $GITHUB_STEP_SUMMARY
           done
+          cd -
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Validation Results" >> $GITHUB_STEP_SUMMARY
+
+          python3 -c "
+          import json
+
+          data_dir = 'frontend/public/data'
+
+          with open(f'{data_dir}/census-tracts.json') as f:
+              tract_count = len(json.load(f)['features'])
+          with open(f'{data_dir}/danger-scores.json') as f:
+              danger_count = len(json.load(f)['features'])
+          with open(f'{data_dir}/crash-geo-data.json') as f:
+              crash_data = json.load(f)
+          actuals = [feat['properties']['actual_crashes'] for feat in crash_data['features']]
+          with open(f'{data_dir}/infrastructure-report.json') as f:
+              report = json.load(f)
+
+          ai_total = sum(report['equity_metrics']['ai_allocation']['by_quintile'].values())
+          need_total = sum(report['equity_metrics']['need_based_allocation']['by_quintile'].values())
+
+          import os
+          file_count = len([f for f in os.listdir(data_dir) if f.endswith('.json')])
+
+          print(f'| Metric | Value |')
+          print(f'|--------|-------|')
+          print(f'| JSON files | {file_count} |')
+          print(f'| Census tracts | {tract_count} |')
+          print(f'| Danger scores features | {danger_count} |')
+          print(f'| Feature count match | {\"Pass\" if tract_count == danger_count else \"FAIL\"} |')
+          print(f'| Crash actual range | {min(actuals)}-{max(actuals)} |')
+          print(f'| AI budget total | \${ai_total:,.0f} |')
+          print(f'| Need-based budget total | \${need_total:,.0f} |')
+          " >> $GITHUB_STEP_SUMMARY
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Data Hash:** \`${{ env.DATA_HASH }}\`" >> $GITHUB_STEP_SUMMARY
