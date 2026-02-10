@@ -25,7 +25,7 @@ env:
 
 jobs:
   fetch-census-data:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       data-hash: ${{ steps.compute-hash.outputs.hash }}
       should-skip: ${{ steps.check-changed.outputs.skip }}
@@ -39,12 +39,10 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
-          cache-dependency-path: backend/requirements.txt
+          cache-dependency-path: backend/requirements-pipeline.txt
 
       - name: Install dependencies
-        run: |
-          cd backend
-          pip install -r requirements.txt
+        run: pip install -r backend/requirements-pipeline.txt
 
       - name: Restore previous data hash
         if: github.event.inputs.force_regenerate != 'true'
@@ -58,19 +56,14 @@ jobs:
       - name: Fetch Durham census data
         env:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
-        run: |
-          cd backend
-          python ../scripts/fetch_durham_data.py
+        run: python scripts/fetch_durham_data.py
 
       - name: Generate crash data
-        run: |
-          cd backend
-          python ../scripts/fetch_ncdot_crash_data.py
+        run: python scripts/fetch_ncdot_crash_data.py
 
       - name: Compute data hash
         id: compute-hash
         run: |
-          # Hash both census and crash data
           HASH=$(cat \
             backend/data/raw/durham_census_tracts.geojson \
             backend/data/raw/ncdot_powerbi_response.json \
@@ -78,7 +71,6 @@ jobs:
           echo "hash=$HASH" >> $GITHUB_OUTPUT
           echo "$HASH" > .data-hash
 
-          # Compare with previous hash
           if [ -f .data-hash ]; then
             cp .data-hash .data-hash.prev
           fi
@@ -87,10 +79,8 @@ jobs:
         id: check-changed
         run: |
           CURRENT="${{ steps.compute-hash.outputs.hash }}"
-          PREVIOUS="${{ steps.cache-hash.outputs.cache-hit == 'true' && 'cached' || 'none' }}"
           FORCE="${{ github.event.inputs.force_regenerate }}"
 
-          # Check for code changes in backend/scripts
           git fetch origin main --depth=1 2>/dev/null || true
           CODE_CHANGED=$(git diff --quiet HEAD origin/main -- backend/ scripts/ 2>/dev/null && echo "false" || echo "true")
 
@@ -104,10 +94,8 @@ jobs:
 
           if [[ "${{ github.event_name }}" == "schedule" && "$DATA_CHANGED" == "false" && "$CODE_CHANGED" == "false" && "$FORCE" != "true" ]]; then
             echo "skip=true" >> $GITHUB_OUTPUT
-            echo "📊 Skipping pipeline: data unchanged, no code changes, scheduled run"
           else
             echo "skip=false" >> $GITHUB_OUTPUT
-            echo "📊 Running pipeline: data_changed=$DATA_CHANGED, code_changed=$CODE_CHANGED, force=$FORCE"
           fi
 
       - name: Save data hash
@@ -119,7 +107,7 @@ jobs:
 
       - name: Generate job summary
         run: |
-          echo "## 📊 Durham Census Data Fetch" >> $GITHUB_STEP_SUMMARY
+          echo "## Durham Census Data Fetch" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ -f backend/data/raw/durham_census_tracts.geojson ]; then
@@ -132,17 +120,10 @@ jobs:
             echo "| File Size | $SIZE |" >> $GITHUB_STEP_SUMMARY
             echo "| Data Hash | \`${{ steps.compute-hash.outputs.hash }}\` |" >> $GITHUB_STEP_SUMMARY
             echo "| Timestamp | $(date -u +"%Y-%m-%d %H:%M:%S UTC") |" >> $GITHUB_STEP_SUMMARY
-            echo "| Commit | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
-
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Data Sources" >> $GITHUB_STEP_SUMMARY
-            echo "- [US Census Bureau ACS 5-Year Estimates (2022)](https://api.census.gov/data/2022/acs/acs5)" >> $GITHUB_STEP_SUMMARY
-            echo "- [Census TIGER/Line (2022)](https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2022/MapServer/8/query)" >> $GITHUB_STEP_SUMMARY
-            echo "- [NCDOT Vision Zero Crash Data](https://analytics.ncdot.gov/t/NCDOT/views/NC_Vision_Zero_Safety/VisionZero)" >> $GITHUB_STEP_SUMMARY
 
             if [ "${{ steps.check-changed.outputs.skip }}" == "true" ]; then
               echo "" >> $GITHUB_STEP_SUMMARY
-              echo "> ⏭️ **Skipping remaining pipeline:** Data unchanged, no code changes" >> $GITHUB_STEP_SUMMARY
+              echo "> Skipping remaining pipeline: data unchanged, no code changes" >> $GITHUB_STEP_SUMMARY
             fi
           fi
 
@@ -154,192 +135,10 @@ jobs:
           path: backend/data/raw/
           retention-days: 7
 
-  simulate-volume-predictions:
+  build:
     needs: fetch-census-data
     if: needs.fetch-census-data.outputs.should-skip != 'true'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-          cache-dependency-path: backend/requirements.txt
-
-      - name: Install dependencies
-        run: |
-          cd backend
-          pip install -r requirements.txt
-
-      - name: Download census data
-        uses: actions/download-artifact@v4
-        with:
-          name: census-data
-          path: backend/data/raw
-
-      - name: Simulate volume predictions
-        run: |
-          cd backend
-          python ../scripts/simulate_ai_predictions.py
-
-      - name: Upload volume predictions
-        uses: actions/upload-artifact@v4
-        with:
-          name: volume-predictions
-          path: |
-            backend/data/simulated/ai_volume_predictions.json
-            backend/data/simulated/ground_truth_counters.json
-            backend/data/simulated/tract_volume_predictions.json
-          retention-days: 7
-
-  simulate-crash-predictions:
-    needs: fetch-census-data
-    if: needs.fetch-census-data.outputs.should-skip != 'true'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-          cache-dependency-path: backend/requirements.txt
-
-      - name: Install dependencies
-        run: |
-          cd backend
-          pip install -r requirements.txt
-
-      - name: Download census data
-        uses: actions/download-artifact@v4
-        with:
-          name: census-data
-          path: backend/data/raw
-
-      - name: Simulate crash predictions
-        run: |
-          cd backend
-          python ../scripts/simulate_crash_predictions.py
-
-      - name: Upload crash predictions
-        uses: actions/upload-artifact@v4
-        with:
-          name: crash-predictions
-          path: |
-            backend/data/simulated/crash_predictions.json
-            backend/data/simulated/confusion_matrices.json
-            backend/data/simulated/roc_curves.json
-            backend/data/simulated/crash_time_series.json
-            backend/data/simulated/crash_geo_data.json
-          retention-days: 7
-
-  simulate-infrastructure:
-    needs: fetch-census-data
-    if: needs.fetch-census-data.outputs.should-skip != 'true'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-          cache-dependency-path: backend/requirements.txt
-
-      - name: Install dependencies
-        run: |
-          cd backend
-          pip install -r requirements.txt
-
-      - name: Download census data
-        uses: actions/download-artifact@v4
-        with:
-          name: census-data
-          path: backend/data/raw
-
-      - name: Simulate infrastructure recommendations
-        run: |
-          cd backend
-          python ../scripts/simulate_infrastructure_recommendations.py
-
-      - name: Upload infrastructure recommendations
-        uses: actions/upload-artifact@v4
-        with:
-          name: infrastructure-recommendations
-          path: backend/data/simulated/infrastructure_recommendations.json
-          retention-days: 7
-
-  analyze-suppressed-demand:
-    needs: [simulate-volume-predictions, simulate-crash-predictions, simulate-infrastructure]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-          cache-dependency-path: backend/requirements.txt
-
-      - name: Install dependencies
-        run: |
-          cd backend
-          pip install -r requirements.txt
-
-      - name: Download census data
-        uses: actions/download-artifact@v4
-        with:
-          name: census-data
-          path: backend/data/raw
-
-      - name: Download all prediction artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: '*-predictions'
-          path: backend/data/simulated
-          merge-multiple: true
-
-      - name: Download infrastructure recommendations
-        uses: actions/download-artifact@v4
-        with:
-          name: infrastructure-recommendations
-          path: backend/data/simulated
-
-      - name: Analyze suppressed demand
-        run: |
-          cd backend
-          python ../scripts/analyze_suppressed_demand.py
-
-      - name: Upload demand analysis
-        uses: actions/upload-artifact@v4
-        with:
-          name: demand-analysis
-          path: |
-            backend/data/simulated/demand_analysis.json
-            backend/data/simulated/demand_funnel.json
-            backend/data/simulated/correlation_matrix.json
-            backend/data/simulated/detection_scorecard.json
-            backend/data/simulated/network_flow.json
-            backend/data/simulated/demand_geo_data.json
-          retention-days: 7
-
-  generate-static-files:
-    needs: [fetch-census-data, simulate-volume-predictions, simulate-crash-predictions, simulate-infrastructure, analyze-suppressed-demand]
-    if: needs.fetch-census-data.outputs.should-skip != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     env:
       DATA_HASH: ${{ needs.fetch-census-data.outputs.data-hash }}
       GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -355,12 +154,10 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
-          cache-dependency-path: backend/requirements.txt
+          cache-dependency-path: backend/requirements-pipeline.txt
 
-      - name: Install dependencies
-        run: |
-          cd backend
-          pip install -r requirements.txt
+      - name: Install Python dependencies
+        run: pip install -r backend/requirements-pipeline.txt
 
       - name: Download census data
         uses: actions/download-artifact@v4
@@ -368,36 +165,23 @@ jobs:
           name: census-data
           path: backend/data/raw
 
-      - name: Download volume predictions
-        uses: actions/download-artifact@v4
-        with:
-          name: volume-predictions
-          path: backend/data/simulated
+      - name: Simulate volume predictions
+        run: python scripts/simulate_ai_predictions.py
 
-      - name: Download crash predictions
-        uses: actions/download-artifact@v4
-        with:
-          name: crash-predictions
-          path: backend/data/simulated
+      - name: Simulate crash predictions
+        run: python scripts/simulate_crash_predictions.py
 
-      - name: Download infrastructure recommendations
-        uses: actions/download-artifact@v4
-        with:
-          name: infrastructure-recommendations
-          path: backend/data/simulated
+      - name: Simulate infrastructure recommendations
+        run: python scripts/simulate_infrastructure_recommendations.py
 
-      - name: Download demand analysis
-        uses: actions/download-artifact@v4
-        with:
-          name: demand-analysis
-          path: backend/data/simulated
+      - name: Analyze suppressed demand
+        run: python scripts/analyze_suppressed_demand.py
 
-      - name: Generate static JSON files for gh-pages
+      - name: Generate static JSON files
         run: |
           mkdir -p frontend/public/data
           python scripts/generate_static_data.py
 
-          # Add metadata
           cat > frontend/public/data/metadata.json << EOF
           {
             "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
@@ -407,9 +191,9 @@ jobs:
           }
           EOF
 
-      - name: Generate job summary
+      - name: Generate data summary
         run: |
-          echo "## 📦 Static Files Generated" >> $GITHUB_STEP_SUMMARY
+          echo "## Static Files Generated" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
           echo "|------|------|" >> $GITHUB_STEP_SUMMARY
@@ -421,9 +205,7 @@ jobs:
           done
 
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Verification" >> $GITHUB_STEP_SUMMARY
           echo "- **Data Hash:** \`${{ env.DATA_HASH }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Generated:** $(date -u +%Y-%m-%d\ %H:%M:%S\ UTC)" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** [\`${GITHUB_SHA:0:7}\`](${{ env.REPO_URL }}/commit/${{ env.GIT_SHA }})" >> $GITHUB_STEP_SUMMARY
 
       - name: Setup Node.js
@@ -433,33 +215,17 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install frontend dependencies
-        run: |
-          cd frontend
-          npm ci
-
-      - name: Build frontend with data
-        run: |
-          cd frontend
-          GITHUB_PAGES=true npm run build
+      - name: Build frontend
+        run: cd frontend && npm ci && GITHUB_PAGES=true npm run build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: frontend/dist
 
-      - name: Generate build summary
-        run: |
-          echo "## 📦 Build Complete" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Static data files generated and ready for deployment." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Data Hash:** ${{ env.DATA_HASH }}" >> $GITHUB_STEP_SUMMARY
-
   deploy:
-    needs: generate-static-files
-    if: needs.fetch-census-data.outputs.should-skip != 'true'
-    runs-on: ubuntu-latest
+    needs: build
+    runs-on: ubuntu-slim
 
     permissions:
       pages: write
@@ -473,9 +239,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-      - name: Generate deployment summary
-        run: |
-          echo "## ✅ Deployed to GitHub Pages" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Live Site:** https://safe-t-ai.github.io/" >> $GITHUB_STEP_SUMMARY
