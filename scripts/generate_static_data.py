@@ -53,7 +53,7 @@ def main():
     # 3. Full report
     print("Generating full report...")
     report = auditor.generate_full_report()
-    with open(output_dir / 'report.json', 'w') as f:
+    with open(output_dir / 'volume-report.json', 'w') as f:
         json.dump(report, f, indent=2)
 
     # 4. Choropleth data (use tract-level predictions for full coverage)

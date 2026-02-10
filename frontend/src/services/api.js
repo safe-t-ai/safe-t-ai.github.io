@@ -15,7 +15,7 @@ class APIClient {
     }
 
     // Test 1 endpoints
-    getTest1Report() { return this.get('report'); }
+    getTest1Report() { return this.get('volume-report'); }
     getCensusTracts() { return this.get('census-tracts'); }
     getChoroplethData() { return this.get('choropleth-data'); }
     getCounterLocations() { return this.get('counter-locations'); }

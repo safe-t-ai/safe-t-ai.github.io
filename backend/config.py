@@ -28,12 +28,6 @@ BIAS_PARAMETERS = {
     'base_noise': 0.05
 }
 
-FLASK_CONFIG = {
-    'host': '0.0.0.0',
-    'port': 5000,
-    'debug': True
-}
-
 # Temporal configuration
 CRASH_ANALYSIS_YEARS = [2019, 2020, 2021, 2022, 2023]
 CRASH_TRAINING_YEARS = [2019, 2020, 2021, 2022]

@@ -19,9 +19,9 @@ class App {
         this.data = {};
         this.charts = {};
         this.map = null;
-        this.test2Instance = null;
-        this.test3Instance = null;
-        this.test4Instance = null;
+        this.crashPredictionAudit = null;
+        this.infrastructureAudit = null;
+        this.suppressedDemandAudit = null;
         this.currentTest = 'test1';
     }
 
@@ -352,27 +352,27 @@ class App {
         document.getElementById('test-description').textContent = descriptions[testId];
 
         // Load test-specific data
-        if (testId === 'test2' && !this.test2Instance) {
+        if (testId === 'test2' && !this.crashPredictionAudit) {
             document.getElementById('loading').style.display = 'flex';
-            const { Test2 } = await import('./test2.js');
-            this.test2Instance = new Test2();
-            await this.test2Instance.initialize();
+            const { CrashPredictionAudit } = await import('./CrashPredictionAudit.js');
+            this.crashPredictionAudit = new CrashPredictionAudit();
+            await this.crashPredictionAudit.initialize();
             document.getElementById('loading').style.display = 'none';
         }
 
-        if (testId === 'test3' && !this.test3Instance) {
+        if (testId === 'test3' && !this.infrastructureAudit) {
             document.getElementById('loading').style.display = 'flex';
-            const { Test3 } = await import('./test3.js');
-            this.test3Instance = new Test3();
-            await this.test3Instance.initialize();
+            const { InfrastructureAudit } = await import('./InfrastructureAudit.js');
+            this.infrastructureAudit = new InfrastructureAudit();
+            await this.infrastructureAudit.initialize();
             document.getElementById('loading').style.display = 'none';
         }
 
-        if (testId === 'test4' && !this.test4Instance) {
+        if (testId === 'test4' && !this.suppressedDemandAudit) {
             document.getElementById('loading').style.display = 'flex';
-            const { Test4 } = await import('./test4.js');
-            this.test4Instance = new Test4();
-            await this.test4Instance.initialize();
+            const { SuppressedDemandAudit } = await import('./SuppressedDemandAudit.js');
+            this.suppressedDemandAudit = new SuppressedDemandAudit();
+            await this.suppressedDemandAudit.initialize();
             document.getElementById('loading').style.display = 'none';
         }
 

@@ -1,5 +1,5 @@
 /**
- * Test 2: Crash Prediction Bias Audit
+ * Crash Prediction Bias Audit
  */
 
 import echarts from './services/echarts.js';
@@ -7,7 +7,7 @@ import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
 import { COLORS } from './services/chartConfig.js';
 
-export class Test2 {
+export class CrashPredictionAudit {
     constructor() {
         this.data = {};
         this.charts = {};

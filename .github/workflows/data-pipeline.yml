@@ -290,7 +290,7 @@ jobs:
           expected_files = [
               'census-tracts.json',
               'counter-locations.json',
-              'report.json',
+              'volume-report.json',
               'choropleth-data.json',
               'accuracy-by-income.json',
               'accuracy-by-race.json',

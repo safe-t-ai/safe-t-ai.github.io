@@ -1,5 +1,5 @@
 /**
- * Test 3: Infrastructure Recommendation Audit
+ * Infrastructure Recommendation Audit
  */
 
 import echarts from './services/echarts.js';
@@ -7,7 +7,7 @@ import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
 import { COLORS } from './services/chartConfig.js';
 
-export class Test3 {
+export class InfrastructureAudit {
     constructor() {
         this.data = {};
         this.charts = {};
