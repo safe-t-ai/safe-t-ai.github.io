@@ -3,12 +3,10 @@
  * Multi-test platform with tab navigation
  */
 
-import * as echarts from 'echarts';
+import echarts from './services/echarts.js';
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
-import { Test2 } from './test2.js';
-import { Test3 } from './test3.js';
-import { Test4 } from './test4.js';
+// Test 2-4 loaded on demand via dynamic import
 import {
     createBarChartConfig,
     createScatterChartConfig,
@@ -325,7 +323,7 @@ class App {
         const tabs = document.querySelectorAll('.tab');
         tabs.forEach(tab => {
             tab.addEventListener('click', async (e) => {
-                const testId = e.target.dataset.test;
+                const testId = e.currentTarget.dataset.test;
                 await this.switchTest(testId);
             });
         });
@@ -356,6 +354,7 @@ class App {
         // Load test-specific data
         if (testId === 'test2' && !this.test2Instance) {
             document.getElementById('loading').style.display = 'flex';
+            const { Test2 } = await import('./test2.js');
             this.test2Instance = new Test2();
             await this.test2Instance.initialize();
             document.getElementById('loading').style.display = 'none';
@@ -363,6 +362,7 @@ class App {
 
         if (testId === 'test3' && !this.test3Instance) {
             document.getElementById('loading').style.display = 'flex';
+            const { Test3 } = await import('./test3.js');
             this.test3Instance = new Test3();
             await this.test3Instance.initialize();
             document.getElementById('loading').style.display = 'none';
@@ -370,6 +370,7 @@ class App {
 
         if (testId === 'test4' && !this.test4Instance) {
             document.getElementById('loading').style.display = 'flex';
+            const { Test4 } = await import('./test4.js');
             this.test4Instance = new Test4();
             await this.test4Instance.initialize();
             document.getElementById('loading').style.display = 'none';

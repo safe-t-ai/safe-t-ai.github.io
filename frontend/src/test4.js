@@ -2,7 +2,7 @@
  * Test 4: Suppressed Demand Analysis
  */
 
-import * as echarts from 'echarts';
+import echarts from './services/echarts.js';
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
 import { COLORS } from './services/chartConfig.js';
