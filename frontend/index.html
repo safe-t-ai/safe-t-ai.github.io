@@ -537,9 +537,8 @@
                     <div class="chart-header">
                         <h2>Crash Distribution Map</h2>
                         <span class="data-source-badge simulated">
-                            <span class="icon">✓</span>
-                            Simulated + Validated
-                            <span class="tooltip">Crash data simulated with realistic distributions, validated against NCDOT volumes via NC Vision Zero API. Real NCDOT data lacks geocoding for census tract analysis.</span>
+                            Simulated
+                            <span class="tooltip">Crash data simulated with realistic distributions based on Durham County demographics and road network characteristics.</span>
                         </span>
                     </div>
                     <p class="chart-description">Interactive map showing actual vs AI-predicted crash counts by census tract. Toggle between views to see where AI predictions differ from ground truth.</p>
@@ -559,8 +558,7 @@
                         <div class="chart-header">
                             <h2>Model Performance by Quintile</h2>
                             <span class="data-source-badge simulated">
-                                <span class="icon">✓</span>
-                                Simulated + Validated
+                                Simulated
                                 <span class="tooltip">AI trained on simulated Durham crash data (2019-2023). Demonstrates documented pattern: AI shows 25-40% higher error rates in low-income areas.</span>
                             </span>
                         </div>
@@ -572,9 +570,8 @@
                         <div class="chart-header">
                             <h2>Crashes Over Time</h2>
                             <span class="data-source-badge simulated">
-                                <span class="icon">✓</span>
-                                Simulated + Validated
-                                <span class="tooltip">5-year crash trends (2019-2023) simulated with realistic temporal patterns. Total volume validated against NCDOT Durham County data.</span>
+                                Simulated
+                                <span class="tooltip">5-year crash trends (2019-2023) simulated with realistic temporal patterns based on Durham County demographics.</span>
                             </span>
                         </div>
                         <p class="chart-description">Time series showing actual vs AI-predicted crashes over 5 years. Reveals how AI systematically over/underpredicts in different demographic areas over time.</p>
@@ -585,8 +582,7 @@
                         <div class="chart-header">
                             <h2>ROC Curves by Income Quintile</h2>
                             <span class="data-source-badge simulated">
-                                <span class="icon">✓</span>
-                                Simulated + Validated
+                                Simulated
                                 <span class="tooltip">ROC analysis using Ridge regression trained on simulated crash data. Demonstrates lower discrimination ability (AUC) for low-income quintiles.</span>
                             </span>
                         </div>

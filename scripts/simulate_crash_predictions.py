@@ -287,21 +287,11 @@ def main():
     # Export geospatial crash data for maps
     print("\n10. Exporting geospatial crash data...")
 
-    # Use 2023 predictions with 5-year crash totals
-    crash_5year = crash_df.groupby('tract_id').agg({
-        'crash_count': 'sum',  # Total crashes 2019-2023
-        'median_income': 'first',
-        'income_quintile': 'first'
-    }).reset_index()
-
-    crash_5year.columns = ['tract_id', 'actual_crashes_5yr', 'median_income', 'income_quintile']
-
-    # Merge with 2023 predictions
-    tract_summary = crash_5year.merge(
-        predictions_df[['tract_id', 'ai_predicted_crashes', 'prediction_error', 'prediction_error_pct']],
-        on='tract_id',
-        how='left'
-    )
+    # Use 2023 actuals alongside 2023 predictions (same time scale)
+    tract_summary = predictions_df[['tract_id', 'crash_count', 'ai_predicted_crashes',
+                                     'prediction_error', 'prediction_error_pct',
+                                     'median_income', 'income_quintile']].copy()
+    tract_summary = tract_summary.rename(columns={'crash_count': 'actual_crashes'})
 
     # Merge with geometry
     crash_geo = census_gdf[['tract_id', 'geometry']].merge(

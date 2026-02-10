@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-def generate_simulated_crash_data(census_tract_count=238, seed=42):
+def generate_simulated_crash_data(census_tract_count=68, seed=42):
     """
     Generate realistic simulated crash data for Durham County.
 

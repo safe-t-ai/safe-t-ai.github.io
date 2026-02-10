@@ -85,7 +85,7 @@ def fetch_durham_census_tracts():
 
     # Fetch tract geometries from Census TIGER/Line
     print("Fetching tract geometries...")
-    tiger_url = f"https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2022/MapServer/8/query"
+    tiger_url = f"https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2022/MapServer/6/query"
 
     tiger_params = {
         'where': f"STATE='{state_fips}' AND COUNTY='{county_fips}'",
@@ -103,6 +103,19 @@ def fetch_durham_census_tracts():
 
         # Merge demographics with geometries
         gdf = gdf.merge(df, on='tract_id', how='left')
+
+        # Clean sentinel income values (Census uses -666666666 for missing)
+        sentinel_mask = gdf['median_income'] < 0
+        if sentinel_mask.any():
+            county_median = gdf.loc[~sentinel_mask, 'median_income'].median()
+            print(f"  Replacing {sentinel_mask.sum()} sentinel income values with county median ${county_median:,.0f}")
+            gdf.loc[sentinel_mask, 'median_income'] = county_median
+
+        # Drop tracts with 0 population (water-only, institutional, etc.)
+        zero_pop = gdf['total_population'] == 0
+        if zero_pop.any():
+            print(f"  Dropping {zero_pop.sum()} tracts with 0 population")
+            gdf = gdf[~zero_pop].reset_index(drop=True)
     else:
         print("Warning: Could not fetch tract geometries, generating synthetic boundaries...")
         gdf = generate_synthetic_boundaries(df)

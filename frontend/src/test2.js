@@ -125,13 +125,11 @@ export class Test2 {
     }
 
     updateCrashLayer() {
-        const field = this.currentView === 'actual' ? 'actual_crashes_5yr' : 'ai_predicted_crashes';
-        const label = this.currentView === 'actual' ? 'Actual Crashes (5yr)' : 'AI Predicted Crashes';
+        const field = this.currentView === 'actual' ? 'actual_crashes' : 'ai_predicted_crashes';
+        const label = this.currentView === 'actual' ? 'Actual Crashes (2023)' : 'AI Predicted Crashes (2023)';
 
-        // Different breaks for actual vs predicted (AI severely underpredicts)
-        const breaks = this.currentView === 'actual'
-            ? [500, 1000, 1500, 2000, 2500, 3000, 4000, 5000]
-            : [20, 40, 60, 80, 100, 150, 200, 250];
+        // Same scale for both views (both are single-year 2023 data)
+        const breaks = [20, 40, 60, 80, 100, 150, 200, 250];
 
         // Clear existing layer
         if (this.map.choroplethLayer) {
@@ -149,7 +147,7 @@ export class Test2 {
                 popupFields: [
                     { label: 'Median Income', field: 'median_income', format: v => `$${v?.toLocaleString()}` },
                     { label: 'Income Quintile', field: 'income_quintile' },
-                    { label: 'Actual Crashes (5yr)', field: 'actual_crashes_5yr', format: v => v?.toLocaleString() },
+                    { label: 'Actual Crashes (2023)', field: 'actual_crashes', format: v => v?.toLocaleString() },
                     { label: 'AI Predicted', field: 'ai_predicted_crashes', format: v => v?.toFixed(0) }
                 ]
             }

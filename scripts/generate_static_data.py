@@ -65,10 +65,8 @@ def main():
         tract_predictions['tract_id'] = tract_predictions['tract_id'].astype(str)
         census_gdf['tract_id'] = census_gdf['tract_id'].astype(str)
 
-        # Aggregate block groups to census tracts (census_gdf has block groups, not tracts)
-        print("  Aggregating block groups to census tracts...")
-
-        # Dissolve block groups by tract_id to get tract-level geometries
+        # Dissolve to tract-level geometries (deduplicates if needed)
+        print("  Preparing tract-level geometries...")
         tract_geoms = census_gdf.dissolve(by='tract_id', aggfunc='first')[['geometry']]
         tract_geoms = tract_geoms.reset_index()
 
