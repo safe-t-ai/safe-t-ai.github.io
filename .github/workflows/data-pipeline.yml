@@ -183,10 +183,10 @@ jobs:
           sevs = {}
           for r in rows:
               sevs[r['severity']] = sevs.get(r['severity'], 0) + 1
-          print(f'TOTAL={len(rows)}')
-          print(f'YEARS={years[0]}-{years[-1]}')
+          print(f'TOTAL=\"{len(rows)}\"')
+          print(f'YEARS=\"{years[0]}-{years[-1]}\"')
           sev_str = ', '.join(f'{k}: {v}' for k, v in sorted(sevs.items()))
-          print(f'SEVERITY={sev_str}')
+          print(f'SEVERITY=\"{sev_str}\"')
           " > /tmp/crash_stats.txt
 
           source /tmp/crash_stats.txt
