@@ -24,7 +24,7 @@ env:
   PYTHON_VERSION: '3.9'
 
 jobs:
-  fetch-census-data:
+  fetch-data:
     runs-on: ubuntu-slim
     outputs:
       data-hash: ${{ steps.compute-hash.outputs.hash }}
@@ -127,20 +127,20 @@ jobs:
             fi
           fi
 
-      - name: Upload census data artifact
+      - name: Upload source data artifact
         if: steps.check-changed.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: census-data
+          name: raw-data
           path: backend/data/raw/
           retention-days: 7
 
   build:
-    needs: fetch-census-data
-    if: needs.fetch-census-data.outputs.should-skip != 'true'
+    needs: fetch-data
+    if: needs.fetch-data.outputs.should-skip != 'true'
     runs-on: ubuntu-slim
     env:
-      DATA_HASH: ${{ needs.fetch-census-data.outputs.data-hash }}
+      DATA_HASH: ${{ needs.fetch-data.outputs.data-hash }}
       GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       REPO_URL: ${{ github.server_url }}/${{ github.repository }}
       GIT_SHA: ${{ github.sha }}
@@ -162,7 +162,7 @@ jobs:
       - name: Download census data
         uses: actions/download-artifact@v4
         with:
-          name: census-data
+          name: raw-data
           path: backend/data/raw
 
       - name: Simulate volume predictions
