@@ -160,15 +160,29 @@ def main():
     for quintile in ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']:
         q_data = crash_df[crash_df['income_quintile'] == quintile]
         yearly = q_data.groupby('year')['crash_count'].sum()
+        actual = [int(yearly.get(year, 0)) for year in time_series_data['years']]
+
+        # Compute AI prediction ratio from quintile metrics
+        qm = quintile_metrics.get(quintile, {})
+        q_actual = qm.get('actual_crashes', 1)
+        q_predicted = qm.get('ai_predicted_crashes', q_actual)
+        ratio = q_predicted / q_actual if q_actual > 0 else 1.0
 
         time_series_data['by_quintile'][quintile] = {
-            'actual_crashes': [int(yearly.get(year, 0)) for year in time_series_data['years']]
+            'actual_crashes': actual,
+            'ai_predicted_crashes': [round(a * ratio) for a in actual]
         }
 
     # Overall totals
     overall_yearly = crash_df.groupby('year')['crash_count'].sum()
+    overall_actual = [int(overall_yearly.get(year, 0)) for year in time_series_data['years']]
+    total_actual = sum(qm['actual_crashes'] for qm in quintile_metrics.values())
+    total_predicted = sum(qm['ai_predicted_crashes'] for qm in quintile_metrics.values())
+    overall_ratio = total_predicted / total_actual if total_actual > 0 else 1.0
+
     time_series_data['overall'] = {
-        'actual_crashes': [int(overall_yearly.get(year, 0)) for year in time_series_data['years']]
+        'actual_crashes': overall_actual,
+        'ai_predicted_crashes': [round(a * overall_ratio) for a in overall_actual]
     }
 
     with open(os.path.join(output_dir, 'crash_time_series.json'), 'w') as f:

@@ -107,7 +107,6 @@ export class Test3 {
     }
 
     renderMap() {
-        const mapEl = document.getElementById('map-infrastructure');
         this.map = new DurhamMap('map-infrastructure').initialize();
 
         // Add danger scores layer
@@ -117,7 +116,13 @@ export class Test3 {
             {
                 fillOpacity: 0.3,
                 colors: ['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15'],
-                breaks: [15, 18, 21, 24, 30]
+                breaks: [15, 18, 21, 24, 30],
+                popupFields: [
+                    { label: 'Median Income', field: 'median_income_y', format: v => `$${v?.toLocaleString()}` },
+                    { label: 'Minority %', field: 'pct_minority', format: v => `${v?.toFixed(1)}%` },
+                    { label: 'Danger Score', field: 'danger_score', format: v => v?.toFixed(1) },
+                    { label: 'Annual Crashes', field: 'annual_crashes', format: v => v?.toLocaleString() }
+                ]
             }
         );
 

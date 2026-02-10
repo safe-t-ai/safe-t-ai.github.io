@@ -155,7 +155,13 @@ export class Test4 {
                 colors: colors,
                 breaks: this.currentView === 'suppressed'
                     ? [20, 40, 60, 80, 100, 150, 200]
-                    : [200, 300, 400, 500, 600, 700, 800]
+                    : [200, 300, 400, 500, 600, 700, 800],
+                popupFields: [
+                    { label: 'Income Quintile', field: 'income_quintile' },
+                    { label: 'Potential Demand', field: 'potential_demand', format: v => `${v?.toFixed(0)} trips/day` },
+                    { label: 'Actual Demand', field: 'actual_demand', format: v => `${v?.toFixed(0)} trips/day` },
+                    { label: 'Suppressed Demand', field: 'suppressed_demand', format: v => `${v?.toFixed(0)} trips/day` }
+                ]
             }
         );
 
@@ -232,7 +238,7 @@ export class Test4 {
 
     renderFunnelChart() {
         const chart = echarts.init(document.getElementById('chart-funnel'));
-        const { overall, 'Q1 (Poorest)': q1, 'Q5 (Richest)': q5 } = this.data.funnel;
+        const { 'Q1 (Poorest)': q1, 'Q5 (Richest)': q5 } = this.data.funnel;
 
         const option = {
             title: {

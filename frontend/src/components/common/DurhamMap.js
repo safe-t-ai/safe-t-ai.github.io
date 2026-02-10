@@ -30,25 +30,49 @@ export class DurhamMap {
         return this;
     }
 
-    addChoroplethLayer(geojson, options = {}) {
+    addChoroplethLayer(geojson, fieldOrOptions = {}, extraOptions) {
+        // Support both calling conventions:
+        //   addChoroplethLayer(geojson, { valueField, colorScale, ... })
+        //   addChoroplethLayer(geojson, 'fieldName', { colors, breaks, fillOpacity })
+        let options;
+        if (typeof fieldOrOptions === 'string') {
+            options = { valueField: fieldOrOptions, ...(extraOptions || {}) };
+        } else {
+            options = fieldOrOptions;
+        }
+
         const {
             valueField = 'error_pct',
             layerName = 'choropleth',
-            colorScale = this.getDefaultColorScale(),
+            colorScale = null,
+            colors = null,
+            breaks = null,
+            fillOpacity = 0.7,
             onEachFeature = null,
-            style = null
+            style = null,
+            popupFields = null
         } = options;
+
+        // Build color function: use colors/breaks if provided, otherwise colorScale
+        const getColorForValue = (value) => {
+            if (colors && breaks) {
+                if (value === null || value === undefined) return '#cbd5e0';
+                for (let i = 0; i < breaks.length; i++) {
+                    if (value <= breaks[i]) return colors[i] || colors[colors.length - 1];
+                }
+                return colors[colors.length - 1];
+            }
+            return this.getColor(value, colorScale || this.getDefaultColorScale());
+        };
 
         const defaultStyle = (feature) => {
             const value = feature.properties[valueField];
-            const color = this.getColor(value, colorScale);
-
             return {
-                fillColor: color,
+                fillColor: getColorForValue(value),
                 weight: 1,
                 opacity: 1,
                 color: '#ffffff',
-                fillOpacity: 0.7
+                fillOpacity: fillOpacity
             };
         };
 
@@ -56,26 +80,31 @@ export class DurhamMap {
             style: style || defaultStyle,
             onEachFeature: onEachFeature || ((feature, layer) => {
                 const props = feature.properties;
+                const income = (props.median_income || props.median_income_y);
 
-                const popupContent = `
-                    <div style="font-size: 13px;">
-                        <strong>Census Tract ${props.tract_id}</strong><br/>
-                        <strong>Median Income:</strong> $${props.median_income?.toLocaleString() || 'N/A'}<br/>
-                        <strong>Minority %:</strong> ${props.pct_minority?.toFixed(1) || 'N/A'}%<br/>
-                        <strong>AI Error:</strong> ${props[valueField]?.toFixed(1) || '0'}%
-                    </div>
-                `;
+                const lines = [`<strong>Census Tract ${props.tract_id}</strong>`];
+                if (popupFields) {
+                    popupFields.forEach(({ label, field, format }) => {
+                        const val = props[field];
+                        if (val == null) return;
+                        lines.push(`<strong>${label}:</strong> ${format ? format(val) : val}`);
+                    });
+                } else {
+                    lines.push(`<strong>Median Income:</strong> $${income?.toLocaleString() || 'N/A'}`);
+                    if (props.pct_minority != null) lines.push(`<strong>Minority %:</strong> ${props.pct_minority.toFixed(1)}%`);
+                    lines.push(`<strong>AI Error:</strong> ${props[valueField]?.toFixed?.(1) ?? props[valueField] ?? 'N/A'}%`);
+                }
 
-                layer.bindPopup(popupContent);
+                layer.bindPopup(`<div style="font-size: 13px;">${lines.join('<br/>')}</div>`);
 
-                layer.on('mouseover', function(e) {
+                layer.on('mouseover', function() {
                     this.setStyle({
                         weight: 3,
                         color: '#666'
                     });
                 });
 
-                layer.on('mouseout', function(e) {
+                layer.on('mouseout', function() {
                     this.setStyle({
                         weight: 1,
                         color: '#ffffff'
@@ -85,6 +114,7 @@ export class DurhamMap {
         }).addTo(this.map);
 
         this.layers[layerName] = layer;
+        this.choroplethLayer = layer;
 
         return this;
     }

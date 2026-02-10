@@ -145,7 +145,13 @@ export class Test2 {
             {
                 fillOpacity: 0.7,
                 colors: ['#ffffcc', '#ffeda0', '#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c', '#b10026'],
-                breaks: breaks
+                breaks: breaks,
+                popupFields: [
+                    { label: 'Median Income', field: 'median_income', format: v => `$${v?.toLocaleString()}` },
+                    { label: 'Income Quintile', field: 'income_quintile' },
+                    { label: 'Actual Crashes (5yr)', field: 'actual_crashes_5yr', format: v => v?.toLocaleString() },
+                    { label: 'AI Predicted', field: 'ai_predicted_crashes', format: v => v?.toFixed(0) }
+                ]
             }
         );
 
@@ -355,7 +361,7 @@ export class Test2 {
 
     renderRocCurves() {
         const chart = echarts.init(document.getElementById('chart-roc'));
-        const { by_quintile, overall } = this.data.rocCurves;
+        const { by_quintile } = this.data.rocCurves;
 
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
         const colors = [COLORS.error, '#ff9800', '#ffc107', '#8bc34a', COLORS.success];
