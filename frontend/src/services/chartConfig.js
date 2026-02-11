@@ -3,7 +3,6 @@
  * Provides consistent styling across all visualizations
  */
 
-// Responsive helper
 const isMobile = () => window.innerWidth <= 768;
 
 const getResponsiveFontSize = (desktop, mobile) => {
@@ -22,6 +21,7 @@ export const COLORS = {
     success: '#38a169',
     warning: '#d69e2e',
     danger: '#e53e3e',
+    error: '#e53e3e',
     quintiles: ['#e53e3e', '#ed8936', '#ecc94b', '#48bb78', '#38a169'],
     minority: ['#38a169', '#ecc94b', '#e53e3e'],
     gradient: ['#38a169', '#ecc94b', '#ed8936', '#e53e3e']
@@ -92,72 +92,6 @@ export function createBarChartConfig(data, options = {}) {
     };
 }
 
-export function createGroupedBarChartConfig(categories, series, options = {}) {
-    const {
-        title = '',
-        yAxisLabel = '',
-        colors = COLORS.quintiles,
-        formatter = null
-    } = options;
-
-    return {
-        title: {
-            text: title,
-            left: 'center',
-            textStyle: {
-                fontSize: getResponsiveFontSize(16, 12),
-                fontWeight: 'normal'
-            }
-        },
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'shadow'
-            },
-            confine: true,
-            formatter: formatter
-        },
-        legend: {
-            data: series.map(s => s.name),
-            bottom: 0,
-            orient: isMobile() ? 'horizontal' : 'horizontal',
-            textStyle: {
-                fontSize: getResponsiveFontSize(11, 9)
-            }
-        },
-        grid: {
-            left: isMobile() ? '8%' : '3%',
-            right: isMobile() ? '5%' : '4%',
-            bottom: isMobile() ? '20%' : '15%',
-            top: isMobile() ? '15%' : '10%',
-            containLabel: true
-        },
-        xAxis: {
-            type: 'category',
-            data: categories,
-            axisLabel: {
-                fontSize: getResponsiveFontSize(12, 10),
-                rotate: isMobile() ? 15 : 0
-            }
-        },
-        yAxis: {
-            type: 'value',
-            name: yAxisLabel,
-            nameTextStyle: {
-                fontSize: 12
-            }
-        },
-        series: series.map((s, idx) => ({
-            name: s.name,
-            type: 'bar',
-            data: s.data,
-            itemStyle: {
-                color: colors[idx % colors.length]
-            }
-        }))
-    };
-}
-
 export function createScatterChartConfig(data, options = {}) {
     const {
         xField = 'x',
@@ -170,7 +104,6 @@ export function createScatterChartConfig(data, options = {}) {
         formatter = null
     } = options;
 
-    // Group by color field if provided
     let seriesData = [];
 
     if (colorField) {
@@ -199,7 +132,6 @@ export function createScatterChartConfig(data, options = {}) {
         }];
     }
 
-    // Calculate reference line (y=x)
     const allX = data.map(d => d[xField]);
     const minVal = Math.min(...allX);
     const maxVal = Math.max(...allX);
@@ -226,7 +158,7 @@ export function createScatterChartConfig(data, options = {}) {
         legend: colorField ? {
             data: seriesData.map(s => s.name),
             bottom: 0,
-            orient: isMobile() ? 'horizontal' : 'horizontal',
+            orient: 'horizontal',
             textStyle: {
                 fontSize: getResponsiveFontSize(11, 9)
             }

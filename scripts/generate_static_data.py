@@ -64,33 +64,25 @@ def main():
     with open(output_dir / 'volume-report.json', 'w') as f:
         json.dump(report, f, indent=2)
 
-    # 4. Choropleth data (use tract-level predictions for full coverage)
+    # 4. Choropleth data
     print("Generating choropleth data...")
     tract_predictions_file = SIMULATED_DATA_DIR / 'tract_volume_predictions.json'
-    if tract_predictions_file.exists():
-        # Load tract-level predictions
-        tract_predictions = pd.read_json(tract_predictions_file)
-        tract_predictions['tract_id'] = tract_predictions['tract_id'].astype(str)
-        census_gdf['tract_id'] = census_gdf['tract_id'].astype(str)
+    tract_predictions = pd.read_json(tract_predictions_file)
+    tract_predictions['tract_id'] = tract_predictions['tract_id'].astype(str)
+    census_gdf['tract_id'] = census_gdf['tract_id'].astype(str)
 
-        # Dissolve to tract-level geometries (deduplicates if needed)
-        print("  Preparing tract-level geometries...")
-        tract_geoms = census_gdf.dissolve(by='tract_id', aggfunc='first')[['geometry']]
-        tract_geoms = tract_geoms.reset_index()
+    print("  Preparing tract-level geometries...")
+    tract_geoms = census_gdf.dissolve(by='tract_id', aggfunc='first')[['geometry']]
+    tract_geoms = tract_geoms.reset_index()
 
-        # Merge tract geometries with predictions
-        tract_errors_gdf = tract_geoms.merge(
-            tract_predictions[['tract_id', 'error_pct', 'error', 'true_volume', 'predicted_volume',
-                              'median_income', 'pct_minority', 'total_population']],
-            on='tract_id',
-            how='left'
-        )
+    tract_errors_gdf = tract_geoms.merge(
+        tract_predictions[['tract_id', 'error_pct', 'error', 'true_volume', 'predicted_volume',
+                          'median_income', 'pct_minority', 'total_population']],
+        on='tract_id',
+        how='left'
+    )
 
-        print(f"  Created {len(tract_errors_gdf)} census tract polygons")
-    else:
-        # Fallback to counter-based errors (old method)
-        print("  Warning: tract_volume_predictions.json not found, using counter-based errors")
-        tract_errors_gdf = auditor.get_tract_level_errors()
+    print(f"  Created {len(tract_errors_gdf)} census tract polygons")
 
     tract_errors_gdf = simplify_geometry(tract_errors_gdf, tolerance=0.001)
     choropleth_geojson = geojson_to_dict(tract_errors_gdf)
@@ -126,118 +118,82 @@ def main():
     print("Generating Test 3 data (Infrastructure Recommendations)...")
     print("=" * 60)
 
-    # Load infrastructure simulation data
     infrastructure_file = SIMULATED_DATA_DIR / 'infrastructure_recommendations.json'
-    if infrastructure_file.exists():
-        print("Loading infrastructure recommendations...")
-        infrastructure_data = copy_json(infrastructure_file, output_dir / 'infrastructure-report.json')
+    infrastructure_data = copy_json(infrastructure_file, output_dir / 'infrastructure-report.json')
 
-        # 10. Danger scores with geography
-        print("Generating danger scores map data...")
-        danger_scores = infrastructure_data['danger_scores']
-        danger_gdf = census_gdf.merge(
-            pd.DataFrame(danger_scores),
-            on='tract_id'
-        )
-        danger_gdf = simplify_geometry(danger_gdf, tolerance=0.001)
-        danger_geojson = geojson_to_dict(danger_gdf)
-        with open(output_dir / 'danger-scores.json', 'w') as f:
-            json.dump(danger_geojson, f)
+    print("Generating danger scores map data...")
+    danger_scores = infrastructure_data['danger_scores']
+    danger_gdf = census_gdf.merge(
+        pd.DataFrame(danger_scores),
+        on='tract_id'
+    )
+    danger_gdf = simplify_geometry(danger_gdf, tolerance=0.001)
+    danger_geojson = geojson_to_dict(danger_gdf)
+    with open(output_dir / 'danger-scores.json', 'w') as f:
+        json.dump(danger_geojson, f)
 
-        # 11. Budget allocation comparison
-        print("Generating budget allocation data...")
-        allocation_comparison = {
-            'ai_allocation': infrastructure_data['equity_metrics']['ai_allocation'],
-            'need_based_allocation': infrastructure_data['equity_metrics']['need_based_allocation'],
-            'comparison': infrastructure_data['equity_metrics']['comparison']
-        }
-        with open(output_dir / 'budget-allocation.json', 'w') as f:
-            json.dump(allocation_comparison, f, indent=2)
+    print("Generating budget allocation data...")
+    allocation_comparison = {
+        'ai_allocation': infrastructure_data['equity_metrics']['ai_allocation'],
+        'need_based_allocation': infrastructure_data['equity_metrics']['need_based_allocation'],
+        'comparison': infrastructure_data['equity_metrics']['comparison']
+    }
+    with open(output_dir / 'budget-allocation.json', 'w') as f:
+        json.dump(allocation_comparison, f, indent=2)
 
-        # 12. Recommendations with geography
-        print("Generating recommendations map data...")
-        ai_recs_df = pd.DataFrame(infrastructure_data['ai_recommendations'])
-        need_recs_df = pd.DataFrame(infrastructure_data['need_based_recommendations'])
+    print("Generating recommendations map data...")
+    ai_recs_df = pd.DataFrame(infrastructure_data['ai_recommendations'])
+    need_recs_df = pd.DataFrame(infrastructure_data['need_based_recommendations'])
 
-        # Merge with census for geography
-        ai_recs_gdf = census_gdf.merge(ai_recs_df, on='tract_id', how='inner')
-        need_recs_gdf = census_gdf.merge(need_recs_df, on='tract_id', how='inner')
+    ai_recs_gdf = census_gdf.merge(ai_recs_df, on='tract_id', how='inner')
+    need_recs_gdf = census_gdf.merge(need_recs_df, on='tract_id', how='inner')
 
-        ai_recs_gdf = simplify_geometry(ai_recs_gdf, tolerance=0.001)
-        need_recs_gdf = simplify_geometry(need_recs_gdf, tolerance=0.001)
+    ai_recs_gdf = simplify_geometry(ai_recs_gdf, tolerance=0.001)
+    need_recs_gdf = simplify_geometry(need_recs_gdf, tolerance=0.001)
 
-        recommendations_data = {
-            'ai_recommendations': geojson_to_dict(ai_recs_gdf),
-            'need_based_recommendations': geojson_to_dict(need_recs_gdf)
-        }
-        with open(output_dir / 'recommendations.json', 'w') as f:
-            json.dump(recommendations_data, f, indent=2)
-
-        print("✓ Test 3 data generation complete!")
-    else:
-        print(f"Warning: Infrastructure data not found at {infrastructure_file}")
-        print("Run scripts/simulate_infrastructure_recommendations.py first")
+    recommendations_data = {
+        'ai_recommendations': geojson_to_dict(ai_recs_gdf),
+        'need_based_recommendations': geojson_to_dict(need_recs_gdf)
+    }
+    with open(output_dir / 'recommendations.json', 'w') as f:
+        json.dump(recommendations_data, f, indent=2)
 
     # ===== TEST 2: Crash Prediction Bias =====
     print("\n" + "=" * 60)
     print("Generating Test 2 data (Crash Prediction Bias)...")
     print("=" * 60)
 
-    # Load crash prediction data
     crash_report_file = SIMULATED_DATA_DIR / 'crash_predictions.json'
-    if crash_report_file.exists():
-        print("Loading crash prediction data...")
+    copy_json(crash_report_file, output_dir / 'crash-report.json')
 
-        copy_json(crash_report_file, output_dir / 'crash-report.json')
-
-        # Copy supplementary crash data files
-        crash_files = {
-            'confusion_matrices.json': 'confusion-matrices.json',
-            'roc_curves.json': 'roc-curves.json',
-            'crash_time_series.json': 'crash-time-series.json',
-            'crash_geo_data.json': 'crash-geo-data.json',
-        }
-        for src_name, dest_name in crash_files.items():
-            src = SIMULATED_DATA_DIR / src_name
-            if src.exists():
-                indent = 2 if dest_name != 'crash-geo-data.json' else None
-                copy_json(src, output_dir / dest_name, indent=indent)
-
-        print("✓ Test 2 data generation complete!")
-    else:
-        print(f"Warning: Crash prediction data not found at {crash_report_file}")
-        print("Run scripts/simulate_crash_predictions.py first")
+    crash_files = {
+        'confusion_matrices.json': 'confusion-matrices.json',
+        'roc_curves.json': 'roc-curves.json',
+        'crash_time_series.json': 'crash-time-series.json',
+        'crash_geo_data.json': 'crash-geo-data.json',
+    }
+    for src_name, dest_name in crash_files.items():
+        indent = 2 if dest_name != 'crash-geo-data.json' else None
+        copy_json(SIMULATED_DATA_DIR / src_name, output_dir / dest_name, indent=indent)
 
     # ===== TEST 4: Suppressed Demand Analysis =====
     print("\n" + "=" * 60)
     print("Generating Test 4 data (Suppressed Demand Analysis)...")
     print("=" * 60)
 
-    # Load suppressed demand data
     demand_report_file = SIMULATED_DATA_DIR / 'demand_analysis.json'
-    if demand_report_file.exists():
-        print("Loading suppressed demand data...")
+    copy_json(demand_report_file, output_dir / 'demand-report.json')
 
-        copy_json(demand_report_file, output_dir / 'demand-report.json')
-
-        # Copy supplementary demand data files
-        demand_files = {
-            'demand_funnel.json': 'demand-funnel.json',
-            'correlation_matrix.json': 'correlation-matrix.json',
-            'detection_scorecard.json': 'detection-scorecard.json',
-            'network_flow.json': 'network-flow.json',
-            'demand_geo_data.json': 'demand-geo-data.json',
-        }
-        for src_name, dest_name in demand_files.items():
-            src = SIMULATED_DATA_DIR / src_name
-            if src.exists():
-                indent = 2 if dest_name != 'demand-geo-data.json' else None
-                copy_json(src, output_dir / dest_name, indent=indent)
-
-        print("✓ Test 4 data generation complete!")
-    else:
-        print(f"Warning: Suppressed demand data not found at {demand_report_file}")
-        print("Run scripts/analyze_suppressed_demand.py first")
+    demand_files = {
+        'demand_funnel.json': 'demand-funnel.json',
+        'correlation_matrix.json': 'correlation-matrix.json',
+        'detection_scorecard.json': 'detection-scorecard.json',
+        'network_flow.json': 'network-flow.json',
+        'demand_geo_data.json': 'demand-geo-data.json',
+    }
+    for src_name, dest_name in demand_files.items():
+        indent = 2 if dest_name != 'demand-geo-data.json' else None
+        copy_json(SIMULATED_DATA_DIR / src_name, output_dir / dest_name, indent=indent)
 
     # Summary
     print("\n" + "=" * 60)

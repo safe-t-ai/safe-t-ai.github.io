@@ -38,7 +38,6 @@ class App {
                 counters
             };
 
-            // Hide loading, show app
             document.getElementById('loading').style.display = 'none';
             document.getElementById('app').style.display = 'block';
 
@@ -128,12 +127,10 @@ class App {
     renderMap() {
         this.map = new DurhamMap('map').initialize();
 
-        // Add choropleth layer
         this.map.addChoroplethLayer(this.data.choroplethData, {
             valueField: 'error_pct'
         });
 
-        // Create custom icon (avoids Leaflet default icon issues)
         const customIcon = L.divIcon({
             className: 'custom-marker',
             html: '<div style="background-color: #3388ff; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>',
@@ -141,7 +138,6 @@ class App {
             iconAnchor: [6, 6]
         });
 
-        // Add counter markers
         this.map.addMarkers(this.data.counters, {
             icon: customIcon,
             popupContent: (point) => `
@@ -154,13 +150,9 @@ class App {
             `
         });
 
-        // Add legend
         this.map.addLegend();
-
-        // Fit to bounds
         this.map.fitBounds(this.data.choroplethData);
 
-        // Handle window resize
         window.addEventListener('resize', () => {
             if (this.map) this.map.invalidateSize();
         });
@@ -182,8 +174,6 @@ class App {
             quintile: q.quintile
         }));
 
-        const chart = echarts.init(document.getElementById('chart-income'));
-
         const config = createBarChartConfig(chartData, {
             yAxisLabel: 'Mean Prediction Error (%)',
             color: COLORS.quintiles,
@@ -199,24 +189,7 @@ class App {
             }
         });
 
-        // Add reference line at 0
-        config.series.push({
-            name: 'No Bias',
-            type: 'line',
-            data: chartData.map(() => 0),
-            lineStyle: {
-                color: '#cbd5e0',
-                width: 2,
-                type: 'dashed'
-            },
-            symbol: 'none',
-            silent: true
-        });
-
-        chart.setOption(config);
-        this.charts.income = chart;
-
-        window.addEventListener('resize', () => chart.resize());
+        this.charts.income = this.initChartWithZeroLine('chart-income', config, chartData.length);
     }
 
     renderRaceChart() {
@@ -226,8 +199,6 @@ class App {
             label: c.category,
             value: c.mean_error_pct
         }));
-
-        const chart = echarts.init(document.getElementById('chart-race'));
 
         const config = createBarChartConfig(chartData, {
             yAxisLabel: 'Mean Prediction Error (%)',
@@ -243,30 +214,11 @@ class App {
             }
         });
 
-        // Add reference line
-        config.series.push({
-            name: 'No Bias',
-            type: 'line',
-            data: chartData.map(() => 0),
-            lineStyle: {
-                color: '#cbd5e0',
-                width: 2,
-                type: 'dashed'
-            },
-            symbol: 'none',
-            silent: true
-        });
-
-        chart.setOption(config);
-        this.charts.race = chart;
-
-        window.addEventListener('resize', () => chart.resize());
+        this.charts.race = this.initChartWithZeroLine('chart-race', config, chartData.length);
     }
 
     renderScatterChart() {
         const { scatter_data } = this.data.report;
-
-        const chart = echarts.init(document.getElementById('chart-scatter'));
 
         const config = createScatterChartConfig(scatter_data, {
             xField: 'true_volume',
@@ -287,26 +239,35 @@ class App {
             }
         });
 
-        chart.setOption(config);
-        this.charts.scatter = chart;
-
-        window.addEventListener('resize', () => chart.resize());
+        this.charts.scatter = this.initChart('chart-scatter', config);
     }
 
     renderHistogramChart() {
-        const { error_distribution } = this.data.report;
-
-        const chart = echarts.init(document.getElementById('chart-histogram'));
-
-        const config = createHistogramConfig(error_distribution, {
+        const config = createHistogramConfig(this.data.report.error_distribution, {
             xAxisLabel: 'Prediction Error (%)',
             color: COLORS.primary
         });
 
-        chart.setOption(config);
-        this.charts.histogram = chart;
+        this.charts.histogram = this.initChart('chart-histogram', config);
+    }
 
+    initChart(elementId, config) {
+        const chart = echarts.init(document.getElementById(elementId));
+        chart.setOption(config);
         window.addEventListener('resize', () => chart.resize());
+        return chart;
+    }
+
+    initChartWithZeroLine(elementId, config, dataLength) {
+        config.series.push({
+            name: 'No Bias',
+            type: 'line',
+            data: Array(dataLength).fill(0),
+            lineStyle: { color: '#cbd5e0', width: 2, type: 'dashed' },
+            symbol: 'none',
+            silent: true
+        });
+        return this.initChart(elementId, config);
     }
 
     setupTabs() {
@@ -322,17 +283,14 @@ class App {
     async switchTest(testId) {
         if (testId === this.currentTest) return;
 
-        // Update tab active state
         document.querySelectorAll('.tab').forEach(tab => {
             tab.classList.toggle('active', tab.dataset.test === testId);
         });
 
-        // Update content visibility
         document.querySelectorAll('.test-content').forEach(content => {
             content.classList.toggle('active', content.id === `${testId}-content`);
         });
 
-        // Update description
         const descriptions = {
             test1: 'Evaluating AI tools for demographic bias in pedestrian and cyclist volume predictions',
             test2: 'Evaluating AI crash prediction models for enforcement bias',
@@ -341,29 +299,21 @@ class App {
         };
         document.getElementById('test-description').textContent = descriptions[testId];
 
-        // Lazy-load test modules on first visit (literal paths required for code splitting)
-        if (testId === 'test2' && !this.crashPredictionAudit) {
-            document.getElementById('loading').style.display = 'flex';
-            const { CrashPredictionAudit } = await import('./CrashPredictionAudit.js');
-            this.crashPredictionAudit = new CrashPredictionAudit();
-            await this.crashPredictionAudit.initialize();
-            document.getElementById('loading').style.display = 'none';
-        }
+        // Lazy-load test modules on first visit (literal paths required for Vite code splitting)
+        const loaders = {
+            test2: ['crashPredictionAudit', () => import('./CrashPredictionAudit.js').then(m => m.CrashPredictionAudit)],
+            test3: ['infrastructureAudit', () => import('./InfrastructureAudit.js').then(m => m.InfrastructureAudit)],
+            test4: ['suppressedDemandAudit', () => import('./SuppressedDemandAudit.js').then(m => m.SuppressedDemandAudit)],
+        };
 
-        if (testId === 'test3' && !this.infrastructureAudit) {
-            document.getElementById('loading').style.display = 'flex';
-            const { InfrastructureAudit } = await import('./InfrastructureAudit.js');
-            this.infrastructureAudit = new InfrastructureAudit();
-            await this.infrastructureAudit.initialize();
-            document.getElementById('loading').style.display = 'none';
-        }
-
-        if (testId === 'test4' && !this.suppressedDemandAudit) {
-            document.getElementById('loading').style.display = 'flex';
-            const { SuppressedDemandAudit } = await import('./SuppressedDemandAudit.js');
-            this.suppressedDemandAudit = new SuppressedDemandAudit();
-            await this.suppressedDemandAudit.initialize();
-            document.getElementById('loading').style.display = 'none';
+        if (loaders[testId] && !this[loaders[testId][0]]) {
+            const [prop, load] = loaders[testId];
+            const loading = document.getElementById('loading');
+            loading.style.display = 'flex';
+            const AuditClass = await load();
+            this[prop] = new AuditClass();
+            await this[prop].initialize();
+            loading.style.display = 'none';
         }
 
         this.currentTest = testId;
