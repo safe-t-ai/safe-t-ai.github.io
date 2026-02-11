@@ -47,6 +47,48 @@ Multi-modal traffic volume estimates from mobile device data.
 
 Complete NC crash database with detailed records.
 
-- **Access:** Institutional request to TEAAS_Support@ncdot.gov
-- **Would provide:** Individual crash records with road-level location data
+- **Access:** Free for government, municipal, and research entities, but requires completing a two-part training program (online modules + instructor-led class) before account provisioning
+- **Download:** https://dmvcrashweb.dot.state.nc.us/teaas/
+- **Info:** https://connect.ncdot.gov/resources/safety/Pages/TEAAS-Crash-Data-System.aspx
+- **Would provide:** Individual crash records with road-level location data (all reportable NC crashes since 1990)
 - **Current substitute:** Simulated crash records calibrated to NC Vision Zero API totals
+
+## Potential Additions
+
+### OpenStreetMap (Infrastructure Geometry)
+
+Crowdsourced map data with pedestrian and cyclist infrastructure tagging (footways, crossings, bike routes). The US saw record pedestrian mapping growth in 2024 driven by the OSM US Pedestrian Working Group and Meta's Walkabout Initiative.
+
+- **Extract:** Custom bounding-box extract via https://extract.bbbike.org/ (Durham is not pre-made; draw a region). Alternatively, query directly via the Overpass API.
+- **License:** ODbL (open)
+- **Formats:** OSM/PBF, Shapefile, GeoJSON, GeoParquet
+- **Useful for:** Test 3 (Infrastructure Audit) and Test 4 (Suppressed Demand). Map actual infrastructure presence per census tract against income quintiles to validate whether AI allocation recommendations match real-world conditions.
+
+### Durham Vision Zero Dashboard (Crash Validation)
+
+Interactive ArcGIS dashboard showing fatal and serious injury crashes in Durham from 2016 to present, maintained by the city.
+
+- **Dashboard:** https://www.arcgis.com/apps/dashboards/fd720475a8de48ef82f801dc8d6d6677
+- **Program page:** https://www.durhamnc.gov/2995/Vision-Zero
+- **Auth:** None (public, view-only)
+- **Provides:** Crash locations along the High Injury Network, temporal trends, severity breakdowns. Verified stats: ~23 fatalities/year, a pedestrian crash every 3 days on average.
+- **Limitation:** View-only ArcGIS dashboard with no bulk data export. Useful for manual validation of Test 2 crash patterns, not for pipeline integration.
+
+### GoDurham GTFS (Transit Routes)
+
+Transit route and schedule data for Durham's bus system. The Durham Open Data Portal does not include transit data; this is the actual source.
+
+- **URL:** https://godurhamtransit.org/developer-resources
+- **Auth:** None (public)
+- **Formats:** GTFS and GTFS-RT
+- **Useful for:** Enriching equity analysis by mapping transit access gaps against income and race demographics. Areas with poor transit access may correlate with suppressed active transportation demand.
+
+### DVRPC Bike/Ped Count Program (Methodology Reference)
+
+Philadelphia-region bike/ped counting program with fully open data and a documented Eco-Counter integration pipeline.
+
+- **Data portal:** https://www.dvrpc.org/traffic/bikepedtravelmonitoring/
+- **Open data:** https://dvrpc-dvrpcgis.opendata.arcgis.com/
+- **GitHub pipeline:** https://github.com/dvrpc/eco-counter-import
+- **Formats:** CSV, Shapefile, GeoJSON
+- **Useful for:** Not Durham-specific, but serves as a reference for how to structure real count data integration if Durham publishes Eco-Counter data in the future. Their pipeline architecture could inform Test 1 (Volume Estimation) ground truth methodology.

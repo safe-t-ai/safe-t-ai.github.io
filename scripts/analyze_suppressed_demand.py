@@ -100,6 +100,11 @@ def main():
     # Export demand report
     print("\n6. Exporting demand analysis report...")
     demand_report = {
+        '_provenance': {
+            'data_type': 'simulated',
+            'simulated': ['potential demand', 'actual demand', 'AI detection models'],
+            'parameters': {'high_suppression_threshold': HIGH_SUPPRESSION_THRESHOLD},
+        },
         'summary': results['summary'],
         'high_suppression_threshold': HIGH_SUPPRESSION_THRESHOLD,
         'by_quintile': results['by_quintile'],

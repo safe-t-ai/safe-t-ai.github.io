@@ -65,6 +65,8 @@ jobs:
         run: |
           python3 -c "
           import json, csv, sys
+          sys.path.insert(0, 'backend')
+          from config import PLAUSIBILITY_RANGES
 
           errors = []
 
@@ -73,8 +75,9 @@ jobs:
               tracts = json.load(f)
           features = tracts['features']
           count = len(features)
-          if not (60 <= count <= 75):
-              errors.append(f'Census tract count {count} outside expected range 60-75')
+          lo, hi = PLAUSIBILITY_RANGES['census_tracts']
+          if not (lo <= count <= hi):
+              errors.append(f'Census tract count {count} outside expected range {lo}-{hi}')
 
           for feat in features:
               props = feat['properties']
@@ -270,19 +273,12 @@ jobs:
           mkdir -p frontend/public/data
           python scripts/generate_static_data.py
 
-          cat > frontend/public/data/metadata.json << EOF
-          {
-            "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "data_hash": "${{ env.DATA_HASH }}",
-            "github_run_url": "${{ env.GITHUB_RUN_URL }}",
-            "git_sha": "${{ env.GIT_SHA }}"
-          }
-          EOF
-
       - name: Validate generated data
         run: |
           python3 -c "
           import json, os, sys
+          sys.path.insert(0, 'backend')
+          from config import PLAUSIBILITY_RANGES
 
           errors = []
           data_dir = 'frontend/public/data'
@@ -312,6 +308,7 @@ jobs:
               'network-flow.json',
               'demand-geo-data.json',
               'metadata.json',
+              'data-manifest.json',
           ]
 
           # Check all files exist and parse as JSON
@@ -338,6 +335,7 @@ jobs:
                   errors.append('crash-geo-data.json contains stale actual_crashes_5yr field')
 
           # Check budget by_quintile sums to expected range
+          budget_lo, budget_hi = PLAUSIBILITY_RANGES['budget_allocation_total']
           report_path = os.path.join(data_dir, 'infrastructure-report.json')
           if os.path.exists(report_path):
               with open(report_path) as f:
@@ -345,8 +343,8 @@ jobs:
               for alloc_key in ['ai_allocation', 'need_based_allocation']:
                   by_q = report['equity_metrics'][alloc_key]['by_quintile']
                   total = sum(by_q.values())
-                  if not (4_500_000 <= total <= 5_500_000):
-                      errors.append(f'{alloc_key} by_quintile sum {total} outside 4.5M-5.5M range')
+                  if not (budget_lo <= total <= budget_hi):
+                      errors.append(f'{alloc_key} by_quintile sum {total} outside {budget_lo/1e6:.1f}M-{budget_hi/1e6:.1f}M range')
 
           # Check danger-scores feature count matches census-tracts
           tracts_path = os.path.join(data_dir, 'census-tracts.json')
@@ -365,6 +363,63 @@ jobs:
                   print(f'  - {e}')
               sys.exit(1)
           print(f'Generated data valid: {len(expected_files)} files, {tract_count} tracts, feature counts match')
+          "
+
+      - name: Validate data plausibility
+        run: |
+          python3 -c "
+          import json, sys
+          sys.path.insert(0, 'backend')
+          from config import PLAUSIBILITY_RANGES
+
+          errors = []
+          data_dir = 'frontend/public/data'
+
+          # Crash volumes
+          with open(f'{data_dir}/crash-report.json') as f:
+              crash = json.load(f)
+          total = crash['summary']['total_crashes_all_years']
+          years = len(crash['summary']['years_analyzed'])
+          per_year = total / years
+
+          lo, hi = PLAUSIBILITY_RANGES['crashes_per_year']
+          if not (lo <= per_year <= hi):
+              errors.append(f'Crashes per year {per_year:.0f} outside range {lo}-{hi}')
+
+          lo, hi = PLAUSIBILITY_RANGES['crashes_total_5yr']
+          if not (lo <= total <= hi):
+              errors.append(f'Total crashes {total} outside range {lo}-{hi}')
+
+          # Population and income
+          with open(f'{data_dir}/census-tracts.json') as f:
+              tracts = json.load(f)
+
+          total_pop = sum(
+              f['properties'].get('total_population', 0)
+              for f in tracts['features']
+          )
+          lo, hi = PLAUSIBILITY_RANGES['durham_total_population']
+          if not (lo <= total_pop <= hi):
+              errors.append(f'Total population {total_pop} outside range {lo}-{hi}')
+
+          lo, hi = PLAUSIBILITY_RANGES['census_tracts']
+          tract_count = len(tracts['features'])
+          if not (lo <= tract_count <= hi):
+              errors.append(f'Census tract count {tract_count} outside range {lo}-{hi}')
+
+          inc_lo, inc_hi = PLAUSIBILITY_RANGES['median_income_range']
+          for feat in tracts['features']:
+              income = feat['properties'].get('median_income')
+              if income is not None and not (inc_lo <= income <= inc_hi):
+                  tid = feat['properties'].get('tract_id', '?')
+                  errors.append(f'Tract {tid} income {income} outside range {inc_lo}-{inc_hi}')
+
+          if errors:
+              print('Plausibility validation failed:')
+              for e in errors:
+                  print(f'  - {e}')
+              sys.exit(1)
+          print(f'Plausibility valid: {per_year:.0f} crashes/yr, {total_pop:,} population, {tract_count} tracts')
           "
 
       - name: Generate data summary

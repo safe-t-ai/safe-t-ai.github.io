@@ -5,13 +5,15 @@
 [![Python](https://img.shields.io/badge/python-3.9+-blue?logo=python&style=classic)](https://www.python.org/)
 [![Node](https://img.shields.io/badge/node-18+-green?logo=node.js&style=classic)](https://nodejs.org/)
 
-Auditing framework for evaluating equity and fairness in AI-driven transportation safety systems.
+Auditing framework for evaluating equity and fairness in AI-driven transportation safety systems. Built at the [2026 SCAI Hackathon](https://sites.duke.edu/scai/hackathon/), Duke University.
 
 **[Live Demo](https://safe-t-ai.github.io/)**
 
+**Team:** [Jonas Neves](https://www.linkedin.com/in/jonasnvs/), [Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/), [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/), [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/), [Matthew Menon](https://www.linkedin.com/in/matthewmenon/)
+
 ## Overview
 
-AI tools like Strava Metro and StreetLight Data are increasingly used by cities for infrastructure planning, but have documented demographic biases that undercount vulnerable populations. SAFE-T provides benchmark tests to evaluate whether these AI tools serve all residents equitably.
+AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities. This audit tests whether those tools treat Durham's communities equitably across four tests measuring how income and race correlate with AI accuracy, resource allocation, and demand visibility.
 
 ## Tests
 
@@ -58,15 +60,15 @@ make dev
 - **Deployment:** Static site on GitHub Pages
 - **Data Pipeline:** Automated via GitHub Actions
 
-The data pipeline fetches Durham census data (238 tracts), simulates AI predictions with documented bias patterns, generates static JSON files, and automatically deploys.
+The data pipeline fetches Durham census data, simulates AI predictions with documented bias patterns, generates static JSON files, and automatically deploys.
 
 ## Project Structure
 
 ```
-durham-transport/
+safe-t-ai.github.io/
 ├── backend/
 │   ├── models/           # Analysis models (4 tests)
-│   ├── tests/            # Pytest suite (48 tests, 64% coverage)
+│   ├── tests/            # Pytest suite (48 tests, 70% coverage)
 │   ├── utils/            # Demographic & geospatial analysis
 │   └── config.py         # Centralized configuration
 ├── frontend/
@@ -80,7 +82,7 @@ durham-transport/
 
 - **Census:** US Census Bureau ACS 5-Year Estimates (2022)
 - **Boundaries:** TIGER/Line Shapefiles
-- **Crash Data:** Simulated, validated against NCDOT Vision Zero API
+- **Crash Data:** Simulated (2019-2023), validated against NCDOT NC Vision Zero API
 - **AI Predictions:** Simulated with bias patterns from research literature
 
 ## Development

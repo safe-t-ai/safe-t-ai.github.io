@@ -78,3 +78,13 @@ SUPPRESSED_DEMAND_CONFIG = {
 HIGH_SUPPRESSION_THRESHOLD = 70  # Suppression % that defines "high suppression"
 
 QUINTILE_LABELS = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']
+
+# Plausibility ranges for CI validation (catch order-of-magnitude errors)
+PLAUSIBILITY_RANGES = {
+    'crashes_per_year': (10_000, 20_000),        # NCDOT calibration: ~14,400/yr
+    'crashes_total_5yr': (50_000, 100_000),       # 5 years of Durham crash data
+    'census_tracts': (60, 75),                    # US Census ACS Durham County
+    'durham_total_population': (250_000, 400_000),  # Census 2022 estimate ~311k
+    'median_income_range': (15_000, 250_000),     # Per-tract median household income
+    'budget_allocation_total': (4_500_000, 5_500_000),  # INFRASTRUCTURE_DEFAULT_BUDGET ± margin
+}

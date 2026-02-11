@@ -4,7 +4,9 @@ Generate static JSON files for gh-pages deployment.
 Pre-generates all API responses so frontend can work without backend.
 """
 
+import os
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 import json
 import pandas as pd
@@ -13,7 +15,7 @@ import pandas as pd
 backend_dir = Path(__file__).parent.parent / 'backend'
 sys.path.insert(0, str(backend_dir))
 
-from config import RAW_DATA_DIR, SIMULATED_DATA_DIR
+from config import RAW_DATA_DIR, SIMULATED_DATA_DIR, PLAUSIBILITY_RANGES
 from models.volume_estimator import VolumeEstimationAuditor, load_test1_data
 from utils.geospatial import geojson_to_dict, simplify_geometry
 
@@ -194,6 +196,69 @@ def main():
     for src_name, dest_name in demand_files.items():
         indent = 2 if dest_name != 'demand-geo-data.json' else None
         copy_json(SIMULATED_DATA_DIR / src_name, output_dir / dest_name, indent=indent)
+
+    # ===== DATA MANIFEST & METADATA =====
+    print("\n" + "=" * 60)
+    print("Generating data manifest and metadata...")
+    print("=" * 60)
+
+    manifest = {
+        'sources': {
+            'census_demographics': {
+                'type': 'real',
+                'provider': 'US Census Bureau ACS 2022',
+                'files': ['census-tracts.json', 'choropleth-data.json'],
+            },
+            'crash_volumes': {
+                'type': 'calibrated',
+                'provider': 'NCDOT NC Vision Zero API',
+                'files': ['crash-report.json', 'crash-time-series.json',
+                          'confusion-matrices.json', 'roc-curves.json', 'crash-geo-data.json'],
+            },
+            'volume_predictions': {
+                'type': 'simulated',
+                'rationale': 'Strava Metro / StreetLight Data require institutional license',
+                'files': ['volume-report.json', 'counter-locations.json',
+                          'accuracy-by-income.json', 'accuracy-by-race.json',
+                          'scatter-data.json', 'error-distribution.json'],
+            },
+            'infrastructure_recommendations': {
+                'type': 'simulated',
+                'rationale': 'No public dataset of Durham safety project allocations',
+                'files': ['infrastructure-report.json', 'danger-scores.json',
+                          'budget-allocation.json', 'recommendations.json'],
+            },
+            'suppressed_demand': {
+                'type': 'simulated',
+                'rationale': 'Suppressed demand is inherently unobservable',
+                'files': ['demand-report.json', 'demand-funnel.json',
+                          'correlation-matrix.json', 'detection-scorecard.json',
+                          'network-flow.json', 'demand-geo-data.json'],
+            },
+        },
+        'plausibility_ranges': PLAUSIBILITY_RANGES,
+    }
+
+    with open(output_dir / 'data-manifest.json', 'w') as f:
+        json.dump(manifest, f, indent=2)
+    print("  Generated data-manifest.json")
+
+    metadata = {
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'data_hash': os.environ.get('DATA_HASH', 'local'),
+        'github_run_url': os.environ.get('GITHUB_RUN_URL', ''),
+        'git_sha': os.environ.get('GIT_SHA', ''),
+        'sources': {
+            'real': ['US Census ACS 2022'],
+            'calibrated': ['NCDOT NC Vision Zero crash totals'],
+            'simulated': ['volume predictions', 'crash distributions',
+                          'infrastructure recommendations', 'demand analysis'],
+        },
+    }
+
+    with open(output_dir / 'metadata.json', 'w') as f:
+        json.dump(metadata, f, indent=2)
+    print("  Generated metadata.json")
 
     # Summary
     print("\n" + "=" * 60)

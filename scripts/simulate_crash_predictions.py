@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
 import geopandas as gpd
-from config import CRASH_ANALYSIS_YEARS, RAW_DATA_DIR
+from config import CRASH_ANALYSIS_YEARS, RAW_DATA_DIR, NCDOT_DATA_YEARS
 from models.crash_predictor import CrashPredictionAuditor
 
 
@@ -119,7 +119,22 @@ def main():
     q1_error_pct = quintile_metrics.get('Q1 (Poorest)', {}).get('error_pct', 0)
     q5_error_pct = quintile_metrics.get('Q5 (Richest)', {}).get('error_pct', 0)
 
+    # Load calibration data for provenance
+    calibration_path = RAW_DATA_DIR / 'ncdot_calibration.json'
+    if calibration_path.exists():
+        with open(calibration_path) as f:
+            calibration = json.load(f)
+        crashes_per_year = calibration['per_year']
+    else:
+        crashes_per_year = int(total_crashes_all_years / len(CRASH_ANALYSIS_YEARS))
+
     crash_report = {
+        '_provenance': {
+            'data_type': 'mixed',
+            'real': ['US Census ACS 2022 demographics', 'NCDOT crash volumes (calibration)'],
+            'simulated': ['crash geographic distribution', 'AI prediction errors'],
+            'calibration': {'crashes_per_year': crashes_per_year, 'source': 'ncdot_calibration.json'},
+        },
         'summary': {
             'total_crashes_all_years': int(total_crashes_all_years),
             'crashes_2023_actual': int(crashes_2023),

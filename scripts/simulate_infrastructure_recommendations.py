@@ -112,6 +112,12 @@ def main():
     print("\nGenerating full audit report...")
     report = auditor.generate_report()
 
+    report['_provenance'] = {
+        'data_type': 'simulated',
+        'simulated': ['danger scores', 'AI recommendations', 'need-based recommendations'],
+        'parameters': {'budget': INFRASTRUCTURE_DEFAULT_BUDGET, 'seed': DEFAULT_RANDOM_SEED},
+    }
+
     # Export to JSON
     print(f"\nExporting results to: {output_file}")
     with open(output_file, 'w') as f:
