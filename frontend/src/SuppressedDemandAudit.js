@@ -53,15 +53,15 @@ export class SuppressedDemandAudit {
                 sentiment: 'value-warning'
             },
             {
-                title: 'Naive AI Accuracy',
-                value: (summary.naive_ai_correlation * 100).toFixed(1) + '%',
-                subtext: 'Fails to detect suppressed demand',
+                title: 'Naive AI Correlation',
+                value: summary.naive_ai_correlation.toFixed(2),
+                subtext: 'With potential demand (Pearson r)',
                 sentiment: 'value-danger'
             },
             {
-                title: 'Sophisticated AI',
-                value: (summary.sophisticated_ai_correlation * 100).toFixed(1) + '%',
-                subtext: 'Partial detection capability',
+                title: 'Sophisticated AI Correlation',
+                value: summary.sophisticated_ai_correlation.toFixed(2),
+                subtext: 'With potential demand (Pearson r)',
                 sentiment: 'value-warning'
             }
         ]);
@@ -160,10 +160,9 @@ export class SuppressedDemandAudit {
                 fontSize: 11
             },
             labelLine: { show: true },
-            itemStyle: { borderColor: '#fff', borderWidth: 1 },
+            itemStyle: { color, borderColor: '#fff', borderWidth: 1 },
             emphasis: { label: { fontSize: 13 } },
-            data,
-            color
+            data
         });
 
         const stages = [

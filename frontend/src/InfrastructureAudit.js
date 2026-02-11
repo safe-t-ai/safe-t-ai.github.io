@@ -43,17 +43,19 @@ export class InfrastructureAudit {
     renderMetrics() {
         const { ai_allocation, need_based_allocation, comparison } = this.data.budgetAllocation;
 
+        const q1Share = (ai_allocation.by_quintile['Q1 (Poorest)'] / this.data.report.summary.total_budget * 100);
+
         renderMetrics('test3-metrics', [
             {
                 title: 'AI Disparate Impact',
                 value: (ai_allocation.disparate_impact_ratio * 100).toFixed(1) + '%',
-                subtext: 'Q1 vs Q5 per capita',
+                subtext: 'Q1 vs Q5 per capita (80% = equitable)',
                 sentiment: 'value-danger'
             },
             {
                 title: 'Need-Based Impact',
-                value: (need_based_allocation.disparate_impact_ratio * 100).toFixed(1) + '%',
-                subtext: 'More equitable baseline',
+                value: need_based_allocation.disparate_impact_ratio.toFixed(1) + 'x',
+                subtext: 'Q1 receives 5x Q5 per capita',
                 sentiment: 'value-success'
             },
             {
@@ -63,9 +65,9 @@ export class InfrastructureAudit {
                 sentiment: 'value-warning'
             },
             {
-                title: 'Equity Gap',
-                value: (comparison.equity_gap * 100).toFixed(1) + '%',
-                subtext: 'AI vs need-based difference',
+                title: 'Q1 Budget Share',
+                value: q1Share.toFixed(1) + '%',
+                subtext: `$${(ai_allocation.by_quintile['Q1 (Poorest)'] / 1000).toFixed(0)}k of $${(this.data.report.summary.total_budget / 1e6).toFixed(0)}M total`,
                 sentiment: 'value-danger'
             }
         ]);
@@ -235,13 +237,15 @@ export class InfrastructureAudit {
             },
             legend: {
                 data: ['AI Allocation', 'Need-Based'],
-                bottom: 10
+                top: 30
             },
             radar: {
+                center: ['50%', '58%'],
+                radius: '55%',
                 indicator: [
-                    { name: 'Equity\n(Lower=Better)', max: 100 },
+                    { name: 'Equity', max: 100 },
                     { name: 'Q1 Budget\nPer Capita', max: 100 },
-                    { name: 'Budget\nConcentration', max: 100 },
+                    { name: 'Budget\nEquality', max: 100 },
                     { name: 'Project\nCount', max: 100 }
                 ],
                 shape: 'polygon',
@@ -252,9 +256,9 @@ export class InfrastructureAudit {
                 data: [
                     {
                         value: [
-                            100 - normalize(ai_allocation.disparate_impact_ratio, 1),
-                            normalize(ai_allocation.per_capita['Q1 (Poorest)'], 50),
-                            100 - normalize(ai_allocation.gini_coefficient, 1),
+                            Math.min(ai_allocation.disparate_impact_ratio * 100, 100),
+                            normalize(ai_allocation.per_capita['Q1 (Poorest)'], 30),
+                            (1 - ai_allocation.gini_coefficient) * 100,
                             normalize(this.data.report.summary.ai_projects, 50)
                         ],
                         name: 'AI Allocation',
@@ -263,9 +267,9 @@ export class InfrastructureAudit {
                     },
                     {
                         value: [
-                            100 - normalize(need_based_allocation.disparate_impact_ratio, 1),
-                            normalize(need_based_allocation.per_capita['Q1 (Poorest)'], 50),
-                            100 - normalize(need_based_allocation.gini_coefficient, 1),
+                            Math.min(need_based_allocation.disparate_impact_ratio * 100, 100),
+                            normalize(need_based_allocation.per_capita['Q1 (Poorest)'], 30),
+                            (1 - need_based_allocation.gini_coefficient) * 100,
                             normalize(this.data.report.summary.need_based_projects, 50)
                         ],
                         name: 'Need-Based',
