@@ -113,6 +113,22 @@ export class VolumeEstimationAudit {
         this.renderRaceChart();
         this.renderScatterChart();
         this.renderHistogramChart();
+        this.setupCrossFiltering();
+    }
+
+    setupCrossFiltering() {
+        if (!this.charts.income || !this.map) return;
+        const quintileMap = { 0: 'Q1', 1: 'Q2', 2: 'Q3', 3: 'Q4', 4: 'Q5' };
+
+        this.charts.income.on('mouseover', (params) => {
+            if (params.dataIndex != null && quintileMap[params.dataIndex]) {
+                this.map.highlightByQuintile(quintileMap[params.dataIndex]);
+            }
+        });
+
+        this.charts.income.on('mouseout', () => {
+            this.map.resetHighlight();
+        });
     }
 
     renderIncomeChart() {
