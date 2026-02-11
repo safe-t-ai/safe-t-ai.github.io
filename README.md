@@ -1,6 +1,7 @@
 # SAFE-T: Safety Algorithm Fairness Evaluation for Transportation
 
-[![Pipeline Status](https://img.shields.io/github/actions/workflow/status/safe-t-ai/safe-t-ai.github.io/data-pipeline.yml?branch=main&label=pipeline&logo=github&style=classic)](https://github.com/safe-t-ai/safe-t-ai.github.io/actions/workflows/data-pipeline.yml)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/safe-t-ai/safe-t-ai.github.io/deploy.yml?branch=main&label=deploy&logo=github&style=classic)](https://github.com/safe-t-ai/safe-t-ai.github.io/actions/workflows/deploy.yml)
+[![Data Refresh](https://img.shields.io/github/actions/workflow/status/safe-t-ai/safe-t-ai.github.io/data-refresh.yml?branch=main&label=data&logo=github&style=classic)](https://github.com/safe-t-ai/safe-t-ai.github.io/actions/workflows/data-refresh.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=classic)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9+-blue?logo=python&style=classic)](https://www.python.org/)
 [![Node](https://img.shields.io/badge/node-18+-green?logo=node.js&style=classic)](https://nodejs.org/)
@@ -116,8 +117,11 @@ Install: `make install-hooks` (included in `make setup`)
 ### CI/CD
 
 ```bash
-# Trigger data pipeline manually
-gh workflow run data-pipeline.yml
+# Trigger a data refresh (fetch APIs, run simulations, update data branch)
+gh workflow run data-refresh.yml
+
+# Trigger a deploy (build frontend with latest data, deploy to Pages)
+gh workflow run deploy.yml
 ```
 
 ## License
