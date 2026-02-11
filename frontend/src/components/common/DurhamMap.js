@@ -56,7 +56,7 @@ export class DurhamMap {
         // Build color function: use colors/breaks if provided, otherwise colorScale
         const getColorForValue = (value) => {
             if (colors && breaks) {
-                if (value === null || value === undefined) return '#cbd5e0';
+                if (value === null || value === undefined) return '#c7c7cc';
                 for (let i = 0; i < breaks.length; i++) {
                     if (value <= breaks[i]) return colors[i] || colors[colors.length - 1];
                 }
@@ -100,7 +100,7 @@ export class DurhamMap {
                 layer.on('mouseover', function() {
                     this.setStyle({
                         weight: 3,
-                        color: '#666'
+                        color: '#636366'
                     });
                 });
 
@@ -184,7 +184,7 @@ export class DurhamMap {
 
     getColor(value, colorScale) {
         if (value === null || value === undefined) {
-            return '#cbd5e0';  // Gray for no data
+            return '#c7c7cc';  // Gray for no data
         }
 
         for (let i = 0; i < colorScale.length; i++) {
@@ -198,12 +198,12 @@ export class DurhamMap {
 
     getDefaultColorScale() {
         return [
-            { max: -20, color: '#e53e3e', label: '< -20% (severe undercount)' },
-            { max: -10, color: '#ed8936', label: '-20% to -10%' },
-            { max: -5, color: '#ecc94b', label: '-10% to -5%' },
-            { max: 5, color: '#48bb78', label: '-5% to +5% (accurate)' },
-            { max: 10, color: '#38a169', label: '+5% to +10%' },
-            { max: Infinity, color: '#2f855a', label: '> +10% (overcount)' }
+            { max: -20, color: '#b35806', label: '< -20% (severe undercount)' },
+            { max: -10, color: '#f1a340', label: '-20% to -10%' },
+            { max: -5, color: '#fee0b6', label: '-10% to -5%' },
+            { max: 5, color: '#d8daeb', label: '-5% to +5% (accurate)' },
+            { max: 10, color: '#998ec3', label: '+5% to +10%' },
+            { max: Infinity, color: '#542788', label: '> +10% (overcount)' }
         ];
     }
 

@@ -334,7 +334,7 @@ export class CrashPredictionAudit {
         const { by_quintile } = this.data.rocCurves;
 
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
-        const colors = [COLORS.error, '#ff9800', '#ffc107', '#8bc34a', COLORS.success];
+        const colors = [COLORS.error, '#e8903e', '#9ca3af', '#3ab7a5', COLORS.success];
 
         const series = [];
 
@@ -343,7 +343,7 @@ export class CrashPredictionAudit {
             type: 'line',
             data: [[0, 0], [1, 1]],
             lineStyle: {
-                color: '#999',
+                color: '#c7c7cc',
                 type: 'dashed',
                 width: 2
             },

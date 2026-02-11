@@ -16,15 +16,15 @@ const getResponsiveGrid = () => {
 };
 
 export const COLORS = {
-    primary: '#3182ce',
-    secondary: '#805ad5',
-    success: '#38a169',
-    warning: '#d69e2e',
-    danger: '#e53e3e',
-    error: '#e53e3e',
-    quintiles: ['#e53e3e', '#ed8936', '#ecc94b', '#48bb78', '#38a169'],
-    minority: ['#38a169', '#ecc94b', '#e53e3e'],
-    gradient: ['#38a169', '#ecc94b', '#ed8936', '#e53e3e']
+    primary: '#0891b2',
+    secondary: '#6366f1',
+    success: '#0f766e',
+    warning: '#d97706',
+    danger: '#c2410c',
+    error: '#c2410c',
+    quintiles: ['#c2410c', '#e8903e', '#9ca3af', '#3ab7a5', '#0891b2'],
+    minority: ['#0891b2', '#6366f1', '#c2410c'],
+    gradient: ['#0891b2', '#3ab7a5', '#e8903e', '#c2410c']
 };
 
 export function createBarChartConfig(data, options = {}) {
@@ -195,7 +195,7 @@ export function createScatterChartConfig(data, options = {}) {
                 type: 'line',
                 data: [[minVal, minVal], [maxVal, maxVal]],
                 lineStyle: {
-                    color: '#cbd5e0',
+                    color: '#c7c7cc',
                     width: 2,
                     type: 'dashed'
                 },

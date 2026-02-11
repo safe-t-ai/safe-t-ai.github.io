@@ -122,19 +122,19 @@ export class InfrastructureAudit {
             div.innerHTML = `
                 <h4>Project Types</h4>
                 <div class="legend-item">
-                    <span class="legend-color" style="background: #ffd700;"></span>
+                    <span class="legend-color" style="background: #f59e0b;"></span>
                     Crosswalk
                 </div>
                 <div class="legend-item">
-                    <span class="legend-color" style="background: #4CAF50;"></span>
+                    <span class="legend-color" style="background: #0d9488;"></span>
                     Bike Lane
                 </div>
                 <div class="legend-item">
-                    <span class="legend-color" style="background: #2196F3;"></span>
+                    <span class="legend-color" style="background: #6366f1;"></span>
                     Traffic Signal
                 </div>
                 <div class="legend-item">
-                    <span class="legend-color" style="background: #FF9800;"></span>
+                    <span class="legend-color" style="background: #ea580c;"></span>
                     Speed Reduction
                 </div>
                 <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
@@ -166,7 +166,7 @@ export class InfrastructureAudit {
             const marker = L.circleMarker([center[1], center[0]], {
                 radius: Math.sqrt(props.cost / 10000),
                 fillColor: this.getProjectColor(props.project_type),
-                color: '#000',
+                color: '#1c1c1e',
                 weight: 1,
                 opacity: 0.8,
                 fillOpacity: 0.6
@@ -195,12 +195,12 @@ export class InfrastructureAudit {
 
     getProjectColor(type) {
         const colors = {
-            crosswalk: '#ffd700',
-            bike_lane: '#4CAF50',
-            traffic_signal: '#2196F3',
-            speed_reduction: '#FF9800'
+            crosswalk: '#f59e0b',
+            bike_lane: '#0d9488',
+            traffic_signal: '#6366f1',
+            speed_reduction: '#ea580c'
         };
-        return colors[type] || '#666';
+        return colors[type] || '#636366';
     }
 
     renderCharts() {

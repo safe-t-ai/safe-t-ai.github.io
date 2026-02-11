@@ -101,7 +101,7 @@ export class VolumeEstimationAudit {
 
         const customIcon = L.divIcon({
             className: 'custom-marker',
-            html: '<div style="background-color: #3388ff; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>',
+            html: '<div style="background-color: #0891b2; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>',
             iconSize: [12, 12],
             iconAnchor: [6, 6]
         });
@@ -231,7 +231,7 @@ export class VolumeEstimationAudit {
             name: 'No Bias',
             type: 'line',
             data: Array(dataLength).fill(0),
-            lineStyle: { color: '#cbd5e0', width: 2, type: 'dashed' },
+            lineStyle: { color: '#c7c7cc', width: 2, type: 'dashed' },
             symbol: 'none',
             silent: true
         });

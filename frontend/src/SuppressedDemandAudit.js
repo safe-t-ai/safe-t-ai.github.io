@@ -386,8 +386,8 @@ export class SuppressedDemandAudit {
         }
 
         const seriesEntries = [
-            { name: 'Naive AI (Strava-style)', data: naive_ai, color: '#f44336' },
-            { name: 'Sophisticated AI', data: sophisticated_ai, color: '#ff9800' },
+            { name: 'Naive AI (Strava-style)', data: naive_ai, color: '#c2410c' },
+            { name: 'Sophisticated AI', data: sophisticated_ai, color: '#d97706' },
             { name: 'Human Expert', data: human_expert_baseline, color: COLORS.success },
         ];
 
