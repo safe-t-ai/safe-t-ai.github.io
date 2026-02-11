@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "predev": "[ -f public/data/metadata.json ] || ../scripts/pull_data.sh",
     "dev": "vite",
     "build": "GITHUB_PAGES=true vite build",
     "preview": "vite preview",

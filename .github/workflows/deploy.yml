@@ -1,0 +1,65 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-slim
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Fetch data from data branch
+        run: |
+          git fetch origin data --depth=1
+          mkdir -p frontend/public/data
+          git archive origin/data -- frontend/ | tar -x -C /tmp/
+          cp /tmp/frontend/* frontend/public/data/
+
+      - name: Verify data files
+        run: |
+          FILE_COUNT=$(ls frontend/public/data/*.json 2>/dev/null | wc -l)
+          if [ "$FILE_COUNT" -lt 10 ]; then
+            echo "Error: Expected at least 10 data files, found $FILE_COUNT"
+            exit 1
+          fi
+          echo "Found $FILE_COUNT data files"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install and build
+        run: cd frontend && npm ci && GITHUB_PAGES=true npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,4 +1,4 @@
-name: Data Pipeline
+name: Data Refresh
 
 on:
   push:
@@ -6,7 +6,9 @@ on:
     paths:
       - 'backend/**'
       - 'scripts/**'
-      - '.github/workflows/data-pipeline.yml'
+      - '.github/workflows/data-refresh.yml'
+  schedule:
+    - cron: '0 6 * * 1'
   workflow_dispatch:
     inputs:
       force_regenerate:
@@ -17,19 +19,18 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
+  actions: write
 
 env:
   PYTHON_VERSION: '3.9'
 
-jobs:
-  fetch-data:
-    runs-on: ubuntu-slim
-    outputs:
-      data-hash: ${{ steps.compute-hash.outputs.hash }}
-      should-skip: ${{ steps.check-changed.outputs.skip }}
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
 
+jobs:
+  refresh:
+    runs-on: ubuntu-slim
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -43,15 +44,6 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r backend/requirements-pipeline.txt
-
-      - name: Restore previous data hash
-        if: github.event.inputs.force_regenerate != 'true'
-        id: cache-hash
-        uses: actions/cache/restore@v4
-        with:
-          path: .data-hash
-          key: durham-data-hash-latest
-          restore-keys: durham-data-hash-
 
       - name: Fetch source data
         env:
@@ -127,11 +119,15 @@ jobs:
             backend/data/raw/ncdot_crashes_durham.csv \
             | sha256sum | cut -d' ' -f1 | cut -c1-16)
           echo "hash=$HASH" >> $GITHUB_OUTPUT
-          echo "$HASH" > .data-hash
 
-          if [ -f .data-hash ]; then
-            cp .data-hash .data-hash.prev
-          fi
+      - name: Restore previous data hash
+        if: github.event.inputs.force_regenerate != 'true'
+        id: cache-hash
+        uses: actions/cache/restore@v4
+        with:
+          path: .data-hash
+          key: durham-data-hash-latest
+          restore-keys: durham-data-hash-
 
       - name: Check if data changed
         id: check-changed
@@ -143,8 +139,8 @@ jobs:
           CODE_CHANGED=$(git diff --quiet HEAD origin/main -- backend/ scripts/ 2>/dev/null && echo "false" || echo "true")
 
           DATA_CHANGED="true"
-          if [ -f .data-hash.prev ]; then
-            PREV_HASH=$(cat .data-hash.prev)
+          if [ -f .data-hash ]; then
+            PREV_HASH=$(cat .data-hash)
             if [ "$CURRENT" == "$PREV_HASH" ]; then
               DATA_CHANGED="false"
             fi
@@ -152,116 +148,21 @@ jobs:
 
           if [[ "${{ github.event_name }}" == "schedule" && "$DATA_CHANGED" == "false" && "$CODE_CHANGED" == "false" && "$FORCE" != "true" ]]; then
             echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Skipping: data unchanged, no code changes"
           else
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Save data hash
-        if: steps.check-changed.outputs.skip != 'true' && always()
+        if: steps.check-changed.outputs.skip != 'true'
         uses: actions/cache/save@v4
         with:
           path: .data-hash
           key: durham-data-hash-latest
 
-      - name: Generate job summary
-        run: |
-          echo "## Durham Census Data Fetch" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          TRACTS=$(python3 -c "import json; d=json.load(open('backend/data/raw/durham_census_tracts.geojson')); print(len(d['features']))")
-          CENSUS_SIZE=$(du -h backend/data/raw/durham_census_tracts.geojson | cut -f1)
-
-          echo "### Census Data" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Census Tracts | $TRACTS |" >> $GITHUB_STEP_SUMMARY
-          echo "| File Size | $CENSUS_SIZE |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          python3 -c "
-          import csv
-          with open('backend/data/raw/ncdot_crashes_durham.csv') as f:
-              rows = list(csv.DictReader(f))
-          years = sorted(set(r['year'] for r in rows))
-          sevs = {}
-          for r in rows:
-              sevs[r['severity']] = sevs.get(r['severity'], 0) + 1
-          print(f'TOTAL=\"{len(rows)}\"')
-          print(f'YEARS=\"{years[0]}-{years[-1]}\"')
-          sev_str = ', '.join(f'{k}: {v}' for k, v in sorted(sevs.items()))
-          print(f'SEVERITY=\"{sev_str}\"')
-          " > /tmp/crash_stats.txt
-
-          source /tmp/crash_stats.txt
-          CRASH_SIZE=$(du -h backend/data/raw/ncdot_crashes_durham.csv | cut -f1)
-
-          echo "### Crash Data" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Total Crashes | $TOTAL |" >> $GITHUB_STEP_SUMMARY
-          echo "| Year Range | $YEARS |" >> $GITHUB_STEP_SUMMARY
-          echo "| Severity | $SEVERITY |" >> $GITHUB_STEP_SUMMARY
-          echo "| File Size | $CRASH_SIZE |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          echo "| | |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Data Hash | \`${{ steps.compute-hash.outputs.hash }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Timestamp | $(date -u +"%Y-%m-%d %H:%M:%S UTC") |" >> $GITHUB_STEP_SUMMARY
-
-          if [ "${{ steps.check-changed.outputs.skip }}" == "true" ]; then
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "> Skipping remaining pipeline: data unchanged, no code changes" >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Upload source data artifact
-        if: steps.check-changed.outputs.skip != 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: raw-data
-          path: backend/data/raw/
-          retention-days: 7
-
-  build:
-    needs: fetch-data
-    if: needs.fetch-data.outputs.should-skip != 'true'
-    runs-on: ubuntu-slim
-    env:
-      DATA_HASH: ${{ needs.fetch-data.outputs.data-hash }}
-      GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-      REPO_URL: ${{ github.server_url }}/${{ github.repository }}
-      GIT_SHA: ${{ github.sha }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-          cache-dependency-path: backend/requirements-pipeline.txt
-
-      - name: Install Python dependencies
-        run: pip install -r backend/requirements-pipeline.txt
-
-      - name: Download census data
-        uses: actions/download-artifact@v4
-        with:
-          name: raw-data
-          path: backend/data/raw
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
       - name: Run simulations
+        if: steps.check-changed.outputs.skip != 'true'
         run: |
-          (cd frontend && npm ci) &
           python scripts/simulate_ai_predictions.py &
           python scripts/simulate_crash_predictions.py &
           python scripts/simulate_infrastructure_recommendations.py &
@@ -269,11 +170,13 @@ jobs:
           wait
 
       - name: Generate static JSON files
+        if: steps.check-changed.outputs.skip != 'true'
         run: |
           mkdir -p frontend/public/data
           python scripts/generate_static_data.py
 
       - name: Validate generated data
+        if: steps.check-changed.outputs.skip != 'true'
         run: |
           python3 -c "
           import json, os, sys
@@ -377,6 +280,7 @@ jobs:
           "
 
       - name: Validate data plausibility
+        if: steps.check-changed.outputs.skip != 'true'
         run: |
           python3 -c "
           import json, sys
@@ -433,80 +337,102 @@ jobs:
           print(f'Plausibility valid: {per_year:.0f} crashes/yr, {total_pop:,} population, {tract_count} tracts')
           "
 
-      - name: Generate data summary
+      - name: Push to data branch
+        if: steps.check-changed.outputs.skip != 'true'
         run: |
-          echo "## Static Files Generated" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          git clone --branch data --single-branch --depth 1 \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
+            /tmp/data-branch
 
-          cd frontend/public/data
-          for file in *.json; do
-            SIZE=$(du -h "$file" | cut -f1)
-            echo "| $file | $SIZE |" >> $GITHUB_STEP_SUMMARY
-          done
-          cd -
+          cd /tmp/data-branch
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
+          rm -rf raw/ simulated/ frontend/
+          cp -r "$GITHUB_WORKSPACE/backend/data/raw" raw/
+          cp -r "$GITHUB_WORKSPACE/backend/data/simulated" simulated/
+          cp -r "$GITHUB_WORKSPACE/frontend/public/data" frontend/
+
+          find . -name '.gitkeep' -delete 2>/dev/null || true
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No data changes to commit"
+          else
+            SUMMARY=$(python3 -c "
+          import json, csv, os
+          tracts = json.load(open('raw/durham_census_tracts.geojson'))
+          with open('raw/ncdot_crashes_durham.csv') as f:
+              crash_count = sum(1 for _ in csv.reader(f)) - 1
+          frontend_files = [f for f in os.listdir('frontend') if f.endswith('.json')]
+          print(f'{len(tracts[\"features\"])} tracts, {crash_count} crashes, {len(frontend_files)} frontend files')
+          ")
+            git commit -m "data: refresh $(date -u +'%Y-%m-%d') — $SUMMARY"
+            git push origin data
+          fi
+
+      - name: Trigger deploy
+        if: steps.check-changed.outputs.skip != 'true'
+        run: gh workflow run deploy.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Generate job summary
+        if: always()
+        run: |
+          echo "## Data Refresh" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Validation Results" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.check-changed.outputs.skip }}" == "true" ]; then
+            echo "> Skipped: data unchanged, no code changes" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+
+          TRACTS=$(python3 -c "import json; d=json.load(open('backend/data/raw/durham_census_tracts.geojson')); print(len(d['features']))")
+          CENSUS_SIZE=$(du -h backend/data/raw/durham_census_tracts.geojson | cut -f1)
+
+          echo "### Source Data" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Census Tracts | $TRACTS |" >> $GITHUB_STEP_SUMMARY
+          echo "| Census File | $CENSUS_SIZE |" >> $GITHUB_STEP_SUMMARY
 
           python3 -c "
-          import json
+          import csv
+          with open('backend/data/raw/ncdot_crashes_durham.csv') as f:
+              rows = list(csv.DictReader(f))
+          years = sorted(set(r['year'] for r in rows))
+          sevs = {}
+          for r in rows:
+              sevs[r['severity']] = sevs.get(r['severity'], 0) + 1
+          print(f'TOTAL=\"{len(rows)}\"')
+          print(f'YEARS=\"{years[0]}-{years[-1]}\"')
+          sev_str = ', '.join(f'{k}: {v}' for k, v in sorted(sevs.items()))
+          print(f'SEVERITY=\"{sev_str}\"')
+          " > /tmp/crash_stats.txt
 
-          data_dir = 'frontend/public/data'
+          source /tmp/crash_stats.txt
+          CRASH_SIZE=$(du -h backend/data/raw/ncdot_crashes_durham.csv | cut -f1)
 
-          with open(f'{data_dir}/census-tracts.json') as f:
-              tract_count = len(json.load(f)['features'])
-          with open(f'{data_dir}/danger-scores.json') as f:
-              danger_count = len(json.load(f)['features'])
-          with open(f'{data_dir}/crash-geo-data.json') as f:
-              crash_data = json.load(f)
-          actuals = [feat['properties']['actual_crashes'] for feat in crash_data['features']]
-          with open(f'{data_dir}/infrastructure-report.json') as f:
-              report = json.load(f)
+          echo "| Total Crashes | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+          echo "| Year Range | $YEARS |" >> $GITHUB_STEP_SUMMARY
+          echo "| Crash File | $CRASH_SIZE |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
 
-          ai_total = sum(report['equity_metrics']['ai_allocation']['by_quintile'].values())
-          need_total = sum(report['equity_metrics']['need_based_allocation']['by_quintile'].values())
-
-          import os
-          file_count = len([f for f in os.listdir(data_dir) if f.endswith('.json')])
-
-          print(f'| Metric | Value |')
-          print(f'|--------|-------|')
-          print(f'| JSON files | {file_count} |')
-          print(f'| Census tracts | {tract_count} |')
-          print(f'| Danger scores features | {danger_count} |')
-          print(f'| Feature count match | {\"Pass\" if tract_count == danger_count else \"FAIL\"} |')
-          print(f'| Crash actual range | {min(actuals)}-{max(actuals)} |')
-          print(f'| AI budget total | \${ai_total:,.0f} |')
-          print(f'| Need-based budget total | \${need_total:,.0f} |')
-          " >> $GITHUB_STEP_SUMMARY
+          if [ -d "frontend/public/data" ]; then
+            echo "### Generated Files" >> $GITHUB_STEP_SUMMARY
+            echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+            echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+            cd frontend/public/data
+            for file in *.json; do
+              SIZE=$(du -h "$file" | cut -f1)
+              echo "| $file | $SIZE |" >> $GITHUB_STEP_SUMMARY
+            done
+            cd -
+          fi
 
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Data Hash:** \`${{ env.DATA_HASH }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** [\`${GITHUB_SHA:0:7}\`](${{ env.REPO_URL }}/commit/${{ env.GIT_SHA }})" >> $GITHUB_STEP_SUMMARY
-
-      - name: Build frontend
-        run: cd frontend && GITHUB_PAGES=true npm run build
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: frontend/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-slim
-
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Data Hash | \`${{ steps.compute-hash.outputs.hash }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Timestamp | $(date -u +"%Y-%m-%d %H:%M:%S UTC") |" >> $GITHUB_STEP_SUMMARY
