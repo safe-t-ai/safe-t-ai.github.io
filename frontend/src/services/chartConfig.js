@@ -24,7 +24,35 @@ window.addEventListener('resize', () => {
 
 export { resizeVisibleCharts };
 
+// Shared tooltip style matching design tokens
+const TOOLTIP_STYLE = {
+    backgroundColor: '#0f172a',
+    borderColor: '#0f172a',
+    borderWidth: 0,
+    borderRadius: 6,
+    padding: [8, 12],
+    textStyle: {
+        color: 'rgba(255,255,255,0.85)',
+        fontSize: 13,
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif'
+    },
+    extraCssText: 'box-shadow: 0 4px 12px rgba(0,0,0,0.15);'
+};
+
+// Entrance animation defaults
+const ANIMATION_DEFAULTS = {
+    animationDuration: 600,
+    animationEasing: 'cubicOut',
+    animationDelay: (idx) => idx * 80
+};
+
 export function initChart(elementId, config) {
+    // Merge tooltip style and animation defaults
+    config.tooltip = { ...TOOLTIP_STYLE, ...(config.tooltip || {}) };
+    if (!config.animationDuration) {
+        Object.assign(config, ANIMATION_DEFAULTS);
+    }
+
     const chart = echarts.init(document.getElementById(elementId));
     chart.setOption(config);
     activeCharts.add(chart);
@@ -121,7 +149,8 @@ export function createBarChartConfig(data, options = {}) {
             },
             label: {
                 show: false
-            }
+            },
+            animationDelay: (idx) => idx * 120
         }]
     };
 }

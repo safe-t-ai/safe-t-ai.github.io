@@ -178,6 +178,27 @@ export class DurhamMap {
         ];
     }
 
+    highlightByQuintile(quintile) {
+        if (!this.choroplethLayer) return;
+        this.choroplethLayer.eachLayer(layer => {
+            const q = layer.feature?.properties?.income_quintile;
+            if (q == null) return;
+            const match = q === quintile;
+            layer.setStyle({
+                fillOpacity: match ? 0.9 : 0.15,
+                weight: match ? 2 : 1,
+                color: match ? '#636366' : '#ffffff'
+            });
+        });
+    }
+
+    resetHighlight() {
+        if (!this.choroplethLayer) return;
+        this.choroplethLayer.eachLayer(layer => {
+            layer.setStyle({ fillOpacity: 0.7, weight: 1, color: '#ffffff' });
+        });
+    }
+
     fitBounds(geojson) {
         const layer = L.geoJSON(geojson);
         this.map.fitBounds(layer.getBounds());

@@ -42,6 +42,18 @@ class App {
         const tabs = [...document.querySelectorAll('.tab')];
         const tabIds = tabs.map(t => t.dataset.test);
 
+        // Gradient fade for scrollable tabs
+        const tabsContainer = document.querySelector('.tabs');
+        const tabsBarInner = document.querySelector('.tabs-bar-inner');
+        const checkOverflow = () => {
+            const hasOverflow = tabsContainer.scrollWidth > tabsContainer.clientWidth;
+            const atEnd = tabsContainer.scrollLeft + tabsContainer.clientWidth >= tabsContainer.scrollWidth - 4;
+            tabsBarInner.classList.toggle('has-overflow', hasOverflow && !atEnd);
+        };
+        tabsContainer.addEventListener('scroll', checkOverflow, { passive: true });
+        window.addEventListener('resize', checkOverflow);
+        checkOverflow();
+
         tabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
                 this.switchTest(e.currentTarget.dataset.test);
@@ -72,25 +84,62 @@ class App {
         });
 
         document.querySelectorAll('.test-content').forEach(content => {
-            content.classList.toggle('active', content.id === `${testId}-content`);
+            const isTarget = content.id === `${testId}-content`;
+            content.classList.toggle('active', isTarget);
+            // Re-trigger fade-in animation
+            if (isTarget) {
+                content.style.animation = 'none';
+                content.offsetHeight; // force reflow
+                content.style.animation = '';
+            }
         });
 
-        document.getElementById('test-description').textContent = DESCRIPTIONS[testId];
+        const descEl = document.getElementById('test-description');
+        const desc = DESCRIPTIONS[testId];
+        if (desc) {
+            const testNum = testId.replace('test', '');
+            descEl.innerHTML = `<div class="test-subtitle-inner"><span>${desc}</span><span class="test-position">${testNum} / 4</span></div>`;
+        } else {
+            descEl.textContent = '';
+        }
 
         if (LOADERS[testId] && !this.modules[testId]) {
-            const loading = document.getElementById('loading');
-            loading.style.display = 'flex';
+            const container = document.getElementById(`${testId}-content`);
+            const skeleton = this.showSkeleton(container);
             const AuditClass = await LOADERS[testId]();
             this.modules[testId] = new AuditClass();
             await this.modules[testId].initialize();
-            loading.style.display = 'none';
+            skeleton.remove();
         }
+
+        // Scroll active tab into view
+        const activeTab = document.querySelector(`.tab[data-test="${testId}"]`);
+        activeTab?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 
         this.currentTest = testId;
         setTimeout(() => {
             resizeVisibleCharts();
             this.modules[testId]?.map?.invalidateSize();
         }, 50);
+    }
+
+    showSkeleton(container) {
+        const el = document.createElement('div');
+        el.className = 'skeleton-loading-overlay';
+        el.innerHTML = `
+            <div class="skeleton-metrics">
+                <div class="skeleton skeleton-metric"></div>
+                <div class="skeleton skeleton-metric"></div>
+                <div class="skeleton skeleton-metric"></div>
+            </div>
+            <div class="skeleton skeleton-map"></div>
+            <div class="skeleton-group">
+                <div class="skeleton skeleton-chart"></div>
+                <div class="skeleton skeleton-chart"></div>
+            </div>
+        `;
+        container.prepend(el);
+        return el;
     }
 }
 

@@ -121,6 +121,23 @@ export class CrashPredictionAudit {
         this.renderConfusionMatrix();
         this.renderTimeSeriesChart();
         this.renderRocCurves();
+        this.setupCrossFiltering();
+    }
+
+    setupCrossFiltering() {
+        if (!this.charts.confusion || !this.map) return;
+        const quintileMap = { 0: 'Q1', 1: 'Q2', 2: 'Q3', 3: 'Q4', 4: 'Q5' };
+
+        this.charts.confusion.on('mouseover', (params) => {
+            const qIdx = params.data?.[0];
+            if (qIdx != null && quintileMap[qIdx]) {
+                this.map.highlightByQuintile(quintileMap[qIdx]);
+            }
+        });
+
+        this.charts.confusion.on('mouseout', () => {
+            this.map.resetHighlight();
+        });
     }
 
     renderConfusionMatrix() {
