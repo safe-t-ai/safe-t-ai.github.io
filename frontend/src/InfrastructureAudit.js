@@ -16,33 +16,20 @@ export class InfrastructureAudit {
     }
 
     async initialize() {
-        try {
-            const [report, dangerScores, budgetAllocation, recommendations] = await Promise.all([
-                api.getInfrastructureReport(),
-                api.getDangerScores(),
-                api.getBudgetAllocation(),
-                api.getRecommendations()
-            ]);
+        const [report, dangerScores, budgetAllocation, recommendations] = await Promise.all([
+            api.getInfrastructureReport(),
+            api.getDangerScores(),
+            api.getBudgetAllocation(),
+            api.getRecommendations()
+        ]);
 
-            this.data = {
-                report,
-                dangerScores,
-                budgetAllocation,
-                recommendations
-            };
+        this.data = { report, dangerScores, budgetAllocation, recommendations };
 
-            this.renderInterpretation();
-            this.renderMetrics();
-            this.renderMap();
-            this.renderCharts();
-            this.setupAllocationToggle();
-
-        } catch (error) {
-            console.error('Error loading Test 3:', error);
-            document.getElementById('test3-content').innerHTML =
-                '<div class="interpretation" style="background:#fee; border-color:#c00;"><h3>Error Loading Data</h3><p>' +
-                error.message + '</p></div>';
-        }
+        this.renderInterpretation();
+        this.renderMetrics();
+        this.renderMap();
+        this.renderCharts();
+        this.setupAllocationToggle();
     }
 
     renderInterpretation() {

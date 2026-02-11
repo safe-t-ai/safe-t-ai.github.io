@@ -16,35 +16,21 @@ export class CrashPredictionAudit {
     }
 
     async initialize() {
-        try {
-            const [report, confusionMatrices, rocCurves, timeSeries, crashGeoData] = await Promise.all([
-                api.getCrashReport(),
-                api.getConfusionMatrices(),
-                api.getRocCurves(),
-                api.getCrashTimeSeries(),
-                api.getCrashGeoData()
-            ]);
+        const [report, confusionMatrices, rocCurves, timeSeries, crashGeoData] = await Promise.all([
+            api.getCrashReport(),
+            api.getConfusionMatrices(),
+            api.getRocCurves(),
+            api.getCrashTimeSeries(),
+            api.getCrashGeoData()
+        ]);
 
-            this.data = {
-                report,
-                confusionMatrices,
-                rocCurves,
-                timeSeries,
-                crashGeoData
-            };
+        this.data = { report, confusionMatrices, rocCurves, timeSeries, crashGeoData };
 
-            this.renderInterpretation();
-            this.renderMetrics();
-            this.renderMap();
-            this.renderCharts();
-            this.setupViewToggle();
-
-        } catch (error) {
-            console.error('Error loading Test 2:', error);
-            document.getElementById('test2-content').innerHTML =
-                '<div class="interpretation" style="background:#fee; border-color:#c00;"><h3>Error Loading Data</h3><p>' +
-                error.message + '</p></div>';
-        }
+        this.renderInterpretation();
+        this.renderMetrics();
+        this.renderMap();
+        this.renderCharts();
+        this.setupViewToggle();
     }
 
     renderInterpretation() {
