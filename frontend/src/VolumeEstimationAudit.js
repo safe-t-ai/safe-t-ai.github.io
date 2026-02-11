@@ -29,14 +29,10 @@ export class VolumeEstimationAudit {
 
         this.data = { report, choroplethData, counters };
 
-        this.renderInterpretation();
+        renderInterpretation('interpretation', report.interpretation);
         this.renderMetrics();
         this.renderMap();
         this.renderCharts();
-    }
-
-    renderInterpretation() {
-        renderInterpretation('interpretation', this.data.report.interpretation);
     }
 
     renderMetrics() {

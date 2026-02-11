@@ -5,22 +5,24 @@
 
 import echarts from './echarts.js';
 
-/* global setTimeout, clearTimeout */
-
 // Single debounced resize handler for all charts
 const activeCharts = new Set();
 let resizeTimer;
 
+function resizeVisibleCharts() {
+    activeCharts.forEach(chart => {
+        if (!chart.isDisposed() && chart.getDom().offsetParent !== null) {
+            chart.resize();
+        }
+    });
+}
+
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-        activeCharts.forEach(chart => {
-            if (!chart.isDisposed() && chart.getDom().offsetParent !== null) {
-                chart.resize();
-            }
-        });
-    }, 150);
+    resizeTimer = setTimeout(resizeVisibleCharts, 150);
 });
+
+export { resizeVisibleCharts };
 
 export function initChart(elementId, config) {
     const chart = echarts.init(document.getElementById(elementId));
@@ -34,32 +36,25 @@ export function initChart(elementId, config) {
     return chart;
 }
 
-export function resizeVisibleCharts() {
-    activeCharts.forEach(chart => {
-        if (!chart.isDisposed() && chart.getDom().offsetParent !== null) {
-            chart.resize();
-        }
-    });
+function isMobile() {
+    return window.innerWidth <= 768;
 }
 
-const isMobile = () => window.innerWidth <= 768;
-
-const getResponsiveFontSize = (desktop, mobile) => {
+function getResponsiveFontSize(desktop, mobile) {
     return isMobile() ? mobile : desktop;
-};
+}
 
-const getResponsiveGrid = () => {
+function getResponsiveGrid() {
     return isMobile()
         ? { left: '5%', right: '5%', bottom: '10%', top: '15%', containLabel: true }
         : { left: '3%', right: '4%', bottom: '3%', containLabel: true };
-};
+}
 
 export const COLORS = {
     primary: '#0891b2',
     secondary: '#6366f1',
     success: '#0f766e',
     warning: '#d97706',
-    danger: '#c2410c',
     error: '#c2410c',
     quintiles: ['#c2410c', '#e8903e', '#9ca3af', '#3ab7a5', '#0891b2'],
     minority: ['#0891b2', '#6366f1', '#c2410c'],

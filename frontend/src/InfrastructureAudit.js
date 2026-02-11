@@ -41,7 +41,7 @@ export class InfrastructureAudit {
     }
 
     renderMetrics() {
-        const { ai_allocation, need_based_allocation, comparison } = this.data.budgetAllocation;
+        const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
 
         const q1Share = (ai_allocation.by_quintile['Q1 (Poorest)'] / this.data.report.summary.total_budget * 100);
 
@@ -165,7 +165,7 @@ export class InfrastructureAudit {
             traffic_signal: '#6366f1',
             speed_reduction: '#ea580c'
         };
-        return colors[type] || '#636366';
+        return colors[type];
     }
 
     renderCharts() {
