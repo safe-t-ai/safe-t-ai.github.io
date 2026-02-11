@@ -1,5 +1,3 @@
-/* global setTimeout, clearTimeout */
-
 /**
  * Shared rendering utilities for metric cards and interpretation sections
  */

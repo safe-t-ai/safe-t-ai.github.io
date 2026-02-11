@@ -26,15 +26,11 @@ export class CrashPredictionAudit {
 
         this.data = { report, confusionMatrices, rocCurves, timeSeries, crashGeoData };
 
-        this.renderInterpretation();
+        renderInterpretation('test2-interpretation', report.findings);
         this.renderMetrics();
         this.renderMap();
         this.renderCharts();
         this.setupViewToggle();
-    }
-
-    renderInterpretation() {
-        renderInterpretation('test2-interpretation', this.data.report.findings);
     }
 
     renderMetrics() {
@@ -84,8 +80,9 @@ export class CrashPredictionAudit {
     }
 
     updateCrashLayer() {
-        const field = this.currentView === 'actual' ? 'actual_crashes' : 'ai_predicted_crashes';
-        const label = this.currentView === 'actual' ? 'Actual Crashes (2023)' : 'AI Predicted Crashes (2023)';
+        const isActual = this.currentView === 'actual';
+        const field = isActual ? 'actual_crashes' : 'ai_predicted_crashes';
+        const label = isActual ? 'Actual Crashes (2023)' : 'AI Predicted Crashes (2023)';
 
         const breaks = [20, 40, 60, 80, 100, 150, 200, 250];
 

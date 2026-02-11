@@ -25,15 +25,11 @@ export class SuppressedDemandAudit {
 
         this.data = { report, funnel, scorecard, demandGeoData };
 
-        this.renderInterpretation();
+        renderInterpretation('test4-interpretation', report.findings);
         this.renderMetrics();
         this.renderMap();
         this.renderCharts();
         this.setupViewToggle();
-    }
-
-    renderInterpretation() {
-        renderInterpretation('test4-interpretation', this.data.report.findings);
     }
 
     renderMetrics() {
@@ -81,20 +77,13 @@ export class SuppressedDemandAudit {
     }
 
     updateDemandLayer() {
-        const fieldMap = {
-            'potential': 'potential_demand',
-            'actual': 'actual_demand',
-            'suppressed': 'suppressed_demand'
+        const views = {
+            potential: { field: 'potential_demand', title: 'Potential Demand' },
+            actual:    { field: 'actual_demand',    title: 'Actual Demand' },
+            suppressed:{ field: 'suppressed_demand',title: 'Suppressed Demand' }
         };
 
-        const titleMap = {
-            'potential': 'Potential Demand',
-            'actual': 'Actual Demand',
-            'suppressed': 'Suppressed Demand'
-        };
-
-        const field = fieldMap[this.currentView];
-        const title = titleMap[this.currentView];
+        const { field, title } = views[this.currentView];
 
         if (this.map.choroplethLayer) {
             this.map.map.removeLayer(this.map.choroplethLayer);
