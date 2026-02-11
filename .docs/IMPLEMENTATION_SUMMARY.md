@@ -203,7 +203,7 @@ All tests passing:
    - Dual map comparison (actual vs predicted crashes)
    - Confusion matrix heatmap
    - Time series charts
-   - ROC curves by demographic group
+   - Prediction error by income quintile
 
 **Estimated Effort:** 2-3 days
 

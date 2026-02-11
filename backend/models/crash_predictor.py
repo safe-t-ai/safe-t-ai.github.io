@@ -8,12 +8,11 @@ or simply reflect enforcement/reporting bias.
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-from typing import Dict, List, Tuple
+from typing import Dict
 from pathlib import Path
-from shapely.geometry import Point
-from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, roc_curve, auc, mean_absolute_error
+from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, mean_absolute_error
 from sklearn.linear_model import Ridge
-from config import CRASH_ANALYSIS_YEARS, DEFAULT_RANDOM_SEED
+from config import CRASH_ANALYSIS_YEARS
 
 
 class CrashPredictionAuditor:
@@ -396,75 +395,6 @@ class CrashPredictionAuditor:
 
         return results
 
-    def calculate_roc_curves(self, crash_data: pd.DataFrame) -> Dict:
-        """
-        Calculate ROC curves by income quintile.
-
-        Args:
-            crash_data: DataFrame with actual and predicted crashes
-
-        Returns:
-            Dict with ROC curve data by quintile
-        """
-        # Aggregate by tract
-        tract_aggregated = crash_data.groupby('tract_id').agg({
-            'actual_crashes': 'mean',
-            'ai_predicted_crashes': 'mean',
-            'income_quintile': 'first'
-        }).reset_index()
-
-        median_crashes = tract_aggregated['actual_crashes'].median()
-        tract_aggregated['actual_high_crash'] = (
-            tract_aggregated['actual_crashes'] > median_crashes
-        ).astype(int)
-
-        # Normalize predictions for ROC
-        tract_aggregated['prediction_score'] = (
-            tract_aggregated['ai_predicted_crashes'] /
-            tract_aggregated['ai_predicted_crashes'].max()
-        )
-
-        results = {
-            'overall': {},
-            'by_quintile': {}
-        }
-
-        # Overall ROC
-        fpr, tpr, _ = roc_curve(
-            tract_aggregated['actual_high_crash'],
-            tract_aggregated['prediction_score']
-        )
-        roc_auc = auc(fpr, tpr)
-
-        results['overall'] = {
-            'fpr': fpr.tolist(),
-            'tpr': tpr.tolist(),
-            'auc': float(roc_auc)
-        }
-
-        # By quintile
-        for quintile in ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']:
-            quintile_data = tract_aggregated[
-                tract_aggregated['income_quintile'] == quintile
-            ]
-
-            if len(quintile_data) < 2:
-                continue
-
-            fpr_q, tpr_q, _ = roc_curve(
-                quintile_data['actual_high_crash'],
-                quintile_data['prediction_score']
-            )
-            auc_q = auc(fpr_q, tpr_q)
-
-            results['by_quintile'][quintile] = {
-                'fpr': fpr_q.tolist(),
-                'tpr': tpr_q.tolist(),
-                'auc': float(auc_q)
-            }
-
-        return results
-
     def generate_time_series(self, crash_data: pd.DataFrame) -> Dict:
         """
         Generate time series data showing crashes over time by quintile.
@@ -526,7 +456,6 @@ class CrashPredictionAuditor:
 
         # Calculate metrics
         confusion_matrices = self.calculate_confusion_matrices(crash_data)
-        roc_curves = self.calculate_roc_curves(crash_data)
         time_series = self.generate_time_series(crash_data)
 
         # Summary statistics
@@ -563,7 +492,6 @@ class CrashPredictionAuditor:
             'bias_by_quintile': {k: {k2: float(v2) for k2, v2 in v.items()}
                                  for k, v in quintile_bias.items()},
             'confusion_matrices': confusion_matrices,
-            'roc_curves': roc_curves,
             'time_series': time_series,
             'crash_data': crash_data  # For further processing
         }
