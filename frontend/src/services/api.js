@@ -35,7 +35,6 @@ class APIClient {
     // Test 4 endpoints
     getDemandReport() { return this.get('demand-report'); }
     getDemandFunnel() { return this.get('demand-funnel'); }
-    getCorrelationMatrix() { return this.get('correlation-matrix'); }
     getDetectionScorecard() { return this.get('detection-scorecard'); }
     getDemandGeoData() { return this.get('demand-geo-data'); }
 }

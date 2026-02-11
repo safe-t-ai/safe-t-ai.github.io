@@ -1,13 +1,13 @@
 # SAFE-T: Safety Algorithm Fairness Evaluation for Transportation
 
-[![Pipeline Status](https://img.shields.io/github/actions/workflow/status/safe-t-ai/safe-t-ai.github.io/data-pipeline.yml?branch=main&label=pipeline)](https://github.com/safe-t-ai/safe-t-ai.github.io/actions/workflows/data-pipeline.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.9+-blue?logo=python)](https://www.python.org/)
-[![Node](https://img.shields.io/badge/node-18+-green?logo=node.js)](https://nodejs.org/)
+[![Pipeline Status](https://img.shields.io/github/actions/workflow/status/safe-t-ai/safe-t-ai.github.io/data-pipeline.yml?branch=main&label=pipeline&style=classic)](https://github.com/safe-t-ai/safe-t-ai.github.io/actions/workflows/data-pipeline.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=classic)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.9+-blue?logo=python&style=classic)](https://www.python.org/)
+[![Node](https://img.shields.io/badge/node-18+-green?logo=node.js&style=classic)](https://nodejs.org/)
 
 Auditing framework for evaluating equity and fairness in AI-driven transportation safety systems.
 
-**[🚀 Live Demo](https://safe-t-ai.github.io/)**
+**[Live Demo](https://safe-t-ai.github.io/)**
 
 ## Overview
 
@@ -15,25 +15,25 @@ AI tools like Strava Metro and StreetLight Data are increasingly used by cities 
 
 ## Tests
 
-### Test 1: Volume Estimation Equity Audit
+### Volume Estimation
 
 Evaluates whether AI volume estimation tools accurately predict pedestrian and cyclist volumes across all demographic groups.
 
 **Finding:** Low-income areas undercounted by ~25%, high-income areas overcounted by ~8%, with high-minority areas showing 20% worse accuracy overall.
 
-### Test 2: Crash Prediction Bias
+### Crash Prediction
 
 Evaluates whether AI crash prediction models maintain consistent accuracy across income levels when forecasting safety outcomes.
 
 **Finding:** AI prediction error significantly higher in low-income areas, with poorest quintile showing systematically worse model performance, leading to underallocation of safety resources.
 
-### Test 3: Infrastructure Recommendation Audit
+### Infrastructure
 
 Evaluates whether AI-driven infrastructure recommendation systems allocate safety budgets equitably.
 
 **Finding:** AI allocation shows 29.5% disparate impact ratio (Q1 receives 29.5% as much per-capita as Q5), failing the 80% threshold. Need-based allocation achieves 83.8%, demonstrating feasible equity improvements.
 
-### Test 4: Suppressed Demand Analysis
+### Suppressed Demand
 
 Evaluates whether AI tools detect latent transportation demand in areas with poor infrastructure that suppresses observed usage.
 

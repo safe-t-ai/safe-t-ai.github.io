@@ -16,15 +16,14 @@ export class SuppressedDemandAudit {
     }
 
     async initialize() {
-        const [report, funnel, correlationMatrix, scorecard, demandGeoData] = await Promise.all([
+        const [report, funnel, scorecard, demandGeoData] = await Promise.all([
             api.getDemandReport(),
             api.getDemandFunnel(),
-            api.getCorrelationMatrix(),
             api.getDetectionScorecard(),
             api.getDemandGeoData()
         ]);
 
-        this.data = { report, funnel, correlationMatrix, scorecard, demandGeoData };
+        this.data = { report, funnel, scorecard, demandGeoData };
 
         this.renderInterpretation();
         this.renderMetrics();
@@ -139,7 +138,6 @@ export class SuppressedDemandAudit {
 
     renderCharts() {
         this.renderFunnelChart();
-        this.renderCorrelationMatrix();
         this.renderDetectionScorecard();
     }
 
@@ -221,82 +219,6 @@ export class SuppressedDemandAudit {
         };
 
         this.charts.funnel = initChart('chart-funnel', option);
-    }
-
-    renderCorrelationMatrix() {
-        const { variables, correlations } = this.data.correlationMatrix;
-
-        const data = correlations.map(item => {
-            const x = variables.indexOf(item.variable1);
-            const y = variables.indexOf(item.variable2);
-            return [x, y, item.correlation];
-        });
-
-        const displayNames = variables.map(v => {
-            return v.replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        });
-
-        const option = {
-            title: {
-                text: 'Variable Correlation Matrix',
-                left: 'center',
-                textStyle: { fontSize: 14, fontWeight: 'normal' }
-            },
-            tooltip: {
-                position: 'top',
-                formatter: (params) => {
-                    const var1 = displayNames[params.data[0]];
-                    const var2 = displayNames[params.data[1]];
-                    const corr = params.data[2];
-                    return `${var1} ↔ ${var2}<br/>Correlation: ${corr.toFixed(3)}`;
-                }
-            },
-            grid: {
-                height: '65%',
-                top: '15%',
-                left: '20%'
-            },
-            xAxis: {
-                type: 'category',
-                data: displayNames,
-                splitArea: { show: true },
-                axisLabel: { interval: 0, rotate: 45, fontSize: 10 }
-            },
-            yAxis: {
-                type: 'category',
-                data: displayNames,
-                splitArea: { show: true },
-                axisLabel: { fontSize: 10 }
-            },
-            visualMap: {
-                min: -1,
-                max: 1,
-                calculable: true,
-                orient: 'horizontal',
-                left: 'center',
-                bottom: '5%',
-                inRange: {
-                    color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
-                }
-            },
-            series: [{
-                type: 'heatmap',
-                data: data,
-                label: {
-                    show: true,
-                    formatter: (params) => params.data[2].toFixed(2),
-                    fontSize: 10
-                },
-                emphasis: {
-                    itemStyle: {
-                        shadowBlur: 10,
-                        shadowColor: 'rgba(0, 0, 0, 0.5)'
-                    }
-                }
-            }]
-        };
-
-        this.charts.correlation = initChart('chart-correlation', option);
     }
 
     renderDetectionScorecard() {

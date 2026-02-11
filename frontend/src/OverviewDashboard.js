@@ -32,10 +32,28 @@ export class OverviewDashboard {
         this.map = new DurhamMap('overview-map').initialize();
 
         this.map.addChoroplethLayer(this.data.choroplethData, {
-            valueField: 'error_pct'
+            valueField: 'median_income',
+            colors: ['#b45309', '#d97706', '#e2e8f0', '#0891b2', '#155e75'],
+            breaks: [48000, 65000, 80000, 93000, Infinity],
+            fillOpacity: 0.7,
+            popupFields: [
+                { label: 'Median Income', field: 'median_income', format: v => `$${v?.toLocaleString()}` },
+                { label: 'Population', field: 'total_population', format: v => v?.toLocaleString() },
+                { label: 'Minority %', field: 'pct_minority', format: v => `${v?.toFixed(1)}%` }
+            ]
         });
 
-        this.map.addLegend();
+        this.map.addLegend({
+            title: 'Median Household Income',
+            colorScale: [
+                { color: '#b45309', label: '< $48k' },
+                { color: '#d97706', label: '$48k – $65k' },
+                { color: '#e2e8f0', label: '$65k – $80k' },
+                { color: '#0891b2', label: '$80k – $93k' },
+                { color: '#155e75', label: '> $93k' }
+            ]
+        });
+
         this.map.fitBounds(this.data.choroplethData);
 
         window.addEventListener('resize', () => {
@@ -92,16 +110,10 @@ export class OverviewDashboard {
     }
 
     renderFindings() {
-        const { volumeReport, crashReport, demandReport, budgetAllocation } = this.data;
-
-        const gap = volumeReport.by_income.equity_gap;
-        const aiDI = budgetAllocation.ai_allocation.disparate_impact_ratio;
-
         renderInterpretation('overview-findings', [
-            `Volume estimation accuracy varies by ${Math.abs(gap.gap).toFixed(1)} percentage points between income quintiles (p=${gap.p_value.toFixed(4)})`,
-            ...(crashReport.findings?.slice(0, 1) || []),
-            `AI allocates ${(aiDI * 100).toFixed(1)}% as much per-capita to Q1 as Q5, failing the 80% disparate impact threshold`,
-            ...(demandReport.findings?.slice(0, 2) || [])
-        ], 'Key Findings Across Tests');
+            'The same low-income tracts that volume tools undercount also receive the least safety funding — undercounting leads directly to underinvestment',
+            'Crash models perform worst where volume data is least accurate, compounding one test\'s bias into the next test\'s safety outcomes',
+            'Most cycling and walking demand in low-income areas goes unrecorded, so AI tools trained on observed data reinforce the pattern across all four tests'
+        ], 'Cross-Cutting Findings');
     }
 }

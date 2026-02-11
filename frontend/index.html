@@ -399,10 +399,11 @@
             color: white;
         }
 
-        .overview-banner .banner-sources {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 0.2rem;
+        .overview-banner .banner-description {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 0.75rem;
         }
 
         .overview-banner .banner-stats {
@@ -599,14 +600,14 @@
             <div id="overview-content" class="test-content active">
                 <div class="overview-banner">
                     <h2>Durham Transportation Equity Audit</h2>
-                    <p class="banner-sources">US Census ACS 2022 &middot; Strava Metro &middot; StreetLight Data &middot; Census Tract Level</p>
+                    <p class="banner-description">AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities. This audit tests whether those tools treat Durham's communities equitably. Four tests measure how income and race correlate with AI accuracy, resource allocation, and demand visibility.</p>
                     <p class="banner-stats">67 Tracts &middot; 4 Equity Tests &middot; Simulated Data</p>
                 </div>
                 <div class="content-split">
                     <div class="content-map">
                         <div class="map-container">
-                            <h2>Geographic Distribution of AI Prediction Errors</h2>
-                            <p class="chart-description">Choropleth showing mean absolute percentage error across Durham census tracts. Darker colors indicate areas where AI tools perform worst.</p>
+                            <h2>Durham Income Distribution by Census Tract</h2>
+                            <p class="chart-description">Median household income across Durham's 67 census tracts. The equity tests that follow measure how AI transportation tools treat these areas differently.</p>
                             <div id="overview-map" class="map"></div>
                         </div>
                     </div>
@@ -861,18 +862,6 @@
                             </div>
                             <p class="chart-description">Funnel chart showing demand suppression stages from potential demand to actual usage. Width represents trip volume at each stage. Q1 areas show severe drop-off.</p>
                             <div id="chart-funnel" class="chart"></div>
-                        </div>
-
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h2>Variable Correlations</h2>
-                                <span class="data-source-badge simulated">
-                                        Simulated
-                                    <span class="tooltip">Correlation matrix between demographic factors, infrastructure quality, and demand metrics. Shows suppression correlates with poverty and poor infrastructure.</span>
-                                </span>
-                            </div>
-                            <p class="chart-description">Heatmap showing correlations between census demographics, infrastructure quality, and demand metrics. Helps identify root causes of demand suppression.</p>
-                            <div id="chart-correlation" class="chart"></div>
                         </div>
 
                         <div class="chart-container">
