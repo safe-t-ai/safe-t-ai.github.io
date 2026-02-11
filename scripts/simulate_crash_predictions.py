@@ -121,9 +121,8 @@ def main():
     # Export crash report
     print("\n6. Exporting crash prediction audit report...")
 
-    q1_mae = quintile_metrics.get('Q1 (Poorest)', {}).get('mae', 0)
-    q5_mae = quintile_metrics.get('Q5 (Richest)', {}).get('mae', 0)
-    mae_disparity_pct = ((q1_mae - q5_mae) / q5_mae * 100) if q5_mae > 0 else 0
+    q1_error_pct = quintile_metrics.get('Q1 (Poorest)', {}).get('error_pct', 0)
+    q5_error_pct = quintile_metrics.get('Q5 (Richest)', {}).get('error_pct', 0)
 
     crash_report = {
         'summary': {
@@ -137,10 +136,10 @@ def main():
         'error_by_quintile': {k: {k2: float(v2) for k2, v2 in v.items()}
                               for k, v in quintile_metrics.items()},
         'findings': [
-            f"AI prediction error is {mae_disparity_pct:.0f}% higher in low-income areas (Q1 MAE: {q1_mae:.1f}, Q5 MAE: {q5_mae:.1f} crashes per tract)",
-            f"Ridge regression trained on simulated 2019-2022 crash data with demographic features",
-            f"Model shows systematic underperformance in poorest quintile when predicting 2023 crashes",
-            "Demonstrates how AI-guided safety investments systematically underallocate resources to underserved communities"
+            f"AI prediction error is {q1_error_pct:.0f}% in Q1 vs {q5_error_pct:.0f}% in Q5 — {q1_error_pct / q5_error_pct:.1f}x worse in the poorest areas",
+            "Ridge regression trained on simulated 2019-2022 crash data with demographic features",
+            "Model shows systematic underperformance in poorest quintile when predicting 2023 crashes",
+            "AI-guided safety investments systematically underallocate resources to underserved communities"
         ]
     }
 

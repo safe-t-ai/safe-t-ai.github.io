@@ -43,25 +43,23 @@ export class CrashPredictionAudit {
         const q1_error = error_by_quintile['Q1 (Poorest)'];
         const q5_error = error_by_quintile['Q5 (Richest)'];
 
-        const errorDisparity = ((q1_error.mae - q5_error.mae) / q5_error.mae) * 100;
-
         renderMetrics('test2-metrics', [
             {
                 title: 'Q1 Prediction Error',
-                value: q1_error.mae.toFixed(1) + ' crashes',
-                subtext: 'Mean Absolute Error (poorest quintile)',
+                value: q1_error.error_pct.toFixed(0) + '%',
+                subtext: 'Relative error (poorest quintile)',
                 sentiment: 'value-danger'
             },
             {
                 title: 'Q5 Prediction Error',
-                value: q5_error.mae.toFixed(1) + ' crashes',
-                subtext: 'Mean Absolute Error (richest quintile)',
+                value: q5_error.error_pct.toFixed(0) + '%',
+                subtext: 'Relative error (richest quintile)',
                 sentiment: 'value-success'
             },
             {
-                title: 'Error Disparity',
-                value: errorDisparity.toFixed(0) + '%',
-                subtext: 'Higher error in low-income areas',
+                title: 'Error Ratio',
+                value: (q1_error.error_pct / q5_error.error_pct).toFixed(1) + 'x',
+                subtext: 'Q1 error rate relative to Q5',
                 sentiment: 'value-danger'
             },
             {
@@ -320,7 +318,7 @@ export class CrashPredictionAudit {
 
         const option = {
             title: {
-                text: 'ROC Curves by Income Quintile',
+                text: 'Classification Accuracy by Quintile',
                 left: 'center',
                 textStyle: { fontSize: 14, fontWeight: 'normal' }
             },

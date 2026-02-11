@@ -108,9 +108,28 @@
         }
 
         .test-subtitle {
-            font-size: 0.95rem;
-            color: #718096;
-            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            line-height: 1.5;
+            color: white;
+            background: linear-gradient(135deg, #0891b2 0%, #0e4a5c 40%, #0f172a 100%);
+            padding: 1.15rem 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .test-subtitle::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #0891b2, transparent 60%);
         }
 
         .test-subtitle:empty {
@@ -503,6 +522,7 @@
                 border-radius: 6px;
             }
             .container { padding: 1rem; }
+            .test-subtitle { font-size: 1rem; padding: 1rem 1.25rem; }
             .overview-banner { padding: 1.25rem; }
             .overview-banner h2 { font-size: 1.15rem; }
             .metrics-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
@@ -627,13 +647,13 @@
                     <div class="content-map">
                         <div class="map-container">
                             <div class="chart-header">
-                                <h2>Geographic Distribution of AI Prediction Errors</h2>
+                                <h2>Prediction Error by Census Tract</h2>
                                 <span class="data-source-badge simulated">
                                     Simulated
                                     <span class="tooltip">Data based on simulated counter locations with documented bias patterns. Real counter data (Strava Metro, StreetLight) requires vendor access.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Choropleth map showing mean absolute percentage error (MAPE) in AI volume predictions across Durham census tracts. Darker red indicates higher prediction errors.</p>
+                            <p class="chart-description">AI volume prediction error across Durham census tracts. Darker red indicates higher prediction errors, concentrated in low-income areas.</p>
                             <div id="map" class="map"></div>
                         </div>
                     </div>
@@ -647,7 +667,7 @@
                                     <span class="tooltip">Census demographics are real (US Census ACS 2022). Volume predictions are simulated to demonstrate bias patterns documented in research literature.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Bar chart comparing AI prediction accuracy across income quintiles (Q1=poorest, Q5=richest). Shows mean absolute error in predicted vs actual pedestrian/cyclist counts.</p>
+                            <p class="chart-description">Prediction accuracy across income quintiles (Q1=poorest, Q5=richest). Shows mean absolute error in predicted vs actual pedestrian/cyclist counts.</p>
                             <div id="chart-income" class="chart"></div>
                         </div>
 
@@ -659,7 +679,7 @@
                                     <span class="tooltip">Racial composition data from US Census ACS 2022. AI predictions simulated with documented bias patterns showing worse accuracy in high-minority areas.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Bar chart showing AI prediction errors grouped by census tract racial composition. Demonstrates systematic undercount in areas with higher minority percentages.</p>
+                            <p class="chart-description">Prediction errors grouped by census tract racial composition. Areas with higher minority percentages show systematically worse accuracy.</p>
                             <div id="chart-race" class="chart"></div>
                         </div>
 
@@ -671,7 +691,7 @@
                                     <span class="tooltip">Simulated counter data demonstrating systematic bias. Red line shows AI underprediction in low-income areas and overprediction in high-income areas.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Scatter plot comparing AI predicted volumes against actual counts. Perfect predictions would follow the diagonal line. Systematic deviations indicate bias.</p>
+                            <p class="chart-description">Predicted volumes vs actual counts. Perfect predictions follow the diagonal. Systematic deviations reveal where bias occurs.</p>
                             <div id="chart-scatter" class="chart"></div>
                         </div>
 
@@ -683,7 +703,7 @@
                                     <span class="tooltip">Distribution of prediction errors across all counter locations. Simulated to show realistic error patterns with documented demographic bias.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Histogram showing the distribution of percentage errors in AI volume predictions. Positive errors indicate overprediction, negative indicate underprediction.</p>
+                            <p class="chart-description">Distribution of percentage errors across all counter locations. Positive = overprediction, negative = underprediction.</p>
                             <div id="chart-histogram" class="chart"></div>
                         </div>
                     </div>
@@ -707,7 +727,7 @@
                                     <span class="tooltip">Crash data simulated with realistic distributions based on Durham County demographics and road network characteristics.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Interactive map showing actual vs AI-predicted crash counts by census tract. Toggle between views to see where AI predictions differ from ground truth.</p>
+                            <p class="chart-description">Actual vs predicted crash counts by census tract. Toggle between views to compare.</p>
                             <div style="margin-bottom: 1rem;">
                                 <label style="margin-right: 1rem;">
                                     <input type="radio" name="crash-view" value="actual" checked> Actual Crashes
@@ -729,7 +749,7 @@
                                     <span class="tooltip">AI trained on simulated Durham crash data (2019-2023). Demonstrates documented pattern: AI shows 25-40% higher error rates in low-income areas.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Heatmap of AI model precision, recall, and F1 scores across income quintiles. Shows systematic degradation of model quality in lower-income census tracts.</p>
+                            <p class="chart-description">Precision, recall, and F1 scores across income quintiles. Model quality degrades systematically in lower-income tracts.</p>
                             <div id="chart-confusion" class="chart"></div>
                         </div>
 
@@ -741,19 +761,19 @@
                                     <span class="tooltip">5-year crash trends (2019-2023) simulated with realistic temporal patterns based on Durham County demographics.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Time series showing actual vs AI-predicted crashes over 5 years. Reveals how AI systematically over/underpredicts in different demographic areas over time.</p>
+                            <p class="chart-description">Actual vs predicted crashes over 5 years. Shows persistent over/underprediction patterns by income level.</p>
                             <div id="chart-timeseries" class="chart"></div>
                         </div>
 
                         <div class="chart-container">
                             <div class="chart-header">
-                                <h2>ROC Curves by Income Quintile</h2>
+                                <h2>Classification Accuracy by Quintile</h2>
                                 <span class="data-source-badge simulated">
                                     Simulated
                                     <span class="tooltip">ROC analysis using Ridge regression trained on simulated crash data. Demonstrates lower discrimination ability (AUC) for low-income quintiles.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Receiver Operating Characteristic curves showing AI's ability to distinguish high-risk vs low-risk areas by income level. Lower AUC indicates worse performance.</p>
+                            <p class="chart-description">Ability to distinguish high-risk vs low-risk areas by income level. Lower AUC = worse discrimination, concentrated in poorer quintiles.</p>
                             <div id="chart-roc" class="chart"></div>
                         </div>
                     </div>
@@ -777,7 +797,7 @@
                                     <span class="tooltip">Infrastructure recommendations simulated using crash data + census demographics. Demonstrates how AI-driven allocation systematically favors wealthier areas.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Map of safety project recommendations from AI vs need-based approaches. Choropleth shows danger scores; markers show project locations. Toggle to compare allocation equity.</p>
+                            <p class="chart-description">Safety project locations from AI vs need-based allocation. Shading shows danger scores; markers show projects. Toggle to compare.</p>
                             <div style="margin-bottom: 1rem;">
                                 <label style="margin-right: 1rem;">
                                     <input type="radio" name="allocation-type" value="ai" checked> AI Allocation (Biased)
@@ -793,25 +813,25 @@
                     <div class="chart-grid">
                         <div class="chart-container">
                             <div class="chart-header">
-                                <h2>Budget Flow (Sankey Diagram)</h2>
+                                <h2>Budget Allocation by Income</h2>
                                 <span class="data-source-badge simulated">
                                         Simulated
                                     <span class="tooltip">$5M budget allocation simulated across income quintiles. Shows AI allocates 29.5% as much per-capita to Q1 as Q5 (disparate impact).</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Flow diagram showing $5M safety budget distribution across income quintiles. Width represents funding amount. Demonstrates systematic underinvestment in low-income areas.</p>
+                            <p class="chart-description">$5M safety budget distribution across income quintiles. Width represents funding amount. Low-income areas receive disproportionately less.</p>
                             <div id="chart-sankey" class="chart"></div>
                         </div>
 
                         <div class="chart-container">
                             <div class="chart-header">
-                                <h2>Equity Dimensions (Radar Chart)</h2>
+                                <h2>Equity Comparison: AI vs Need-Based</h2>
                                 <span class="data-source-badge simulated">
                                         Simulated
                                     <span class="tooltip">Multi-metric equity comparison: disparate impact, Gini coefficient, coverage rate, and per-capita spending. All metrics show AI allocation is less equitable.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Radar chart comparing AI vs need-based allocation across equity metrics. Larger area = better equity. Need-based consistently outperforms AI across dimensions.</p>
+                            <p class="chart-description">AI vs need-based allocation across equity metrics. Larger area = better equity. Need-based outperforms AI on every dimension.</p>
                             <div id="chart-radar" class="chart"></div>
                         </div>
                     </div>
@@ -835,7 +855,7 @@
                                     <span class="tooltip">Demand suppression analysis simulated using infrastructure quality, safety perception, and demographic factors. Shows latent demand invisible to naive AI tools.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Choropleth map showing suppressed, potential, and actual cycling/walking demand across Durham. High suppression (red) indicates latent demand AI tools miss.</p>
+                            <p class="chart-description">Suppressed, potential, and actual cycling/walking demand across Durham. High suppression (red) indicates latent demand AI tools miss.</p>
                             <div style="margin-bottom: 1rem;">
                                 <label style="margin-right: 1rem;">
                                     <input type="radio" name="demand-view" value="suppressed" checked> Suppressed Demand
@@ -854,13 +874,13 @@
                     <div class="chart-grid">
                         <div class="chart-container">
                             <div class="chart-header">
-                                <h2>Demand Suppression Funnel (Q1 vs Q5)</h2>
+                                <h2>Demand Suppression: Q1 vs Q5</h2>
                                 <span class="data-source-badge simulated">
                                         Simulated
                                     <span class="tooltip">Funnel analysis comparing potential → actual demand conversion in Q1 (poorest) vs Q5 (richest) areas. Q1 shows 70%+ suppression.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Funnel chart showing demand suppression stages from potential demand to actual usage. Width represents trip volume at each stage. Q1 areas show severe drop-off.</p>
+                            <p class="chart-description">Demand suppression stages from potential to actual usage. Width represents trip volume at each stage. Q1 areas show severe drop-off.</p>
                             <div id="chart-funnel" class="chart"></div>
                         </div>
 
@@ -872,7 +892,7 @@
                                     <span class="tooltip">Scorecard comparing naive AI (actual demand only) vs sophisticated AI (demographics + infrastructure). Even advanced AI misses 30-40% of suppressed demand.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Comparison of AI detection accuracy for suppressed demand. Naive AI fails completely; sophisticated AI partial detection. Shows fundamental limitation of data-driven approaches.</p>
+                            <p class="chart-description">Detection accuracy for suppressed demand. Naive AI fails; sophisticated AI achieves partial detection. Neither matches human expert baseline.</p>
                             <div id="chart-scorecard" class="chart"></div>
                         </div>
                     </div>
