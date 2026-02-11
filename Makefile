@@ -1,6 +1,9 @@
-.PHONY: help setup install install-backend install-frontend clean clean-all dev build deploy test data fetch-data generate-data
+.PHONY: help setup install install-backend install-frontend clean clean-all dev build deploy test data fetch-data generate-data venv
 
 .DEFAULT_GOAL := help
+
+VENV := .venv
+PYTHON := $(VENV)/bin/python3
 
 ##@ Help
 
@@ -13,8 +16,11 @@ setup: install install-hooks data ## Complete setup (install dependencies, hooks
 
 install: install-backend install-frontend ## Install all dependencies
 
-install-backend: ## Install Python backend dependencies
-	pip install -r backend/requirements.txt
+venv: ## Create Python venv and install dependencies (requires uv)
+	uv venv $(VENV)
+	uv pip install -r backend/requirements.txt --python $(PYTHON)
+
+install-backend: venv ## Install Python backend dependencies
 
 install-frontend: ## Install Node.js frontend dependencies
 	cd frontend && npm install
@@ -33,15 +39,15 @@ dev: ## Start frontend dev server (data served from frontend/public/data/)
 data: fetch-data generate-data ## Fetch and generate all data
 
 fetch-data: ## Fetch Durham census, geographic, and crash data
-	python3 scripts/fetch_durham_data.py
-	python3 scripts/fetch_ncdot_crash_data.py
+	$(PYTHON) scripts/fetch_durham_data.py
+	$(PYTHON) scripts/fetch_ncdot_crash_data.py
 
 generate-data: ## Generate static data files for frontend
-	python3 scripts/simulate_ai_predictions.py
-	python3 scripts/simulate_crash_predictions.py
-	python3 scripts/simulate_infrastructure_recommendations.py
-	python3 scripts/analyze_suppressed_demand.py
-	python3 scripts/generate_static_data.py
+	$(PYTHON) scripts/simulate_ai_predictions.py
+	$(PYTHON) scripts/simulate_crash_predictions.py
+	$(PYTHON) scripts/simulate_infrastructure_recommendations.py
+	$(PYTHON) scripts/analyze_suppressed_demand.py
+	$(PYTHON) scripts/generate_static_data.py
 
 ##@ Build & Deploy
 
@@ -57,10 +63,10 @@ deploy: build ## Deploy to GitHub Pages
 ##@ Testing & Quality
 
 test: ## Run pytest test suite with coverage
-	cd backend && pytest
+	cd backend && ../$(PYTHON) -m pytest
 
 test-quick: ## Run pytest without coverage
-	cd backend && pytest -v --no-cov
+	cd backend && ../$(PYTHON) -m pytest -v --no-cov
 
 lint: ## Run all linters
 	cd frontend && npm run lint
@@ -74,7 +80,7 @@ hooks: ## Run pre-commit hooks manually
 	pre-commit run --all-files
 
 test-setup: ## Run original setup validation
-	python3 test_setup.py
+	$(PYTHON) test_setup.py
 
 ##@ Cleanup
 
@@ -86,6 +92,7 @@ clean: ## Remove build artifacts and caches
 	find . -type f -name "*.pyc" -delete
 
 clean-all: clean ## Remove all generated files including dependencies
+	rm -rf $(VENV)
 	rm -rf frontend/node_modules
 	rm -rf backend/data/raw
 	rm -rf backend/data/simulated
