@@ -201,7 +201,7 @@ def main():
     # Generate confusion matrices (for 2023 predictions)
     print("\n8. Exporting confusion matrices...")
 
-    # Create binary classification: high-crash (above median) vs low-crash
+    # Global threshold for overall metrics
     median_crashes = predictions_df['crash_count'].median()
     predictions_df['actual_high_crash'] = (predictions_df['crash_count'] > median_crashes).astype(int)
     predictions_df['predicted_high_crash'] = (predictions_df['ai_predicted_crashes'] > median_crashes).astype(int)
@@ -227,14 +227,22 @@ def main():
         'accuracy': float((cm[0, 0] + cm[1, 1]) / cm.sum())
     }
 
-    # By quintile
+    # Per-quintile: use within-quintile median as threshold
+    # Global median makes classification trivial (all Q1 tracts below, all Q5 above).
+    # Per-quintile median tests whether the model ranks tracts correctly within each income level.
     for quintile in ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']:
         q_data = predictions_df[predictions_df['income_quintile'] == quintile]
-        if len(q_data) < 2:
+        if len(q_data) < 4:
             continue
 
-        y_true_q = q_data['actual_high_crash']
-        y_pred_q = q_data['predicted_high_crash']
+        q_median = q_data['crash_count'].median()
+        y_true_q = (q_data['crash_count'] > q_median).astype(int)
+        y_pred_q = (q_data['ai_predicted_crashes'] > q_median).astype(int)
+
+        # Ensure both classes present (skip if all tracts have identical crash count)
+        if y_true_q.nunique() < 2:
+            continue
+
         cm_q = confusion_matrix(y_true_q, y_pred_q)
         prec_q, rec_q, f1_q, _ = precision_recall_fscore_support(y_true_q, y_pred_q, average='binary', zero_division=0)
 
@@ -246,6 +254,7 @@ def main():
             'accuracy': float((cm_q[0, 0] + cm_q[1, 1]) / cm_q.sum()) if cm_q.sum() > 0 else 0,
             'count': int(len(q_data))
         }
+        print(f"   {quintile}: P={prec_q:.2f} R={rec_q:.2f} F1={f1_q:.2f} (threshold={q_median:.0f})")
 
     with open(os.path.join(output_dir, 'confusion_matrices.json'), 'w') as f:
         json.dump(confusion_data, f, indent=2)

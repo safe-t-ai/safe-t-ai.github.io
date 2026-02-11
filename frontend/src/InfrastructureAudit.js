@@ -7,6 +7,13 @@ import { DurhamMap } from './components/common/DurhamMap.js';
 import { initChart, COLORS } from './services/chartConfig.js';
 import { renderMetrics, renderInterpretation, initViewToggle } from './services/renderUtils.js';
 
+const PROJECT_COLORS = {
+    crosswalk: '#f59e0b',
+    bike_lane: '#0d9488',
+    traffic_signal: '#6366f1',
+    speed_reduction: '#ea580c'
+};
+
 export class InfrastructureAudit {
     constructor() {
         this.data = {};
@@ -96,12 +103,10 @@ export class InfrastructureAudit {
 
         this.map.addLegend({
             title: 'Project Types',
-            colorScale: [
-                { color: '#f59e0b', label: 'Crosswalk' },
-                { color: '#0d9488', label: 'Bike Lane' },
-                { color: '#6366f1', label: 'Traffic Signal' },
-                { color: '#ea580c', label: 'Speed Reduction' }
-            ],
+            colorScale: Object.entries(PROJECT_COLORS).map(([type, color]) => ({
+                color,
+                label: type.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())
+            })),
             footer: 'Marker size = project cost'
         });
 
@@ -159,23 +164,22 @@ export class InfrastructureAudit {
     }
 
     getProjectColor(type) {
-        const colors = {
-            crosswalk: '#f59e0b',
-            bike_lane: '#0d9488',
-            traffic_signal: '#6366f1',
-            speed_reduction: '#ea580c'
-        };
-        return colors[type];
+        return PROJECT_COLORS[type];
     }
 
     renderCharts() {
         this.renderAllocationChart();
-        this.renderRadarChart();
+        this.renderEquityComparison();
     }
 
     renderAllocationChart() {
         const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
+
+        const allocationSeries = [
+            { name: 'AI Allocation', allocation: ai_allocation, color: COLORS.error, delay: 0 },
+            { name: 'Need-Based', allocation: need_based_allocation, color: COLORS.success, delay: 60 }
+        ];
 
         const option = {
             tooltip: {
@@ -187,7 +191,7 @@ export class InfrastructureAudit {
                     ).join('<br/>')
             },
             legend: {
-                data: ['AI Allocation', 'Need-Based'],
+                data: allocationSeries.map(s => s.name),
                 bottom: 10
             },
             grid: {
@@ -208,79 +212,72 @@ export class InfrastructureAudit {
                     formatter: (v) => v >= 1e6 ? `$${v / 1e6}M` : `$${v / 1e3}k`
                 }
             },
-            series: [
-                {
-                    name: 'AI Allocation',
-                    type: 'bar',
-                    data: quintiles.map(q => ai_allocation.by_quintile[q]),
-                    itemStyle: { color: COLORS.error, borderRadius: [3, 3, 0, 0] },
-                    animationDelay: (idx) => idx * 120
-                },
-                {
-                    name: 'Need-Based',
-                    type: 'bar',
-                    data: quintiles.map(q => need_based_allocation.by_quintile[q]),
-                    itemStyle: { color: COLORS.success, borderRadius: [3, 3, 0, 0] },
-                    animationDelay: (idx) => idx * 120 + 60
-                }
-            ]
+            series: allocationSeries.map(({ name, allocation, color, delay }) => ({
+                name,
+                type: 'bar',
+                data: quintiles.map(q => allocation.by_quintile[q]),
+                itemStyle: { color, borderRadius: [3, 3, 0, 0] },
+                animationDelay: (idx) => idx * 120 + delay
+            }))
         };
 
         this.charts.allocation = initChart('chart-allocation', option);
     }
 
-    renderRadarChart() {
+    renderEquityComparison() {
         const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
+        const { summary } = this.data.report;
 
-        const normalize = (val, max) => (val / max) * 100;
+        const normalize = (val, max) => Math.min((val / max) * 100, 100);
+
+        const metrics = ['Equity', 'Q1 Per Capita', 'Budget Equality', 'Project Count'];
+
+        const seriesEntries = [
+            { name: 'AI Allocation', alloc: ai_allocation, projects: summary.ai_projects, color: COLORS.error },
+            { name: 'Need-Based', alloc: need_based_allocation, projects: summary.need_based_projects, color: COLORS.success }
+        ];
 
         const option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: (params) =>
+                    `<strong>${params[0].name}</strong><br/>` +
+                    params.map(p => `${p.marker} ${p.seriesName}: ${Number(p.value).toFixed(1)}`).join('<br/>')
+            },
             legend: {
-                data: ['AI Allocation', 'Need-Based'],
-                top: 30
+                data: seriesEntries.map(s => s.name),
+                bottom: 10
             },
-            radar: {
-                center: ['50%', '58%'],
-                radius: '55%',
-                indicator: [
-                    { name: 'Equity', max: 100 },
-                    { name: 'Q1 Budget\nPer Capita', max: 100 },
-                    { name: 'Budget\nEquality', max: 100 },
-                    { name: 'Project\nCount', max: 100 }
-                ],
-                shape: 'polygon',
-                splitNumber: 4
+            grid: {
+                left: '3%', right: '4%', bottom: '15%',
+                containLabel: true
             },
-            series: [{
-                type: 'radar',
+            xAxis: {
+                type: 'category',
+                data: metrics,
+                axisLabel: { fontSize: 11 }
+            },
+            yAxis: {
+                type: 'value',
+                name: 'Score (0-100)',
+                max: 100
+            },
+            series: seriesEntries.map(({ name, alloc, projects, color }) => ({
+                name,
+                type: 'bar',
                 data: [
-                    {
-                        value: [
-                            Math.min(ai_allocation.disparate_impact_ratio * 100, 100),
-                            normalize(ai_allocation.per_capita['Q1 (Poorest)'], 30),
-                            (1 - ai_allocation.gini_coefficient) * 100,
-                            normalize(this.data.report.summary.ai_projects, 50)
-                        ],
-                        name: 'AI Allocation',
-                        lineStyle: { color: COLORS.error },
-                        areaStyle: { color: COLORS.error, opacity: 0.2 }
-                    },
-                    {
-                        value: [
-                            Math.min(need_based_allocation.disparate_impact_ratio * 100, 100),
-                            normalize(need_based_allocation.per_capita['Q1 (Poorest)'], 30),
-                            (1 - need_based_allocation.gini_coefficient) * 100,
-                            normalize(this.data.report.summary.need_based_projects, 50)
-                        ],
-                        name: 'Need-Based',
-                        lineStyle: { color: COLORS.success },
-                        areaStyle: { color: COLORS.success, opacity: 0.2 }
-                    }
-                ]
-            }]
+                    normalize(alloc.disparate_impact_ratio * 100, 100),
+                    normalize(alloc.per_capita['Q1 (Poorest)'], 30),
+                    (1 - alloc.gini_coefficient) * 100,
+                    normalize(projects, 50)
+                ],
+                itemStyle: { color, borderRadius: [3, 3, 0, 0] },
+                animationDelay: (idx) => idx * 120
+            }))
         };
 
-        this.charts.radar = initChart('chart-radar', option);
+        this.charts.equity = initChart('chart-radar', option);
     }
 
     setupAllocationToggle() {

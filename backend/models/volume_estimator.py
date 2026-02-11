@@ -7,7 +7,6 @@ by comparing predictions against ground truth counter data, stratified by demogr
 
 import pandas as pd
 import geopandas as gpd
-import numpy as np
 from pathlib import Path
 import sys
 
@@ -183,26 +182,6 @@ class VolumeEstimationAuditor:
 
         return data
 
-    def get_error_distribution(self):
-        """Get error distribution histogram data"""
-
-        errors = self.ai_predictions_df['error_pct'].values
-
-        # Create histogram bins
-        bins = np.arange(-50, 55, 5)  # -50% to +50% in 5% increments
-        hist, bin_edges = np.histogram(errors, bins=bins)
-
-        data = []
-        for i in range(len(hist)):
-            data.append({
-                'bin_start': float(bin_edges[i]),
-                'bin_end': float(bin_edges[i+1]),
-                'count': int(hist[i]),
-                'bin_label': f'{bin_edges[i]:.0f}% to {bin_edges[i+1]:.0f}%',
-            })
-
-        return data
-
     def get_tract_level_errors(self):
         """
         Calculate average error by census tract for choropleth map
@@ -237,7 +216,6 @@ class VolumeEstimationAuditor:
             'by_income': self.analyze_by_income(),
             'by_race': self.analyze_by_race(),
             'scatter_data': self.get_scatter_data(),
-            'error_distribution': self.get_error_distribution(),
         }
 
         # Add interpretation

@@ -1097,13 +1097,13 @@
 
                         <div class="chart-container">
                             <div class="chart-header">
-                                <h2>Error Distribution</h2>
+                                <h2>Prediction Errors by Quintile</h2>
                                 <span class="data-source-badge simulated">
                                     Simulated
                                     <span class="tooltip">Simulated prediction errors across all counter locations. Error model calibrated to documented demographic accuracy gaps in volume estimation tools.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Distribution of percentage errors across all counter locations. Positive = overprediction, negative = underprediction.</p>
+                            <p class="chart-description">Each dot is one counter location. Dots left of zero indicate underprediction by the AI model.</p>
                             <div id="chart-histogram" class="chart"></div>
                         </div>
                     </div>
@@ -1146,7 +1146,7 @@
                                     <span class="tooltip">Ridge regression trained on NCDOT-calibrated crash data (2019-2022), evaluated on 2023. Real census demographics with simulated geographic distribution.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Precision, recall, and F1 scores across income quintiles. Variation indicates uneven classification accuracy by income level.</p>
+                            <p class="chart-description">Binary classification (above/below within-quintile median) evaluated per income group. Lower scores in poorer quintiles indicate the model struggles to rank tracts within those areas.</p>
                             <div id="chart-confusion" class="chart"></div>
                         </div>
 
@@ -1225,7 +1225,7 @@
                                     <span class="tooltip">Equity metrics (disparate impact ratio, Gini coefficient, coverage rate, per-capita spending) comparing AI-driven vs need-based allocation strategies.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">AI vs need-based allocation across equity metrics. Larger area = better equity. Need-based outperforms AI on every dimension.</p>
+                            <p class="chart-description">Four normalized equity metrics (0-100) comparing AI-driven and need-based allocation strategies.</p>
                             <div id="chart-radar" class="chart"></div>
                         </div>
                     </div>
