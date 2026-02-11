@@ -1,13 +1,13 @@
 {
   "naive_ai": {
-    "correlation_with_potential": 0.6757731953979479,
+    "correlation_with_potential": 0.675773195397948,
     "rmse": 547.0378786688652,
     "bias_q1": -88.50898347601891,
     "bias_q5": -62.19126745324907,
     "detection_rate_high_suppression": 0.0
   },
   "sophisticated_ai": {
-    "correlation_with_potential": 0.8567190565702226,
+    "correlation_with_potential": 0.8567190565702225,
     "rmse": 270.57430429686605,
     "bias_q1": -44.31770199508816,
     "bias_q5": -14.857109470404318,

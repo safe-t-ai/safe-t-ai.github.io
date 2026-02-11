@@ -1,4 +1,15 @@
 {
+  "_provenance": {
+    "data_type": "simulated",
+    "simulated": [
+      "potential demand",
+      "actual demand",
+      "AI detection models"
+    ],
+    "parameters": {
+      "high_suppression_threshold": 70
+    }
+  },
   "summary": {
     "total_potential_demand": 43591,
     "total_actual_demand": 10115,
@@ -6,9 +17,10 @@
     "suppression_rate": 76.79467185677137,
     "tracts_analyzed": 67,
     "high_suppression_tracts": 57,
-    "naive_ai_correlation": 0.6757731953979479,
-    "sophisticated_ai_correlation": 0.8567190565702226
+    "naive_ai_correlation": 0.675773195397948,
+    "sophisticated_ai_correlation": 0.8567190565702225
   },
+  "high_suppression_threshold": 70,
   "by_quintile": {
     "Q1 (Poorest)": {
       "potential_demand": 541.8782897242687,

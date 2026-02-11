@@ -1129,5 +1129,17 @@
     "AI allocation shows severe inequity: poorest quintile receives 6.6% as much per capita as richest quintile",
     "AI allocation is 99% less equitable than need-based allocation",
     "Poorest quintile receives only 2.0% of total budget despite having highest crash rates"
-  ]
+  ],
+  "_provenance": {
+    "data_type": "simulated",
+    "simulated": [
+      "danger scores",
+      "AI recommendations",
+      "need-based recommendations"
+    ],
+    "parameters": {
+      "budget": 5000000,
+      "seed": 42
+    }
+  }
 }
