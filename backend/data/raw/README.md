@@ -5,20 +5,25 @@ This directory contains raw data fetched from external sources.
 ## Files
 
 - `durham_census_tracts.geojson` - Durham census tracts with demographics (US Census Bureau)
-- `ncdot_crashes_durham.csv` - Durham crash data (NC DOT)
-- `ncdot_powerbi_response.json` - NC DOT PowerBI API response
+- `ncdot_crashes_durham.csv` - Simulated Durham crash data calibrated to real NCDOT volumes
+- `ncdot_calibration.json` - Cached NCDOT API crash total for offline use
 
 ## Generating Data
 
-To fetch the raw data, run:
-
 ```bash
-cd backend
-python ../scripts/fetch_durham_data.py
-python ../scripts/fetch_ncdot_crash_data.py
+make data
 ```
 
-**Note:** You'll need a Census API key. Set it as an environment variable:
+Or individually:
+
+```bash
+python3 scripts/fetch_durham_data.py
+python3 scripts/fetch_ncdot_crash_data.py
+```
+
+The crash script queries the NCDOT NC Vision Zero API for Durham County totals and generates simulated records at that volume. See `docs/DATA_ACCESS.md` for details.
+
+**Note:** Census data requires a Census API key:
 ```bash
 export CENSUS_API_KEY=your_key_here
 ```

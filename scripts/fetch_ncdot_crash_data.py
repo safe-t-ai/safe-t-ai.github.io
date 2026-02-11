@@ -1,81 +1,198 @@
 #!/usr/bin/env python3
 """
-Generate simulated crash data for Test 2 demonstration.
+Generate simulated crash data for Durham County, calibrated to real NCDOT volumes.
 
-NOTE: Real NCDOT crash data requires manual request or institutional access.
-This script generates realistic simulated crash data with income correlation
-for demonstration purposes at the hackathon.
-
-For production use, replace with actual NCDOT crash data via:
-- NCDOT Connect TEAAS system (requires agency access)
-- Durham Open Data Portal (if crash dataset becomes available)
-- Manual data request to NCDOT Traffic Safety Unit
+Queries the NC Vision Zero Power BI API for the actual Durham County crash total,
+then generates simulated crash records at that volume. Falls back to a cached
+calibration file if the API is unavailable.
 """
 
-import os
+import json
 import sys
-import numpy as np
-import pandas as pd
+from datetime import datetime, timezone
 from pathlib import Path
 
-def generate_simulated_crash_data(census_tract_count=68, seed=42):
+import numpy as np
+import pandas as pd
+import requests
+
+sys.path.insert(0, str(Path(__file__).parent.parent / 'backend'))
+from config import (
+    CRASH_ANALYSIS_YEARS,
+    DEFAULT_RANDOM_SEED,
+    DURHAM_BOUNDS,
+    NCDOT_DATA_YEARS,
+    NCDOT_DATASET_ID,
+    NCDOT_MODEL_ID,
+    NCDOT_POWERBI_API,
+    NCDOT_REPORT_ID,
+    RAW_DATA_DIR,
+)
+
+CALIBRATION_PATH = RAW_DATA_DIR / 'ncdot_calibration.json'
+OUTPUT_PATH = RAW_DATA_DIR / 'ncdot_crashes_durham.csv'
+
+
+def fetch_durham_crash_count():
     """
-    Generate realistic simulated crash data for Durham County.
+    Query COUNTNONBLANK(CNTY_NM) filtered to DURHAM from the Power BI API.
 
-    This simulates 5 years (2019-2023) of crash data with:
-    - Geographic distribution across census tracts
-    - Correlation with income (more crashes in lower-income areas)
-    - Temporal variation year-over-year
-    - Realistic crash volumes (~25,000 total over 5 years)
-
-    Args:
-        census_tract_count: Number of census tracts in Durham
-        seed: Random seed for reproducibility
-
-    Returns:
-        DataFrame with simulated crash records
+    Returns the total crash count across all years in the dataset, or None
+    if the API is unavailable.
     """
+    query = {
+        "version": "1.0.0",
+        "queries": [{
+            "Query": {
+                "Commands": [{
+                    "SemanticQueryDataShapeCommand": {
+                        "Query": {
+                            "Version": 2,
+                            "From": [{
+                                "Name": "c",
+                                "Entity": "CT_ACCIDENT",
+                                "Type": 0
+                            }],
+                            "Select": [{
+                                "Aggregation": {
+                                    "Expression": {
+                                        "Column": {
+                                            "Expression": {"SourceRef": {"Source": "c"}},
+                                            "Property": "CNTY_NM"
+                                        }
+                                    },
+                                    "Function": 5  # COUNTNONBLANK
+                                },
+                                "Name": "CountNonBlank(CT_ACCIDENT.CNTY_NM)"
+                            }],
+                            "Where": [{
+                                "Condition": {
+                                    "In": {
+                                        "Expressions": [{
+                                            "Column": {
+                                                "Expression": {"SourceRef": {"Source": "c"}},
+                                                "Property": "CNTY_NM"
+                                            }
+                                        }],
+                                        "Values": [[{"Literal": {"Value": "'DURHAM'"}}]]
+                                    }
+                                }
+                            }]
+                        }
+                    }
+                }]
+            },
+            "QueryId": "",
+            "ApplicationContext": {
+                "DatasetId": NCDOT_DATASET_ID,
+                "Sources": [{"ReportId": NCDOT_REPORT_ID}]
+            }
+        }],
+        "cancelQueries": [],
+        "modelId": NCDOT_MODEL_ID
+    }
+
+    try:
+        response = requests.post(
+            NCDOT_POWERBI_API,
+            json=query,
+            headers={
+                'Content-Type': 'application/json',
+                'X-PowerBI-ResourceKey': NCDOT_REPORT_ID
+            },
+            timeout=30
+        )
+
+        if response.status_code != 200:
+            print(f"Warning: NCDOT API returned status {response.status_code}")
+            return None
+
+        data = response.json()
+        result = data['results'][0]['result']['data']
+        ds = result['dsr']['DS']
+        count = ds[0]['PH'][0]['DM0'][0]['M0']
+        return int(count)
+
+    except requests.exceptions.Timeout:
+        print("Warning: NCDOT API request timed out")
+        return None
+    except (requests.exceptions.ConnectionError, requests.exceptions.RequestException) as e:
+        print(f"Warning: NCDOT API request failed: {e}")
+        return None
+    except (KeyError, IndexError, TypeError) as e:
+        print(f"Warning: unexpected NCDOT API response structure: {e}")
+        return None
+
+
+def get_crashes_per_year():
+    """
+    Get the calibrated crashes-per-year value.
+
+    Tries the live API first. On success, caches the result. On failure,
+    falls back to the cached calibration file. If neither is available,
+    fails explicitly.
+    """
+    total = fetch_durham_crash_count()
+
+    if total is not None:
+        per_year = total // NCDOT_DATA_YEARS
+        calibration = {
+            "total": total,
+            "per_year": per_year,
+            "fetched_at": datetime.now(timezone.utc).isoformat(),
+            "api_accessible": True
+        }
+        CALIBRATION_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(CALIBRATION_PATH, 'w') as f:
+            json.dump(calibration, f, indent=2)
+        print(f"NCDOT API: {total:,} total Durham crashes across ~{NCDOT_DATA_YEARS} years ({per_year:,}/year)")
+        return per_year
+
+    # Fallback to cached calibration
+    if CALIBRATION_PATH.exists():
+        with open(CALIBRATION_PATH) as f:
+            calibration = json.load(f)
+        per_year = calibration['per_year']
+        print(f"Using cached calibration from {calibration['fetched_at']}: {per_year:,} crashes/year")
+        return per_year
+
+    raise RuntimeError(
+        "NCDOT API unavailable and no cached calibration exists. "
+        "Run with API access at least once to create ncdot_calibration.json."
+    )
+
+
+def generate_crash_data(crashes_per_year, seed=DEFAULT_RANDOM_SEED):
+    """Generate simulated crash records calibrated to the given annual volume."""
     np.random.seed(seed)
 
-    print("Generating simulated crash data for Durham County...")
-    print("NOTE: This is simulated data for demonstration purposes.")
-    print("For production, replace with real NCDOT crash data.\n")
-
-    # Durham County approximate bounds
-    LAT_MIN, LAT_MAX = 35.85, 36.15
-    LON_MIN, LON_MAX = -79.05, -78.70
+    lat_min, lat_max = DURHAM_BOUNDS['south'], DURHAM_BOUNDS['north']
+    lon_min, lon_max = DURHAM_BOUNDS['west'], DURHAM_BOUNDS['east']
 
     crashes = []
     crash_id = 1
 
-    # Generate crashes for each year
-    years = [2019, 2020, 2021, 2022, 2023]
+    for year in CRASH_ANALYSIS_YEARS:
+        yearly_count = crashes_per_year + np.random.randint(-200, 200)
 
-    for year in years:
-        # Base crashes per year: ~5,000
-        yearly_crashes = 5000 + np.random.randint(-200, 200)
+        for _ in range(yearly_count):
+            lat = np.random.uniform(lat_min, lat_max)
+            lon = np.random.uniform(lon_min, lon_max)
 
-        for _ in range(yearly_crashes):
-            # Generate random location within Durham bounds
-            lat = np.random.uniform(LAT_MIN, LAT_MAX)
-            lon = np.random.uniform(LON_MIN, LON_MAX)
-
-            # Generate crash date
             month = np.random.randint(1, 13)
-            day = np.random.randint(1, 29)  # Simplified to avoid month-end issues
+            day = np.random.randint(1, 29)
             crash_date = f"{year}-{month:02d}-{day:02d}"
 
-            # Severity distribution (based on typical NC data)
             severity_roll = np.random.random()
-            if severity_roll < 0.003:  # ~0.3% fatal
+            if severity_roll < 0.003:
                 severity = 'Fatal'
                 total_killed = np.random.randint(1, 3)
                 total_injured = 0
-            elif severity_roll < 0.30:  # ~30% injury
+            elif severity_roll < 0.30:
                 severity = 'Injury'
                 total_killed = 0
                 total_injured = np.random.randint(1, 4)
-            else:  # ~70% property damage
+            else:
                 severity = 'Property Damage'
                 total_killed = 0
                 total_injured = 0
@@ -91,62 +208,28 @@ def generate_simulated_crash_data(census_tract_count=68, seed=42):
                 'total_killed': total_killed,
                 'year': year
             })
-
             crash_id += 1
 
-    df = pd.DataFrame(crashes)
-    return df
+    return pd.DataFrame(crashes)
 
-def save_crash_data(df, output_path):
-    """Save crash data to CSV."""
-
-    # Ensure output directory exists
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Save to CSV
-    df.to_csv(output_path, index=False)
-    print(f"Saved crash data to: {output_path}")
-
-    # Print summary statistics
-    print("\n" + "="*60)
-    print("CRASH DATA SUMMARY (SIMULATED)")
-    print("="*60)
-    print(f"Total crashes: {len(df):,}")
-    print(f"Date range: {df['crash_date'].min()} to {df['crash_date'].max()}")
-    print(f"\nCrashes by year:")
-    print(df.groupby('year').size())
-    print(f"\nCrashes by severity:")
-    print(df['severity'].value_counts())
-    print(f"\nTotal fatalities: {df['total_killed'].sum()}")
-    print(f"Total injuries: {df['total_injured'].sum()}")
-    print("="*60)
-    print("\nNOTE: This is simulated data for demonstration.")
-    print("For production use, replace with real NCDOT crash data.")
-    print("="*60)
 
 def main():
-    # Set up paths
-    script_dir = Path(__file__).parent
-    project_root = script_dir.parent
-    output_path = project_root / 'backend' / 'data' / 'raw' / 'ncdot_crashes_durham.csv'
+    crashes_per_year = get_crashes_per_year()
 
-    # Check if data already exists
-    if output_path.exists():
-        print(f"Crash data already exists at: {output_path}")
-        print("Delete the file to regenerate, or use existing data.")
+    # Always regenerate to reflect current calibration
+    if OUTPUT_PATH.exists():
+        OUTPUT_PATH.unlink()
 
-        # Show summary of existing data
-        df = pd.read_csv(output_path)
-        print(f"\nExisting data: {len(df):,} crash records")
-        sys.exit(0)
+    df = generate_crash_data(crashes_per_year)
 
-    # Generate simulated crash data
-    df = generate_simulated_crash_data()
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(OUTPUT_PATH, index=False)
 
-    # Save crash data
-    save_crash_data(df, output_path)
+    print(f"\nSaved {len(df):,} crash records to {OUTPUT_PATH}")
+    print(f"  Years: {df['year'].min()}-{df['year'].max()}")
+    print(f"  Per year: {df.groupby('year').size().to_dict()}")
+    print(f"  Severity: {df['severity'].value_counts().to_dict()}")
 
-    print("\n✓ Crash data generation complete!")
 
 if __name__ == '__main__':
     main()
