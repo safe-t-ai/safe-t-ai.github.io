@@ -13,12 +13,12 @@ import sys
 import json
 from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add backend to path
+sys.path.insert(0, str(Path(__file__).parent.parent / 'backend'))
 
 import geopandas as gpd
-from backend.config import INFRASTRUCTURE_DEFAULT_BUDGET, DEFAULT_RANDOM_SEED
-from backend.models.infrastructure_auditor import InfrastructureRecommendationAuditor
+from config import INFRASTRUCTURE_DEFAULT_BUDGET, DEFAULT_RANDOM_SEED
+from models.infrastructure_auditor import InfrastructureRecommendationAuditor
 
 
 def main():

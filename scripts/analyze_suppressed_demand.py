@@ -16,9 +16,29 @@ import json
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
-from config import HIGH_SUPPRESSION_THRESHOLD
+import geopandas as gpd
+from config import HIGH_SUPPRESSION_THRESHOLD, RAW_DATA_DIR
 from models.demand_analyzer import SuppressedDemandAnalyzer
-from utils import load_census_data
+
+
+def load_census_data():
+    """Load Durham census tract data."""
+    census_path = RAW_DATA_DIR / 'durham_census_tracts.geojson'
+    if not census_path.exists():
+        raise FileNotFoundError(
+            f"Census data not found at {census_path}. "
+            "Run fetch_durham_data.py first."
+        )
+
+    gdf = gpd.read_file(census_path)
+    print(f"Loaded {len(gdf)} census tracts")
+
+    required = ['tract_id', 'median_income', 'total_population', 'geometry']
+    missing = [col for col in required if col not in gdf.columns]
+    if missing:
+        raise ValueError(f"Missing required columns: {missing}")
+
+    return gdf
 
 
 def main():
