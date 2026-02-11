@@ -2,15 +2,16 @@
  * Volume Estimation Bias Audit (Test 1)
  */
 
-import echarts from './services/echarts.js';
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
 import {
+    initChart,
     createBarChartConfig,
     createScatterChartConfig,
     createHistogramConfig,
     COLORS
 } from './services/chartConfig.js';
+import { renderMetrics, renderInterpretation } from './services/renderUtils.js';
 
 export class VolumeEstimationAudit {
     constructor() {
@@ -35,24 +36,14 @@ export class VolumeEstimationAudit {
     }
 
     renderInterpretation() {
-        const { interpretation } = this.data.report;
-        if (!interpretation || interpretation.length === 0) return;
-
-        document.getElementById('interpretation').innerHTML = `
-            <div class="interpretation">
-                <h3>Key Findings</h3>
-                <ul>
-                    ${interpretation.map(text => `<li>${text}</li>`).join('')}
-                </ul>
-            </div>
-        `;
+        renderInterpretation('interpretation', this.data.report.interpretation);
     }
 
     renderMetrics() {
         const { overall_accuracy } = this.data.report;
         const volumeBias = (overall_accuracy.total_predicted_volume - overall_accuracy.total_true_volume) / overall_accuracy.total_true_volume * 100;
 
-        const metrics = [
+        renderMetrics('metrics', [
             {
                 title: 'Mean Absolute Error',
                 value: `${overall_accuracy.metrics.mae.toFixed(0)} trips/day`,
@@ -81,15 +72,7 @@ export class VolumeEstimationAudit {
                 subtext: `${overall_accuracy.total_predicted_volume.toLocaleString()} vs ${overall_accuracy.total_true_volume.toLocaleString()} actual`,
                 sentiment: Math.abs(volumeBias) > 10 ? 'value-danger' : 'value-warning'
             }
-        ];
-
-        document.getElementById('metrics').innerHTML = metrics.map(m => `
-            <div class="metric-card">
-                <h3>${m.title}</h3>
-                <div class="value ${m.sentiment}">${m.value}</div>
-                <div class="subtext">${m.subtext}</div>
-            </div>
-        `).join('');
+        ]);
     }
 
     renderMap() {
@@ -207,7 +190,7 @@ export class VolumeEstimationAudit {
             }
         });
 
-        this.charts.scatter = this.initChart('chart-scatter', config);
+        this.charts.scatter = initChart('chart-scatter', config);
     }
 
     renderHistogramChart() {
@@ -216,14 +199,7 @@ export class VolumeEstimationAudit {
             color: COLORS.primary
         });
 
-        this.charts.histogram = this.initChart('chart-histogram', config);
-    }
-
-    initChart(elementId, config) {
-        const chart = echarts.init(document.getElementById(elementId));
-        chart.setOption(config);
-        window.addEventListener('resize', () => chart.resize());
-        return chart;
+        this.charts.histogram = initChart('chart-histogram', config);
     }
 
     initChartWithZeroLine(elementId, config, dataLength) {
@@ -235,6 +211,6 @@ export class VolumeEstimationAudit {
             symbol: 'none',
             silent: true
         });
-        return this.initChart(elementId, config);
+        return initChart(elementId, config);
     }
 }

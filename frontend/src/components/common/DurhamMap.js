@@ -155,8 +155,11 @@ export class DurhamMap {
         const {
             position = 'bottomright',
             title = 'AI Prediction Error',
-            colorScale = this.getDefaultColorScale()
+            colorScale = this.getDefaultColorScale(),
+            footer = null
         } = options;
+
+        if (this.legendControl) this.map.removeControl(this.legendControl);
 
         const legend = L.control({ position });
 
@@ -174,10 +177,19 @@ export class DurhamMap {
                 `;
             });
 
+            if (footer) {
+                div.innerHTML += `
+                    <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
+                        <small>${footer}</small>
+                    </div>
+                `;
+            }
+
             return div;
         };
 
         legend.addTo(this.map);
+        this.legendControl = legend;
 
         return this;
     }

@@ -4,6 +4,7 @@
 
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
+import { renderInterpretation } from './services/renderUtils.js';
 
 export class OverviewDashboard {
     constructor() {
@@ -96,20 +97,11 @@ export class OverviewDashboard {
         const gap = volumeReport.by_income.equity_gap;
         const aiDI = budgetAllocation.ai_allocation.disparate_impact_ratio;
 
-        const findings = [
+        renderInterpretation('overview-findings', [
             `Volume estimation accuracy varies by ${Math.abs(gap.gap).toFixed(1)} percentage points between income quintiles (p=${gap.p_value.toFixed(4)})`,
             ...(crashReport.findings?.slice(0, 1) || []),
             `AI allocates ${(aiDI * 100).toFixed(1)}% as much per-capita to Q1 as Q5, failing the 80% disparate impact threshold`,
             ...(demandReport.findings?.slice(0, 2) || [])
-        ];
-
-        document.getElementById('overview-findings').innerHTML = `
-            <div class="interpretation">
-                <h3>Key Findings Across Tests</h3>
-                <ul>
-                    ${findings.map(f => `<li>${f}</li>`).join('')}
-                </ul>
-            </div>
-        `;
+        ], 'Key Findings Across Tests');
     }
 }

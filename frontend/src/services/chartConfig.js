@@ -3,6 +3,15 @@
  * Provides consistent styling across all visualizations
  */
 
+import echarts from './echarts.js';
+
+export function initChart(elementId, config) {
+    const chart = echarts.init(document.getElementById(elementId));
+    chart.setOption(config);
+    window.addEventListener('resize', () => chart.resize());
+    return chart;
+}
+
 const isMobile = () => window.innerWidth <= 768;
 
 const getResponsiveFontSize = (desktop, mobile) => {

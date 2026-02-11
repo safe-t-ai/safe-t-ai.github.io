@@ -2,10 +2,10 @@
  * Infrastructure Recommendation Audit
  */
 
-import echarts from './services/echarts.js';
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
-import { COLORS } from './services/chartConfig.js';
+import { initChart, COLORS } from './services/chartConfig.js';
+import { renderMetrics, renderInterpretation } from './services/renderUtils.js';
 
 export class InfrastructureAudit {
     constructor() {
@@ -33,23 +33,17 @@ export class InfrastructureAudit {
     }
 
     renderInterpretation() {
-        const { findings } = this.data.report;
-        const html = `
-            <div class="interpretation">
-                <h3>Key Findings</h3>
-                <ul>
-                    ${findings.map(f => `<li>${f}</li>`).join('')}
-                    <li>AI allocates to ${this.data.report.summary.ai_projects} projects vs ${this.data.report.summary.need_based_projects} need-based projects</li>
-                </ul>
-            </div>
-        `;
-        document.getElementById('test3-interpretation').innerHTML = html;
+        const { findings, summary } = this.data.report;
+        renderInterpretation('test3-interpretation', [
+            ...findings,
+            `AI allocates to ${summary.ai_projects} projects vs ${summary.need_based_projects} need-based projects`
+        ]);
     }
 
     renderMetrics() {
         const { ai_allocation, need_based_allocation, comparison } = this.data.budgetAllocation;
 
-        const metrics = [
+        renderMetrics('test3-metrics', [
             {
                 title: 'AI Disparate Impact',
                 value: (ai_allocation.disparate_impact_ratio * 100).toFixed(1) + '%',
@@ -74,17 +68,7 @@ export class InfrastructureAudit {
                 subtext: 'AI vs need-based difference',
                 sentiment: 'value-danger'
             }
-        ];
-
-        const html = metrics.map(m => `
-            <div class="metric-card">
-                <h3>${m.title}</h3>
-                <div class="value ${m.sentiment}">${m.value}</div>
-                <div class="subtext">${m.subtext}</div>
-            </div>
-        `).join('');
-
-        document.getElementById('test3-metrics').innerHTML = html;
+        ]);
     }
 
     renderMap() {
@@ -107,45 +91,21 @@ export class InfrastructureAudit {
         );
 
         this.updateRecommendationsLayer();
-        this.addProjectLegend();
+
+        this.map.addLegend({
+            title: 'Project Types',
+            colorScale: [
+                { color: '#f59e0b', label: 'Crosswalk' },
+                { color: '#0d9488', label: 'Bike Lane' },
+                { color: '#6366f1', label: 'Traffic Signal' },
+                { color: '#ea580c', label: 'Speed Reduction' }
+            ],
+            footer: 'Marker size = project cost'
+        });
 
         window.addEventListener('resize', () => {
             if (this.map) this.map.invalidateSize();
         });
-    }
-
-    addProjectLegend() {
-        const legend = L.control({ position: 'bottomright' });
-
-        legend.onAdd = () => {
-            const div = L.DomUtil.create('div', 'legend');
-            div.innerHTML = `
-                <h4>Project Types</h4>
-                <div class="legend-item">
-                    <span class="legend-color" style="background: #f59e0b;"></span>
-                    Crosswalk
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color" style="background: #0d9488;"></span>
-                    Bike Lane
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color" style="background: #6366f1;"></span>
-                    Traffic Signal
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color" style="background: #ea580c;"></span>
-                    Speed Reduction
-                </div>
-                <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
-                    <small>Marker size = project cost</small>
-                </div>
-            `;
-            return div;
-        };
-
-        legend.addTo(this.map.map);
-        this.legend = legend;
     }
 
     updateRecommendationsLayer() {
@@ -209,7 +169,6 @@ export class InfrastructureAudit {
     }
 
     renderSankeyChart() {
-        const chart = echarts.init(document.getElementById('chart-sankey'));
         const { ai_allocation } = this.data.budgetAllocation;
 
         const nodes = [
@@ -257,14 +216,10 @@ export class InfrastructureAudit {
             }]
         };
 
-        chart.setOption(option);
-        this.charts.sankey = chart;
-
-        window.addEventListener('resize', () => chart.resize());
+        this.charts.sankey = initChart('chart-sankey', option);
     }
 
     renderRadarChart() {
-        const chart = echarts.init(document.getElementById('chart-radar'));
         const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
 
         const normalize = (val, max) => (val / max) * 100;
@@ -318,10 +273,7 @@ export class InfrastructureAudit {
             }]
         };
 
-        chart.setOption(option);
-        this.charts.radar = chart;
-
-        window.addEventListener('resize', () => chart.resize());
+        this.charts.radar = initChart('chart-radar', option);
     }
 
     setupAllocationToggle() {
