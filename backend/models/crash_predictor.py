@@ -367,17 +367,23 @@ class CrashPredictionAuditor:
             'accuracy': float((cm[0, 0] + cm[1, 1]) / cm.sum())
         }
 
-        # By quintile
+        # Per-quintile: use within-quintile median as threshold
+        # Global median makes classification trivial (all Q1 tracts below, all Q5 above).
+        # Per-quintile median tests whether the model ranks tracts correctly within each income level.
         for quintile in ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']:
             quintile_data = tract_aggregated[
                 tract_aggregated['income_quintile'] == quintile
             ]
 
-            if len(quintile_data) < 2:
+            if len(quintile_data) < 4:
                 continue
 
-            y_true_q = quintile_data['actual_high_crash']
-            y_pred_q = quintile_data['predicted_high_crash']
+            q_median = quintile_data['actual_crashes'].median()
+            y_true_q = (quintile_data['actual_crashes'] > q_median).astype(int)
+            y_pred_q = (quintile_data['ai_predicted_crashes'] > q_median).astype(int)
+
+            if y_true_q.nunique() < 2:
+                continue
 
             cm_q = confusion_matrix(y_true_q, y_pred_q)
             prec_q, rec_q, f1_q, _ = precision_recall_fscore_support(

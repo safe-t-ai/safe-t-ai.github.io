@@ -291,7 +291,6 @@ jobs:
               'accuracy-by-income.json',
               'accuracy-by-race.json',
               'scatter-data.json',
-              'error-distribution.json',
               'crash-report.json',
               'confusion-matrices.json',
               'crash-time-series.json',

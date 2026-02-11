@@ -109,12 +109,6 @@ def main():
     with open(output_dir / 'scatter-data.json', 'w') as f:
         json.dump(scatter_data, f, indent=2)
 
-    # 8. Error distribution
-    print("Generating error distribution...")
-    error_dist = auditor.get_error_distribution()
-    with open(output_dir / 'error-distribution.json', 'w') as f:
-        json.dump(error_dist, f, indent=2)
-
     # ===== TEST 3: Infrastructure Recommendations =====
     print("\n" + "=" * 60)
     print("Generating Test 3 data (Infrastructure Recommendations)...")
@@ -217,7 +211,7 @@ def main():
                 'rationale': 'Strava Metro / StreetLight Data require institutional license',
                 'files': ['volume-report.json', 'counter-locations.json',
                           'accuracy-by-income.json', 'accuracy-by-race.json',
-                          'scatter-data.json', 'error-distribution.json'],
+                          'scatter-data.json'],
             },
             'infrastructure_recommendations': {
                 'type': 'simulated',

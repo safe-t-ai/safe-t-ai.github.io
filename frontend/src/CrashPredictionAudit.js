@@ -216,13 +216,40 @@ export class CrashPredictionAudit {
     renderTimeSeriesChart() {
         const { years, by_quintile } = this.data.timeSeries;
 
+        const quintileSeries = [
+            { key: 'Q1 (Poorest)', label: 'Q1', color: COLORS.error },
+            { key: 'Q5 (Richest)', label: 'Q5', color: COLORS.success }
+        ];
+
+        const series = quintileSeries.flatMap(({ key, label, color }) => [
+            {
+                name: `${label} Actual`,
+                type: 'line',
+                data: by_quintile[key].actual_crashes,
+                lineStyle: { color, width: 3 },
+                itemStyle: { color },
+                smooth: true
+            },
+            {
+                name: `${label} Predicted`,
+                type: 'line',
+                data: by_quintile[key].ai_predicted_crashes,
+                lineStyle: { color, type: 'dashed', width: 2 },
+                itemStyle: { color },
+                smooth: true
+            }
+        ]);
+
         const option = {
             tooltip: {
                 trigger: 'axis',
-                axisPointer: { type: 'cross' }
+                axisPointer: { type: 'cross' },
+                formatter: (params) =>
+                    `<strong>${params[0].name}</strong><br/>` +
+                    params.map(p => `${p.marker} ${p.seriesName}: ${Math.round(p.value).toLocaleString()}`).join('<br/>')
             },
             legend: {
-                data: ['Q1 Actual', 'Q1 Predicted', 'Q5 Actual', 'Q5 Predicted'],
+                data: series.map(s => s.name),
                 bottom: 10
             },
             grid: {
@@ -240,40 +267,7 @@ export class CrashPredictionAudit {
                 type: 'value',
                 name: 'Total Crashes'
             },
-            series: [
-                {
-                    name: 'Q1 Actual',
-                    type: 'line',
-                    data: by_quintile['Q1 (Poorest)'].actual_crashes,
-                    lineStyle: { color: COLORS.error, width: 3 },
-                    itemStyle: { color: COLORS.error },
-                    smooth: true
-                },
-                {
-                    name: 'Q1 Predicted',
-                    type: 'line',
-                    data: by_quintile['Q1 (Poorest)'].ai_predicted_crashes,
-                    lineStyle: { color: COLORS.error, type: 'dashed', width: 2 },
-                    itemStyle: { color: COLORS.error },
-                    smooth: true
-                },
-                {
-                    name: 'Q5 Actual',
-                    type: 'line',
-                    data: by_quintile['Q5 (Richest)'].actual_crashes,
-                    lineStyle: { color: COLORS.success, width: 3 },
-                    itemStyle: { color: COLORS.success },
-                    smooth: true
-                },
-                {
-                    name: 'Q5 Predicted',
-                    type: 'line',
-                    data: by_quintile['Q5 (Richest)'].ai_predicted_crashes,
-                    lineStyle: { color: COLORS.success, type: 'dashed', width: 2 },
-                    itemStyle: { color: COLORS.success },
-                    smooth: true
-                }
-            ]
+            series
         };
 
         this.charts.timeseries = initChart('chart-timeseries', option);

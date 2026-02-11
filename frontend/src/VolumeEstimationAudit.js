@@ -8,7 +8,6 @@ import {
     initChart,
     createBarChartConfig,
     createScatterChartConfig,
-    createHistogramConfig,
     COLORS
 } from './services/chartConfig.js';
 import { renderMetrics, renderInterpretation } from './services/renderUtils.js';
@@ -110,7 +109,7 @@ export class VolumeEstimationAudit {
         this.renderIncomeChart();
         this.renderRaceChart();
         this.renderScatterChart();
-        this.renderHistogramChart();
+        this.renderErrorStripChart();
         this.setupCrossFiltering();
     }
 
@@ -190,6 +189,7 @@ export class VolumeEstimationAudit {
             xAxisLabel: 'Actual Daily Volume',
             yAxisLabel: 'AI Predicted Volume',
             colorField: 'income_quintile',
+            colorLabels: { 1: 'Q1', 2: 'Q2', 3: 'Q3', 4: 'Q4', 5: 'Q5' },
             colors: COLORS.quintiles,
             formatter: (params) => {
                 const item = params.data[2];
@@ -206,13 +206,78 @@ export class VolumeEstimationAudit {
         this.charts.scatter = initChart('chart-scatter', config);
     }
 
-    renderHistogramChart() {
-        const config = createHistogramConfig(this.data.report.error_distribution, {
-            xAxisLabel: 'Prediction Error (%)',
-            color: COLORS.primary
-        });
+    renderErrorStripChart() {
+        const { scatter_data } = this.data.report;
+        const quintileLabels = { 1: 'Q1', 2: 'Q2', 3: 'Q3', 4: 'Q4', 5: 'Q5' };
 
-        this.charts.histogram = initChart('chart-histogram', config);
+        // Compute error % per counter and group by quintile
+        const seriesData = Object.entries(
+            scatter_data.reduce((groups, d) => {
+                const key = d.income_quintile;
+                if (!groups[key]) groups[key] = [];
+                const errorPct = (d.predicted_volume - d.true_volume) / d.true_volume * 100;
+                groups[key].push([errorPct, quintileLabels[key], d]);
+                return groups;
+            }, {})
+        ).map(([key, values], idx) => ({
+            name: quintileLabels[key],
+            type: 'scatter',
+            data: values,
+            itemStyle: { color: COLORS.quintiles[idx % COLORS.quintiles.length] },
+            symbolSize: 14
+        }));
+
+        const config = {
+            tooltip: {
+                trigger: 'item',
+                confine: true,
+                formatter: (params) => {
+                    const d = params.data[2];
+                    const errorPct = params.data[0];
+                    return `
+                        <strong>${d.counter_id}</strong><br/>
+                        Error: ${errorPct.toFixed(1)}%<br/>
+                        Actual: ${d.true_volume} / Predicted: ${d.predicted_volume}<br/>
+                        Income: $${d.median_income.toLocaleString()}<br/>
+                        Minority: ${d.pct_minority.toFixed(1)}%
+                    `;
+                }
+            },
+            legend: {
+                data: Object.values(quintileLabels),
+                bottom: 0
+            },
+            grid: {
+                left: '3%', right: '4%', bottom: '15%', top: '10%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value',
+                name: 'Prediction Error (%)',
+                nameLocation: 'middle',
+                nameGap: 30,
+                axisLabel: { formatter: '{value}%' }
+            },
+            yAxis: {
+                type: 'category',
+                data: Object.values(quintileLabels),
+                axisTick: { show: false }
+            },
+            series: [
+                ...seriesData,
+                {
+                    name: 'No Bias',
+                    type: 'line',
+                    data: Object.values(quintileLabels).map(q => [0, q]),
+                    lineStyle: { color: '#c7c7cc', width: 2, type: 'dashed' },
+                    symbol: 'none',
+                    silent: true,
+                    orientation: 'vertical'
+                }
+            ]
+        };
+
+        this.charts.errorStrip = initChart('chart-histogram', config);
     }
 
     cleanup() {

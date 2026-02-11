@@ -171,8 +171,9 @@ export function createScatterChartConfig(data, options = {}) {
             groups[key].push([item[xField], item[yField], item]);
         });
 
+        const labelMap = options.colorLabels || {};
         seriesData = Object.entries(groups).map(([key, values], idx) => ({
-            name: key,
+            name: labelMap[key] || key,
             type: 'scatter',
             data: values,
             itemStyle: {
@@ -190,8 +191,9 @@ export function createScatterChartConfig(data, options = {}) {
     }
 
     const allX = data.map(d => d[xField]);
-    const minVal = Math.min(...allX);
-    const maxVal = Math.max(...allX);
+    const allY = data.map(d => d[yField]);
+    const minVal = Math.floor(Math.min(...allX, ...allY) * 0.9);
+    const maxVal = Math.ceil(Math.max(...allX, ...allY) * 1.1);
 
     return {
         tooltip: {
@@ -200,8 +202,8 @@ export function createScatterChartConfig(data, options = {}) {
             formatter: formatter || ((params) => {
                 const item = params.data[2];
                 return `Counter: ${item.counter_id}<br/>` +
-                       `Actual: ${params.data[0]}<br/>` +
-                       `Predicted: ${params.data[1]}`;
+                       `Actual: ${Math.round(params.data[0])}<br/>` +
+                       `Predicted: ${Math.round(params.data[1])}`;
             })
         },
         legend: colorField ? {
@@ -222,20 +224,24 @@ export function createScatterChartConfig(data, options = {}) {
         xAxis: {
             type: 'value',
             name: xAxisLabel,
+            nameLocation: 'middle',
+            nameGap: 30,
             nameTextStyle: {
                 fontSize: 12
             },
-            min: minVal * 0.9,
-            max: maxVal * 1.1
+            min: minVal,
+            max: maxVal
         },
         yAxis: {
             type: 'value',
             name: yAxisLabel,
+            nameLocation: 'middle',
+            nameGap: 40,
             nameTextStyle: {
                 fontSize: 12
             },
-            min: minVal * 0.9,
-            max: maxVal * 1.1
+            min: minVal,
+            max: maxVal
         },
         series: [
             ...seriesData,
@@ -252,62 +258,5 @@ export function createScatterChartConfig(data, options = {}) {
                 silent: true
             }
         ]
-    };
-}
-
-export function createHistogramConfig(data, options = {}) {
-    const {
-        xAxisLabel = '',
-        yAxisLabel = 'Count',
-        color = COLORS.primary
-    } = options;
-
-    return {
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'shadow'
-            },
-            confine: true,
-            formatter: (params) => {
-                const item = params[0];
-                return `${item.name}<br/>Count: ${item.value}`;
-            }
-        },
-        grid: {
-            left: isMobile() ? '8%' : '3%',
-            right: isMobile() ? '5%' : '4%',
-            bottom: isMobile() ? '15%' : '8%',
-            top: isMobile() ? '15%' : '10%',
-            containLabel: true
-        },
-        xAxis: {
-            type: 'category',
-            data: data.map(d => d.bin_label),
-            name: xAxisLabel,
-            nameTextStyle: {
-                fontSize: getResponsiveFontSize(12, 10)
-            },
-            axisLabel: {
-                fontSize: getResponsiveFontSize(10, 8),
-                rotate: isMobile() ? 60 : 45
-            }
-        },
-        yAxis: {
-            type: 'value',
-            name: yAxisLabel,
-            nameTextStyle: {
-                fontSize: 12
-            }
-        },
-        series: [{
-            type: 'bar',
-            data: data.map(d => d.count),
-            itemStyle: {
-                color: color,
-                borderRadius: [3, 3, 0, 0]
-            },
-            animationDelay: (idx) => idx * 60
-        }]
     };
 }
