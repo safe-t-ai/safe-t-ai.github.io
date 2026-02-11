@@ -9,21 +9,19 @@ vocal advocacy over high-danger corridors in underserved communities.
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-from typing import Dict, List, Tuple
+from typing import Dict, List
+from config import (
+    INFRASTRUCTURE_PROJECT_TYPES, INFRASTRUCTURE_DEFAULT_BUDGET,
+    DANGER_SCORE_CONFIG, DEFAULT_RANDOM_SEED, QUINTILE_LABELS,
+)
 
 
 class InfrastructureRecommendationAuditor:
     """Audit AI infrastructure recommendations for demographic bias."""
 
-    # Project types with costs and safety impact
-    PROJECT_TYPES = {
-        'crosswalk': {'cost': 50000, 'safety_impact': 0.15},  # 15% crash reduction
-        'bike_lane': {'cost': 200000, 'safety_impact': 0.25},  # 25% reduction
-        'traffic_signal': {'cost': 150000, 'safety_impact': 0.30},  # 30% reduction
-        'speed_reduction': {'cost': 75000, 'safety_impact': 0.20},  # 20% reduction
-    }
+    PROJECT_TYPES = INFRASTRUCTURE_PROJECT_TYPES
 
-    def __init__(self, census_gdf: gpd.GeoDataFrame, total_budget: float = 5_000_000):
+    def __init__(self, census_gdf: gpd.GeoDataFrame, total_budget: float = INFRASTRUCTURE_DEFAULT_BUDGET):
         """
         Initialize auditor with census data.
 
@@ -37,7 +35,7 @@ class InfrastructureRecommendationAuditor:
         self.ai_recommendations = None
         self.need_based_recommendations = None
 
-    def simulate_danger_scores(self, seed: int = 42) -> pd.DataFrame:
+    def simulate_danger_scores(self, seed: int = DEFAULT_RANDOM_SEED) -> pd.DataFrame:
         """
         Simulate crash/danger scores by census tract.
 
@@ -55,13 +53,14 @@ class InfrastructureRecommendationAuditor:
             population = tract['total_population']
 
             # Base danger score (crashes per 10k residents per year)
-            base_danger = 15.0
+            base_danger = DANGER_SCORE_CONFIG['base_danger']
 
             # Income effect: Lower income = higher danger (inverse relationship)
             # Normalized income: 0 (lowest) to 1 (highest)
             income_range = self.census_gdf['median_income'].max() - self.census_gdf['median_income'].min()
             norm_income = (median_income - self.census_gdf['median_income'].min()) / income_range
-            income_multiplier = 1.0 + (1.0 - norm_income) * 0.8  # Up to 1.8x in poorest areas
+            multiplier_range = DANGER_SCORE_CONFIG['income_multiplier_max'] - DANGER_SCORE_CONFIG['income_multiplier_min']
+            income_multiplier = DANGER_SCORE_CONFIG['income_multiplier_min'] + (1.0 - norm_income) * multiplier_range
 
             # Population effect: Higher population = slightly higher danger
             pop_multiplier = 1.0 + (population / 10000) * 0.1
@@ -85,7 +84,14 @@ class InfrastructureRecommendationAuditor:
         self.danger_scores = pd.DataFrame(danger_data)
         return self.danger_scores
 
-    def simulate_ai_recommendations(self, bias_strength: float = 0.6, seed: int = 42) -> pd.DataFrame:
+    def _merge_danger_data(self, seed: int) -> pd.DataFrame:
+        """Merge danger scores with census data, computing scores if needed."""
+        if self.danger_scores is None:
+            self.simulate_danger_scores(seed)
+        danger_subset = self.danger_scores[['tract_id', 'danger_score', 'annual_crashes']]
+        return self.census_gdf.merge(danger_subset, on='tract_id')
+
+    def simulate_ai_recommendations(self, bias_strength: float = 0.6, seed: int = DEFAULT_RANDOM_SEED) -> pd.DataFrame:
         """
         Simulate biased AI infrastructure recommendations.
 
@@ -99,16 +105,8 @@ class InfrastructureRecommendationAuditor:
             DataFrame with AI recommendations by tract
         """
         np.random.seed(seed)
+        data = self._merge_danger_data(seed)
 
-        if self.danger_scores is None:
-            self.simulate_danger_scores(seed)
-
-        # Merge danger scores with census data
-        # Only merge danger_score and annual_crashes (other fields already in census_gdf)
-        danger_subset = self.danger_scores[['tract_id', 'danger_score', 'annual_crashes']]
-        data = self.census_gdf.merge(danger_subset, on='tract_id')
-
-        # Normalize scores for comparison
         danger_norm = (data['danger_score'] - data['danger_score'].min()) / (data['danger_score'].max() - data['danger_score'].min())
         income_norm = (data['median_income'] - data['median_income'].min()) / (data['median_income'].max() - data['median_income'].min())
 
@@ -120,10 +118,7 @@ class InfrastructureRecommendationAuditor:
         advocacy_boost = income_norm * np.random.uniform(0.8, 1.2, len(data))
         data['ai_priority'] = data['ai_priority'] * (1 + advocacy_boost * 0.3)
 
-        # Rank tracts by AI priority
         data = data.sort_values('ai_priority', ascending=False).reset_index(drop=True)
-
-        # Allocate budget top-down until exhausted
         recommendations = []
         remaining_budget = self.total_budget
 
@@ -158,7 +153,7 @@ class InfrastructureRecommendationAuditor:
         self.ai_recommendations = pd.DataFrame(recommendations)
         return self.ai_recommendations
 
-    def simulate_need_based_recommendations(self, seed: int = 42) -> pd.DataFrame:
+    def simulate_need_based_recommendations(self, seed: int = DEFAULT_RANDOM_SEED) -> pd.DataFrame:
         """
         Simulate need-based (equitable) infrastructure recommendations.
 
@@ -168,19 +163,9 @@ class InfrastructureRecommendationAuditor:
             DataFrame with need-based recommendations by tract
         """
         np.random.seed(seed)
+        data = self._merge_danger_data(seed)
 
-        if self.danger_scores is None:
-            self.simulate_danger_scores(seed)
-
-        # Merge danger scores with census data
-        # Only merge danger_score and annual_crashes (other fields already in census_gdf)
-        danger_subset = self.danger_scores[['tract_id', 'danger_score', 'annual_crashes']]
-        data = self.census_gdf.merge(danger_subset, on='tract_id')
-
-        # Rank tracts by danger score (highest danger first)
         data = data.sort_values('danger_score', ascending=False).reset_index(drop=True)
-
-        # Allocate budget top-down until exhausted
         recommendations = []
         remaining_budget = self.total_budget
 
@@ -223,14 +208,12 @@ class InfrastructureRecommendationAuditor:
         if self.ai_recommendations is None or self.need_based_recommendations is None:
             raise ValueError("Must simulate recommendations first")
 
-        # Add income quintiles to census data
         self.census_gdf['income_quintile'] = pd.qcut(
             self.census_gdf['median_income'],
             q=5,
-            labels=['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']
+            labels=QUINTILE_LABELS
         )
 
-        # Merge recommendations with quintiles
         ai_with_quintiles = self.ai_recommendations.merge(
             self.census_gdf[['tract_id', 'income_quintile']],
             on='tract_id'
@@ -240,20 +223,16 @@ class InfrastructureRecommendationAuditor:
             on='tract_id'
         )
 
-        # Budget allocation by quintile
         ai_by_quintile = ai_with_quintiles.groupby('income_quintile')['cost'].sum()
         need_by_quintile = need_with_quintiles.groupby('income_quintile')['cost'].sum()
 
-        # Budget per capita by quintile
         pop_by_quintile = self.census_gdf.groupby('income_quintile')['total_population'].sum()
         ai_per_capita = ai_by_quintile / pop_by_quintile
         need_per_capita = need_by_quintile / pop_by_quintile
 
-        # Disparate impact ratio (Q1 vs Q5)
-        ai_disparate_impact = ai_per_capita['Q1 (Poorest)'] / ai_per_capita['Q5 (Richest)']
-        need_disparate_impact = need_per_capita['Q1 (Poorest)'] / need_per_capita['Q5 (Richest)']
+        ai_disparate_impact = ai_per_capita[QUINTILE_LABELS[0]] / ai_per_capita[QUINTILE_LABELS[-1]]
+        need_disparate_impact = need_per_capita[QUINTILE_LABELS[0]] / need_per_capita[QUINTILE_LABELS[-1]]
 
-        # Gini coefficient for budget distribution
         def gini_coefficient(values):
             sorted_values = np.sort(values)
             n = len(values)
@@ -330,7 +309,7 @@ class InfrastructureRecommendationAuditor:
                 f"AI allocation is {gap:.0%} less equitable than need-based allocation"
             )
 
-        ai_q1_pct = equity_metrics['ai_allocation']['by_quintile']['Q1 (Poorest)'] / self.total_budget
+        ai_q1_pct = equity_metrics['ai_allocation']['by_quintile'][QUINTILE_LABELS[0]] / self.total_budget
         if ai_q1_pct < 0.15:
             findings.append(
                 f"Poorest quintile receives only {ai_q1_pct:.1%} of total budget despite "

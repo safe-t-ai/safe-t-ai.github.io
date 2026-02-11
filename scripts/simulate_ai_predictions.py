@@ -11,33 +11,24 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent / 'backend'))
 
-import json
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-from config import RAW_DATA_DIR, SIMULATED_DATA_DIR, BIAS_PARAMETERS
+from config import RAW_DATA_DIR, SIMULATED_DATA_DIR, BIAS_PARAMETERS, VOLUME_SIMULATION_CONFIG
 
 SIMULATED_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 def generate_ground_truth_counters(census_gdf):
     """Generate ground truth bike/ped counter data"""
 
-    # Select 15 counter locations distributed across income levels
-    num_counters = 15
+    num_counters = VOLUME_SIMULATION_CONFIG['num_counters']
 
     counters = []
 
     for idx in range(num_counters):
-        # Pick a random tract
         tract = census_gdf.iloc[idx % len(census_gdf)]
-
-        # Generate counter location within tract
         centroid = tract.geometry.centroid
-
-        # Generate realistic daily volume based on population density
         base_volume = tract['total_population'] / 100  # ~1% of pop bikes/walks daily
-
-        # Add variation by time of year
         seasonal_factor = np.random.uniform(0.8, 1.2)
         daily_volume = int(base_volume * seasonal_factor)
 
@@ -74,32 +65,9 @@ def apply_ai_bias(ground_truth_df, census_gdf):
         income = counter['median_income']
         pct_minority = counter['pct_minority']
 
-        # Calculate bias multiplier based on demographics
-
-        # Income bias
         income_quintile = get_income_quintile(income, census_gdf)
-        if income_quintile <= 2:  # Low income (bottom 40%)
-            income_bias = 1.0 - BIAS_PARAMETERS['low_income_undercount']
-        elif income_quintile >= 4:  # High income (top 40%)
-            income_bias = 1.0 + BIAS_PARAMETERS['high_income_overcount']
-        else:
-            income_bias = 1.0
-
-        # Racial bias
-        if pct_minority > 60:
-            racial_bias = 1.0 - BIAS_PARAMETERS['minority_undercount']
-        elif pct_minority < 30:
-            racial_bias = 1.0 + 0.05
-        else:
-            racial_bias = 1.0
-
-        # Combined bias
-        total_bias = income_bias * racial_bias
-
-        # Add base noise
+        total_bias = calculate_demographic_bias(income_quintile, pct_minority)
         noise = np.random.normal(1.0, BIAS_PARAMETERS['base_noise'])
-
-        # Calculate predicted volume
         predicted_volume = int(true_volume * total_bias * noise)
 
         prediction = {
@@ -118,7 +86,6 @@ def apply_ai_bias(ground_truth_df, census_gdf):
 
     df = pd.DataFrame(ai_predictions)
 
-    # Calculate summary statistics
     print("\nAI Prediction Bias Summary:")
     print("=" * 50)
 
@@ -142,7 +109,6 @@ def apply_ai_bias(ground_truth_df, census_gdf):
     print(f"\nLow-minority areas (<30%):")
     print(f"  Mean error: {low_minority['error_pct'].mean():.1f}%")
 
-    # Save predictions
     output_file = SIMULATED_DATA_DIR / 'ai_volume_predictions.json'
     df.to_json(output_file, orient='records', indent=2)
     print(f"\nSaved AI predictions to {output_file}")
@@ -157,8 +123,6 @@ def generate_tract_level_predictions(census_gdf):
     for entire regions, not just where counters exist.
     """
 
-    # Aggregate block groups to unique census tracts first
-    # (census_gdf may contain block groups, not tracts)
     tract_summary = census_gdf.groupby('tract_id').agg({
         'total_population': 'sum',
         'median_income': 'first',
@@ -171,61 +135,27 @@ def generate_tract_level_predictions(census_gdf):
     predictions = []
 
     for _, tract in tract_summary.iterrows():
-        # Calculate "true" baseline active transportation volume
-        # Based on population density, transit access, walkability
         population = tract['total_population']
-
-        # Base active transportation rate: 2-4% of population makes a bike/walk trip daily
-        # Higher in denser areas, lower in suburban areas
-        base_rate = 0.03  # 3% baseline
-
-        # Adjust for population density (higher density = higher active transport)
-        # This creates realistic geographic variation
+        base_rate = VOLUME_SIMULATION_CONFIG['base_active_transport_rate']
         area_km2 = tract.geometry.area * 111 * 111  # rough conversion to km²
         density = population / area_km2 if area_km2 > 0 else 0
 
-        # Density adjustment (0.8x to 1.2x)
-        if density > 5000:  # Urban core
-            density_factor = 1.2
-        elif density > 2000:  # Urban
-            density_factor = 1.1
-        elif density > 500:  # Suburban
-            density_factor = 0.95
-        else:  # Rural
-            density_factor = 0.8
+        density_factor = VOLUME_SIMULATION_CONFIG['density_default_factor']
+        for threshold, factor in VOLUME_SIMULATION_CONFIG['density_thresholds']:
+            if density > threshold:
+                density_factor = factor
+                break
 
-        # Calculate "true" daily active transportation volume
         true_daily_volume = int(population * base_rate * density_factor)
 
-        # Now apply AI bias based on demographics
         income = tract['median_income']
         pct_minority = tract['pct_minority']
-
         income_quintile = get_income_quintile(income, census_gdf)
-
-        # Income bias
-        if income_quintile <= 2:  # Low income (bottom 40%)
-            income_bias = 1.0 - BIAS_PARAMETERS['low_income_undercount']
-        elif income_quintile >= 4:  # High income (top 40%)
-            income_bias = 1.0 + BIAS_PARAMETERS['high_income_overcount']
-        else:
-            income_bias = 1.0
-
-        # Racial bias
-        if pct_minority > 60:
-            racial_bias = 1.0 - BIAS_PARAMETERS['minority_undercount']
-        elif pct_minority < 30:
-            racial_bias = 1.0 + 0.05
-        else:
-            racial_bias = 1.0
-
-        # Combined bias with smaller noise for tract-level (not individual counter noise)
-        total_bias = income_bias * racial_bias
-        noise = np.random.normal(1.0, 0.03)  # Smaller noise for aggregate
+        total_bias = calculate_demographic_bias(income_quintile, pct_minority)
+        noise = np.random.normal(1.0, VOLUME_SIMULATION_CONFIG['aggregate_noise_std'])
 
         predicted_daily_volume = int(true_daily_volume * total_bias * noise)
 
-        # Calculate error metrics
         error = predicted_daily_volume - true_daily_volume
         error_pct = (error / true_daily_volume * 100) if true_daily_volume > 0 else 0
 
@@ -244,7 +174,6 @@ def generate_tract_level_predictions(census_gdf):
 
     df = pd.DataFrame(predictions)
 
-    # Print summary statistics
     print("\nTract-Level AI Prediction Summary:")
     print("=" * 60)
     print(f"Total tracts: {len(df)}")
@@ -264,7 +193,6 @@ def generate_tract_level_predictions(census_gdf):
     print(f"  High minority (>60%): {high_minority['error_pct'].mean():+.1f}% ({len(high_minority)} tracts)")
     print(f"  Low minority (<30%): {low_minority['error_pct'].mean():+.1f}% ({len(low_minority)} tracts)")
 
-    # Save tract-level predictions
     output_file = SIMULATED_DATA_DIR / 'tract_volume_predictions.json'
     df.to_json(output_file, orient='records', indent=2)
     print(f"\nSaved tract-level predictions to {output_file}")
@@ -286,13 +214,29 @@ def get_income_quintile(income, census_gdf):
     else:
         return 5
 
+def calculate_demographic_bias(income_quintile, pct_minority):
+    """Calculate combined income + racial bias multiplier."""
+    if income_quintile <= 2:
+        income_bias = 1.0 - BIAS_PARAMETERS['low_income_undercount']
+    elif income_quintile >= 4:
+        income_bias = 1.0 + BIAS_PARAMETERS['high_income_overcount']
+    else:
+        income_bias = 1.0
+
+    if pct_minority > VOLUME_SIMULATION_CONFIG['minority_high_threshold']:
+        racial_bias = 1.0 - BIAS_PARAMETERS['minority_undercount']
+    elif pct_minority < VOLUME_SIMULATION_CONFIG['minority_low_threshold']:
+        racial_bias = 1.0 + VOLUME_SIMULATION_CONFIG['minority_low_overcount']
+    else:
+        racial_bias = 1.0
+
+    return income_bias * racial_bias
+
 if __name__ == '__main__':
     print("AI Prediction Simulation - Volume Estimation Bias")
     print("=" * 60)
 
-    # Load census data
     census_file = RAW_DATA_DIR / 'durham_census_tracts.geojson'
-
     if not census_file.exists():
         print("Error: Census data not found. Run fetch_durham_data.py first.")
         sys.exit(1)
@@ -300,15 +244,12 @@ if __name__ == '__main__':
     census_gdf = gpd.read_file(census_file)
     print(f"Loaded {len(census_gdf)} census tracts")
 
-    # Generate ground truth counters (validation points)
     print("\n1. Generating ground truth counter data (validation)...")
     ground_truth = generate_ground_truth_counters(census_gdf)
 
-    # Apply AI bias to counter locations
     print("\n2. Applying AI bias to counter predictions...")
     ai_predictions = apply_ai_bias(ground_truth, census_gdf)
 
-    # Generate tract-level predictions for full map visualization
     print("\n3. Generating tract-level predictions for all areas...")
     tract_predictions = generate_tract_level_predictions(census_gdf)
 

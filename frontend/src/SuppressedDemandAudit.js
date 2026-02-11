@@ -34,6 +34,7 @@ export class SuppressedDemandAudit {
 
     renderMetrics() {
         const { summary } = this.data.report;
+        const threshold = this.data.report.high_suppression_threshold ?? 70;
 
         renderMetrics('test4-metrics', [
             {
@@ -45,7 +46,7 @@ export class SuppressedDemandAudit {
             {
                 title: 'High-Suppression Areas',
                 value: summary.high_suppression_tracts.toString(),
-                subtext: 'Tracts with >70% suppression',
+                subtext: `Tracts with >${threshold}% suppression`,
                 sentiment: 'value-warning'
             },
             {

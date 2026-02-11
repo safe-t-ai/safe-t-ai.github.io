@@ -29,10 +29,10 @@ CRASH_TEST_YEARS = [2023]
 
 # Infrastructure project types
 INFRASTRUCTURE_PROJECT_TYPES = {
-    'bike_lane': {'cost': 500_000, 'safety_impact': 0.85},
-    'crosswalk': {'cost': 50_000, 'safety_impact': 0.70},
-    'traffic_signal': {'cost': 300_000, 'safety_impact': 0.90},
-    'speed_reduction': {'cost': 100_000, 'safety_impact': 0.75},
+    'crosswalk': {'cost': 50_000, 'safety_impact': 0.15},
+    'bike_lane': {'cost': 200_000, 'safety_impact': 0.25},
+    'traffic_signal': {'cost': 150_000, 'safety_impact': 0.30},
+    'speed_reduction': {'cost': 75_000, 'safety_impact': 0.20},
 }
 INFRASTRUCTURE_DEFAULT_BUDGET = 5_000_000
 
@@ -41,14 +41,33 @@ DANGER_SCORE_CONFIG = {
     'base_danger': 15.0,
     'income_multiplier_min': 1.0,
     'income_multiplier_max': 1.8,
-    'seed': 42,
 }
 
 # Model reproducibility
 DEFAULT_RANDOM_SEED = 42
+
+# Volume simulation parameters
+VOLUME_SIMULATION_CONFIG = {
+    'num_counters': 15,
+    'base_active_transport_rate': 0.03,
+    'density_thresholds': [
+        (5000, 1.2),   # Urban core
+        (2000, 1.1),   # Urban
+        (500, 0.95),   # Suburban
+    ],
+    'density_default_factor': 0.8,   # Rural
+    'minority_high_threshold': 60,
+    'minority_low_threshold': 30,
+    'minority_low_overcount': 0.05,
+    'aggregate_noise_std': 0.03,
+}
 
 # Suppressed demand parameters
 SUPPRESSED_DEMAND_CONFIG = {
     'base_rate': 0.10,
     'infrastructure_quality_correlation': 0.65,
 }
+
+HIGH_SUPPRESSION_THRESHOLD = 70  # Suppression % that defines "high suppression"
+
+QUINTILE_LABELS = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']

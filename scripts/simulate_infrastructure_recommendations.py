@@ -9,7 +9,6 @@ Generates:
 - Equity analysis comparing both approaches
 """
 
-import os
 import sys
 import json
 from pathlib import Path
@@ -18,6 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import geopandas as gpd
+from backend.config import INFRASTRUCTURE_DEFAULT_BUDGET, DEFAULT_RANDOM_SEED
 from backend.models.infrastructure_auditor import InfrastructureRecommendationAuditor
 
 
@@ -47,14 +47,13 @@ def main():
     census_gdf = gpd.read_file(census_file)
     print(f"Loaded {len(census_gdf)} census tracts")
 
-    # Initialize auditor with $5M budget
-    total_budget = 5_000_000
-    print(f"\nInitializing auditor with ${total_budget:,} total budget")
-    auditor = InfrastructureRecommendationAuditor(census_gdf, total_budget=total_budget)
+    # Initialize auditor
+    print(f"\nInitializing auditor with ${INFRASTRUCTURE_DEFAULT_BUDGET:,} total budget")
+    auditor = InfrastructureRecommendationAuditor(census_gdf)
 
     # Simulate danger scores
     print("\nSimulating crash/danger scores by tract...")
-    danger_scores = auditor.simulate_danger_scores(seed=42)
+    danger_scores = auditor.simulate_danger_scores(seed=DEFAULT_RANDOM_SEED)
     print(f"  Average danger score: {danger_scores['danger_score'].mean():.1f} crashes/10k/year")
     print(f"  Range: {danger_scores['danger_score'].min():.1f} - {danger_scores['danger_score'].max():.1f}")
 
@@ -65,7 +64,7 @@ def main():
 
     # Simulate AI recommendations (biased toward wealth)
     print("\nSimulating AI recommendations (biased toward high-income)...")
-    ai_recs = auditor.simulate_ai_recommendations(bias_strength=0.6, seed=42)
+    ai_recs = auditor.simulate_ai_recommendations(bias_strength=0.6, seed=DEFAULT_RANDOM_SEED)
     print(f"  Projects recommended: {len(ai_recs)}")
     print(f"  Budget allocated: ${ai_recs['cost'].sum():,}")
     print(f"  Average project cost: ${ai_recs['cost'].mean():,.0f}")
@@ -78,7 +77,7 @@ def main():
 
     # Simulate need-based recommendations (equitable)
     print("\nSimulating need-based recommendations (equitable baseline)...")
-    need_recs = auditor.simulate_need_based_recommendations(seed=42)
+    need_recs = auditor.simulate_need_based_recommendations(seed=DEFAULT_RANDOM_SEED)
     print(f"  Projects recommended: {len(need_recs)}")
     print(f"  Budget allocated: ${need_recs['cost'].sum():,}")
     print(f"  Average project cost: ${need_recs['cost'].mean():,.0f}")
