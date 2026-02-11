@@ -16,35 +16,21 @@ export class SuppressedDemandAudit {
     }
 
     async initialize() {
-        try {
-            const [report, funnel, correlationMatrix, scorecard, demandGeoData] = await Promise.all([
-                api.getDemandReport(),
-                api.getDemandFunnel(),
-                api.getCorrelationMatrix(),
-                api.getDetectionScorecard(),
-                api.getDemandGeoData()
-            ]);
+        const [report, funnel, correlationMatrix, scorecard, demandGeoData] = await Promise.all([
+            api.getDemandReport(),
+            api.getDemandFunnel(),
+            api.getCorrelationMatrix(),
+            api.getDetectionScorecard(),
+            api.getDemandGeoData()
+        ]);
 
-            this.data = {
-                report,
-                funnel,
-                correlationMatrix,
-                scorecard,
-                demandGeoData
-            };
+        this.data = { report, funnel, correlationMatrix, scorecard, demandGeoData };
 
-            this.renderInterpretation();
-            this.renderMetrics();
-            this.renderMap();
-            this.renderCharts();
-            this.setupViewToggle();
-
-        } catch (error) {
-            console.error('Error loading Test 4:', error);
-            document.getElementById('test4-content').innerHTML =
-                '<div class="interpretation" style="background:#fee; border-color:#c00;"><h3>Error Loading Data</h3><p>' +
-                error.message + '</p></div>';
-        }
+        this.renderInterpretation();
+        this.renderMetrics();
+        this.renderMap();
+        this.renderCharts();
+        this.setupViewToggle();
     }
 
     renderInterpretation() {
