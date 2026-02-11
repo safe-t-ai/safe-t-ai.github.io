@@ -2,10 +2,10 @@
  * Crash Prediction Bias Audit
  */
 
-import echarts from './services/echarts.js';
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
-import { COLORS } from './services/chartConfig.js';
+import { initChart, COLORS } from './services/chartConfig.js';
+import { renderMetrics, renderInterpretation } from './services/renderUtils.js';
 
 export class CrashPredictionAudit {
     constructor() {
@@ -34,16 +34,7 @@ export class CrashPredictionAudit {
     }
 
     renderInterpretation() {
-        const { findings } = this.data.report;
-        const html = `
-            <div class="interpretation">
-                <h3>Key Findings</h3>
-                <ul>
-                    ${findings.map(f => `<li>${f}</li>`).join('')}
-                </ul>
-            </div>
-        `;
-        document.getElementById('test2-interpretation').innerHTML = html;
+        renderInterpretation('test2-interpretation', this.data.report.findings);
     }
 
     renderMetrics() {
@@ -54,7 +45,7 @@ export class CrashPredictionAudit {
 
         const errorDisparity = ((q1_error.mae - q5_error.mae) / q5_error.mae) * 100;
 
-        const metrics = [
+        renderMetrics('test2-metrics', [
             {
                 title: 'Q1 Prediction Error',
                 value: q1_error.mae.toFixed(1) + ' crashes',
@@ -79,17 +70,7 @@ export class CrashPredictionAudit {
                 subtext: `Durham County 2019-2023 (NCDOT)`,
                 sentiment: 'value-info'
             }
-        ];
-
-        const html = metrics.map(m => `
-            <div class="metric-card">
-                <h3>${m.title}</h3>
-                <div class="value ${m.sentiment}">${m.value}</div>
-                <div class="subtext">${m.subtext}</div>
-            </div>
-        `).join('');
-
-        document.getElementById('test2-metrics').innerHTML = html;
+        ]);
     }
 
     renderMap() {
@@ -127,44 +108,15 @@ export class CrashPredictionAudit {
             }
         );
 
-        this.addCrashLegend(label, breaks);
-    }
-
-    addCrashLegend(title, breaks) {
-        if (this.legend) {
-            this.map.map.removeControl(this.legend);
-        }
-
-        const legend = L.control({ position: 'bottomright' });
-
-        legend.onAdd = () => {
-            const div = L.DomUtil.create('div', 'legend');
-            div.innerHTML = `
-                <h4>${title}</h4>
-                <div style="margin-top: 0.5rem;">
-                    <div class="legend-item">
-                        <span class="legend-color" style="background: #b10026;"></span>
-                        >${breaks[7]}
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background: #fc4e2a;"></span>
-                        ${breaks[5]}-${breaks[7]}
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background: #fed976;"></span>
-                        ${breaks[2]}-${breaks[5]}
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background: #ffffcc;"></span>
-                        <${breaks[2]}
-                    </div>
-                </div>
-            `;
-            return div;
-        };
-
-        legend.addTo(this.map.map);
-        this.legend = legend;
+        this.map.addLegend({
+            title: label,
+            colorScale: [
+                { color: '#ffffcc', label: `<${breaks[2]}` },
+                { color: '#fed976', label: `${breaks[2]}-${breaks[5]}` },
+                { color: '#fc4e2a', label: `${breaks[5]}-${breaks[7]}` },
+                { color: '#b10026', label: `>${breaks[7]}` }
+            ]
+        });
     }
 
     renderCharts() {
@@ -174,7 +126,6 @@ export class CrashPredictionAudit {
     }
 
     renderConfusionMatrix() {
-        const chart = echarts.init(document.getElementById('chart-confusion'));
         const { by_quintile } = this.data.confusionMatrices;
 
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
@@ -248,14 +199,10 @@ export class CrashPredictionAudit {
             }]
         };
 
-        chart.setOption(option);
-        this.charts.confusion = chart;
-
-        window.addEventListener('resize', () => chart.resize());
+        this.charts.confusion = initChart('chart-confusion', option);
     }
 
     renderTimeSeriesChart() {
-        const chart = echarts.init(document.getElementById('chart-timeseries'));
         const { years, by_quintile } = this.data.timeSeries;
 
         const option = {
@@ -323,14 +270,10 @@ export class CrashPredictionAudit {
             ]
         };
 
-        chart.setOption(option);
-        this.charts.timeseries = chart;
-
-        window.addEventListener('resize', () => chart.resize());
+        this.charts.timeseries = initChart('chart-timeseries', option);
     }
 
     renderRocCurves() {
-        const chart = echarts.init(document.getElementById('chart-roc'));
         const { by_quintile } = this.data.rocCurves;
 
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
@@ -424,10 +367,7 @@ export class CrashPredictionAudit {
             series: series
         };
 
-        chart.setOption(option);
-        this.charts.roc = chart;
-
-        window.addEventListener('resize', () => chart.resize());
+        this.charts.roc = initChart('chart-roc', option);
     }
 
     setupViewToggle() {

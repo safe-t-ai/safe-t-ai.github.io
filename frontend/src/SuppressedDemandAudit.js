@@ -2,10 +2,10 @@
  * Suppressed Demand Analysis
  */
 
-import echarts from './services/echarts.js';
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
-import { COLORS } from './services/chartConfig.js';
+import { initChart, COLORS } from './services/chartConfig.js';
+import { renderMetrics, renderInterpretation } from './services/renderUtils.js';
 
 export class SuppressedDemandAudit {
     constructor() {
@@ -34,22 +34,13 @@ export class SuppressedDemandAudit {
     }
 
     renderInterpretation() {
-        const { findings } = this.data.report;
-        const html = `
-            <div class="interpretation">
-                <h3>Key Findings</h3>
-                <ul>
-                    ${findings.map(f => `<li>${f}</li>`).join('')}
-                </ul>
-            </div>
-        `;
-        document.getElementById('test4-interpretation').innerHTML = html;
+        renderInterpretation('test4-interpretation', this.data.report.findings);
     }
 
     renderMetrics() {
         const { summary } = this.data.report;
 
-        const metrics = [
+        renderMetrics('test4-metrics', [
             {
                 title: 'Suppressed Demand',
                 value: summary.total_suppressed_demand.toLocaleString() + ' trips/day',
@@ -74,17 +65,7 @@ export class SuppressedDemandAudit {
                 subtext: 'Partial detection capability',
                 sentiment: 'value-warning'
             }
-        ];
-
-        const html = metrics.map(m => `
-            <div class="metric-card">
-                <h3>${m.title}</h3>
-                <div class="value ${m.sentiment}">${m.value}</div>
-                <div class="subtext">${m.subtext}</div>
-            </div>
-        `).join('');
-
-        document.getElementById('test4-metrics').innerHTML = html;
+        ]);
     }
 
     renderMap() {
@@ -139,68 +120,21 @@ export class SuppressedDemandAudit {
             }
         );
 
-        this.addDemandLegend(title);
-    }
+        const items = this.currentView === 'suppressed'
+            ? [
+                { color: '#fee5d9', label: '<20' },
+                { color: '#fcbba1', label: '20-60' },
+                { color: '#fb6a4a', label: '60-150' },
+                { color: '#99000d', label: '>150 trips/day' }
+            ]
+            : [
+                { color: '#f7fbff', label: '<200' },
+                { color: '#deebf7', label: '200-400' },
+                { color: '#6baed6', label: '400-600' },
+                { color: '#08519c', label: '>600 trips/day' }
+            ];
 
-    addDemandLegend(title) {
-        if (this.legend) {
-            this.map.map.removeControl(this.legend);
-        }
-
-        const legend = L.control({ position: 'bottomright' });
-
-        legend.onAdd = () => {
-            const div = L.DomUtil.create('div', 'legend');
-            if (this.currentView === 'suppressed') {
-                div.innerHTML = `
-                    <h4>${title}</h4>
-                    <div style="margin-top: 0.5rem;">
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #99000d;"></span>
-                            >150 trips/day
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #fb6a4a;"></span>
-                            60-150
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #fcbba1;"></span>
-                            20-60
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #fee5d9;"></span>
-                            <20
-                        </div>
-                    </div>
-                `;
-            } else {
-                div.innerHTML = `
-                    <h4>${title}</h4>
-                    <div style="margin-top: 0.5rem;">
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #08519c;"></span>
-                            >600 trips/day
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #6baed6;"></span>
-                            400-600
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #deebf7;"></span>
-                            200-400
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #f7fbff;"></span>
-                            <200
-                        </div>
-                    </div>
-                `;
-            }
-            return div;
-        };
-
-        legend.addTo(this.map.map);
-        this.legend = legend;
+        this.map.addLegend({ title, colorScale: items });
     }
 
     renderCharts() {
@@ -210,7 +144,6 @@ export class SuppressedDemandAudit {
     }
 
     renderFunnelChart() {
-        const chart = echarts.init(document.getElementById('chart-funnel'));
         const { 'Q1 (Poorest)': q1, 'Q5 (Richest)': q5 } = this.data.funnel;
 
         const option = {
@@ -287,14 +220,10 @@ export class SuppressedDemandAudit {
             ]
         };
 
-        chart.setOption(option);
-        this.charts.funnel = chart;
-
-        window.addEventListener('resize', () => chart.resize());
+        this.charts.funnel = initChart('chart-funnel', option);
     }
 
     renderCorrelationMatrix() {
-        const chart = echarts.init(document.getElementById('chart-correlation'));
         const { variables, correlations } = this.data.correlationMatrix;
 
         const data = correlations.map(item => {
@@ -367,14 +296,10 @@ export class SuppressedDemandAudit {
             }]
         };
 
-        chart.setOption(option);
-        this.charts.correlation = chart;
-
-        window.addEventListener('resize', () => chart.resize());
+        this.charts.correlation = initChart('chart-correlation', option);
     }
 
     renderDetectionScorecard() {
-        const chart = echarts.init(document.getElementById('chart-scorecard'));
         const { naive_ai, sophisticated_ai, human_expert_baseline } = this.data.scorecard;
 
         function scorecardData(d) {
@@ -434,10 +359,7 @@ export class SuppressedDemandAudit {
             }))
         };
 
-        chart.setOption(option);
-        this.charts.scorecard = chart;
-
-        window.addEventListener('resize', () => chart.resize());
+        this.charts.scorecard = initChart('chart-scorecard', option);
     }
 
     setupViewToggle() {
