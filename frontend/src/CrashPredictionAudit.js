@@ -157,11 +157,6 @@ export class CrashPredictionAudit {
         });
 
         const option = {
-            title: {
-                text: 'Model Performance by Quintile',
-                left: 'center',
-                textStyle: { fontSize: 14, fontWeight: 'normal' }
-            },
             tooltip: {
                 position: 'top',
                 formatter: (params) => {
@@ -223,11 +218,6 @@ export class CrashPredictionAudit {
         const { years, by_quintile } = this.data.timeSeries;
 
         const option = {
-            title: {
-                text: 'Crashes Over Time',
-                left: 'center',
-                textStyle: { fontSize: 14, fontWeight: 'normal' }
-            },
             tooltip: {
                 trigger: 'axis',
                 axisPointer: { type: 'cross' }
@@ -336,11 +326,6 @@ export class CrashPredictionAudit {
         });
 
         const option = {
-            title: {
-                text: 'Classification Accuracy by Quintile',
-                left: 'center',
-                textStyle: { fontSize: 14, fontWeight: 'normal' }
-            },
             tooltip: {
                 trigger: 'axis',
                 axisPointer: { type: 'cross' },

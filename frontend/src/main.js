@@ -80,7 +80,9 @@ class App {
         if (testId === this.currentTest) return;
 
         document.querySelectorAll('.tab').forEach(tab => {
-            tab.classList.toggle('active', tab.dataset.test === testId);
+            const isActive = tab.dataset.test === testId;
+            tab.classList.toggle('active', isActive);
+            tab.setAttribute('aria-selected', isActive);
         });
 
         document.querySelectorAll('.test-content').forEach(content => {

@@ -542,6 +542,17 @@
         .legend h4 { font-size: var(--font-footnote); font-weight: 600; margin-bottom: var(--space-2); }
         .legend-item { display: flex; align-items: center; margin: var(--space-1) 0; }
         .legend-color { width: 18px; height: 18px; border-radius: 2px; margin-right: var(--space-2); }
+        .legend-footer { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--color-separator); }
+
+        /* ── Map Markers ── */
+        .counter-marker {
+            background-color: var(--color-accent);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 4px rgba(0,0,0,0.4);
+        }
 
         /* ── Data Source Badges ── */
         .data-source-badge {
@@ -991,12 +1002,12 @@
 
     <div class="tabs-bar">
         <div class="tabs-bar-inner">
-            <div class="tabs">
-                <button class="tab active" data-test="overview">Overview</button>
-                <button class="tab" data-test="test1">Volume Estimation</button>
-                <button class="tab" data-test="test2">Crash Prediction</button>
-                <button class="tab" data-test="test3">Infrastructure</button>
-                <button class="tab" data-test="test4">Suppressed Demand</button>
+            <div class="tabs" role="tablist" aria-label="Equity audit tests">
+                <button class="tab active" data-test="overview" role="tab" aria-selected="true" aria-controls="overview-content">Overview</button>
+                <button class="tab" data-test="test1" role="tab" aria-selected="false" aria-controls="test1-content">Volume Estimation</button>
+                <button class="tab" data-test="test2" role="tab" aria-selected="false" aria-controls="test2-content">Crash Prediction</button>
+                <button class="tab" data-test="test3" role="tab" aria-selected="false" aria-controls="test3-content">Infrastructure</button>
+                <button class="tab" data-test="test4" role="tab" aria-selected="false" aria-controls="test4-content">Suppressed Demand</button>
             </div>
         </div>
     </div>
@@ -1006,7 +1017,7 @@
         <div id="loading" class="loading"><div class="loading-spinner"></div>Loading data...</div>
         <div id="app" style="display: none;">
             <!-- Overview Content -->
-            <div id="overview-content" class="test-content active">
+            <div id="overview-content" class="test-content active" role="tabpanel" aria-label="Overview">
                 <div class="overview-banner">
                     <h2>Durham Transportation Equity Audit</h2>
                     <p class="banner-description">AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities. This audit tests whether those tools treat Durham's communities equitably. Four tests measure how income and race correlate with AI accuracy, resource allocation, and demand visibility.</p>
@@ -1029,7 +1040,7 @@
             <!-- End Overview Content -->
 
             <!-- Test 1 Content -->
-            <div id="test1-content" class="test-content">
+            <div id="test1-content" class="test-content" role="tabpanel" aria-label="Volume Estimation">
                 <div class="metrics-grid" id="metrics"></div>
 
                 <div class="content-split">
@@ -1103,7 +1114,7 @@
             <!-- End Test 1 Content -->
 
             <!-- Test 2 Content -->
-            <div id="test2-content" class="test-content">
+            <div id="test2-content" class="test-content" role="tabpanel" aria-label="Crash Prediction">
                 <div class="metrics-grid" id="test2-metrics"></div>
 
                 <div class="content-split">
@@ -1170,7 +1181,7 @@
             <!-- End Test 2 Content -->
 
             <!-- Test 3 Content -->
-            <div id="test3-content" class="test-content">
+            <div id="test3-content" class="test-content" role="tabpanel" aria-label="Infrastructure">
                 <div class="metrics-grid" id="test3-metrics"></div>
 
                 <div class="content-split">
@@ -1225,7 +1236,7 @@
             <!-- End Test 3 Content -->
 
             <!-- Test 4 Content -->
-            <div id="test4-content" class="test-content">
+            <div id="test4-content" class="test-content" role="tabpanel" aria-label="Suppressed Demand">
                 <div class="metrics-grid" id="test4-metrics"></div>
 
                 <div class="content-split">

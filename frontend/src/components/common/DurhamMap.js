@@ -80,7 +80,7 @@ export class DurhamMap {
                     lines.push(`<strong>AI Error:</strong> ${props[valueField]?.toFixed?.(1) ?? props[valueField] ?? 'N/A'}%`);
                 }
 
-                layer.bindPopup(`<div style="font-size: 13px;">${lines.join('<br/>')}</div>`);
+                layer.bindPopup(lines.join('<br/>'));
 
                 layer.on('mouseover', function() {
                     this.setStyle({ weight: 3, color: '#636366' });
@@ -138,7 +138,7 @@ export class DurhamMap {
 
             if (footer) {
                 div.innerHTML += `
-                    <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
+                    <div class="legend-footer">
                         <small>${footer}</small>
                     </div>
                 `;

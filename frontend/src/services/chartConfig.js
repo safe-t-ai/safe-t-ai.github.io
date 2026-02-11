@@ -24,6 +24,8 @@ window.addEventListener('resize', () => {
 
 export { resizeVisibleCharts };
 
+const FONT_FAMILY = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif';
+
 // Shared tooltip style matching design tokens
 const TOOLTIP_STYLE = {
     backgroundColor: '#0f172a',
@@ -34,7 +36,7 @@ const TOOLTIP_STYLE = {
     textStyle: {
         color: 'rgba(255,255,255,0.85)',
         fontSize: 13,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif'
+        fontFamily: FONT_FAMILY
     },
     extraCssText: 'box-shadow: 0 4px 12px rgba(0,0,0,0.15);'
 };
@@ -47,6 +49,8 @@ const ANIMATION_DEFAULTS = {
 };
 
 export function initChart(elementId, config) {
+    // Global font family for all text rendered on canvas
+    config.textStyle = { fontFamily: FONT_FAMILY, ...(config.textStyle || {}) };
     // Merge tooltip style and animation defaults
     config.tooltip = { ...TOOLTIP_STYLE, ...(config.tooltip || {}) };
     if (!config.animationDuration) {
@@ -93,21 +97,12 @@ export function createBarChartConfig(data, options = {}) {
     const {
         xField = 'label',
         yField = 'value',
-        title = '',
         yAxisLabel = '',
         color = COLORS.primary,
         formatter = null
     } = options;
 
     return {
-        title: {
-            text: title,
-            left: 'center',
-            textStyle: {
-                fontSize: getResponsiveFontSize(16, 12),
-                fontWeight: 'normal'
-            }
-        },
         tooltip: {
             trigger: 'axis',
             axisPointer: {
@@ -145,7 +140,8 @@ export function createBarChartConfig(data, options = {}) {
             itemStyle: {
                 color: typeof color === 'string' ? color : (params) => {
                     return color[params.dataIndex % color.length];
-                }
+                },
+                borderRadius: [3, 3, 0, 0]
             },
             label: {
                 show: false
@@ -159,7 +155,6 @@ export function createScatterChartConfig(data, options = {}) {
     const {
         xField = 'x',
         yField = 'y',
-        title = '',
         xAxisLabel = '',
         yAxisLabel = '',
         colorField = null,
@@ -200,14 +195,6 @@ export function createScatterChartConfig(data, options = {}) {
     const maxVal = Math.max(...allX);
 
     return {
-        title: {
-            text: title,
-            left: 'center',
-            textStyle: {
-                fontSize: getResponsiveFontSize(16, 12),
-                fontWeight: 'normal'
-            }
-        },
         tooltip: {
             trigger: 'item',
             confine: true,
@@ -271,21 +258,12 @@ export function createScatterChartConfig(data, options = {}) {
 
 export function createHistogramConfig(data, options = {}) {
     const {
-        title = '',
         xAxisLabel = '',
         yAxisLabel = 'Count',
         color = COLORS.primary
     } = options;
 
     return {
-        title: {
-            text: title,
-            left: 'center',
-            textStyle: {
-                fontSize: getResponsiveFontSize(16, 12),
-                fontWeight: 'normal'
-            }
-        },
         tooltip: {
             trigger: 'axis',
             axisPointer: {
@@ -327,8 +305,10 @@ export function createHistogramConfig(data, options = {}) {
             type: 'bar',
             data: data.map(d => d.count),
             itemStyle: {
-                color: color
-            }
+                color: color,
+                borderRadius: [3, 3, 0, 0]
+            },
+            animationDelay: (idx) => idx * 60
         }]
     };
 }

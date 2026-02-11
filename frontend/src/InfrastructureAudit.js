@@ -193,11 +193,6 @@ export class InfrastructureAudit {
         }));
 
         const option = {
-            title: {
-                text: 'Budget Allocation by Income',
-                left: 'center',
-                textStyle: { fontSize: 14, fontWeight: 'normal' }
-            },
             tooltip: {
                 trigger: 'item',
                 formatter: (params) => {
@@ -231,11 +226,6 @@ export class InfrastructureAudit {
         const normalize = (val, max) => (val / max) * 100;
 
         const option = {
-            title: {
-                text: 'Equity Comparison: AI vs Need-Based',
-                left: 'center',
-                textStyle: { fontSize: 14, fontWeight: 'normal' }
-            },
             legend: {
                 data: ['AI Allocation', 'Need-Based'],
                 top: 30
