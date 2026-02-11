@@ -5,10 +5,10 @@
 
 const DESCRIPTIONS = {
     overview: '',
-    test1: 'Evaluating AI tools for demographic bias in pedestrian and cyclist volume predictions',
-    test2: 'Evaluating AI crash prediction models for enforcement bias',
-    test3: 'Evaluating AI infrastructure recommendations for equitable resource allocation',
-    test4: 'Evaluating AI capability to detect suppressed demand in underserved areas'
+    test1: 'Does AI count pedestrians and cyclists equally across all neighborhoods?',
+    test2: 'Does AI predict crashes as accurately in low-income areas as wealthy ones?',
+    test3: 'When AI recommends where to spend safety budgets, who benefits?',
+    test4: 'Can AI see demand that poor infrastructure has made invisible?'
 };
 
 // Literal paths required for Vite code splitting

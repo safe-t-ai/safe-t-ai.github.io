@@ -188,7 +188,7 @@ export class InfrastructureAudit {
 
         const option = {
             title: {
-                text: 'Budget Flow by Income Quintile (AI Allocation)',
+                text: 'Budget Allocation by Income',
                 left: 'center',
                 textStyle: { fontSize: 14, fontWeight: 'normal' }
             },
