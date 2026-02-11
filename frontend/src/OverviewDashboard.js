@@ -92,13 +92,14 @@ export class OverviewDashboard {
         const q1Error = crashReport.error_by_quintile['Q1 (Poorest)'];
         const q5Error = crashReport.error_by_quintile['Q5 (Richest)'];
 
-        const cards = [
-            {
-                test: 'test1',
-                label: 'Volume Estimation',
-                value: `${Math.abs(volumeReport.by_income.equity_gap.gap).toFixed(1)}pp`,
-                finding: 'Accuracy gap between highest and lowest income quintiles'
-            },
+        const hero = {
+            test: 'test1',
+            label: 'Volume Estimation',
+            value: `${Math.abs(volumeReport.by_income.equity_gap.gap).toFixed(1)}pp`,
+            finding: 'Accuracy gap between highest and lowest income quintiles'
+        };
+
+        const secondary = [
             {
                 test: 'test2',
                 label: 'Crash Prediction',
@@ -119,18 +120,28 @@ export class OverviewDashboard {
             }
         ];
 
-        document.getElementById('overview-cards').innerHTML = cards.map(c => `
-            <button class="overview-card" data-test="${c.test}">
-                <div class="card-label">${c.label}</div>
-                <div class="card-value">${c.value}</div>
-                <div class="card-finding">${c.finding}</div>
+        const container = document.getElementById('overview-cards');
+        container.innerHTML = `
+            <button class="stat-hero" data-test="${hero.test}">
+                <div class="stat-label">${hero.label}</div>
+                <div class="stat-value">${hero.value}</div>
+                <div class="stat-desc">${hero.finding}</div>
             </button>
-        `).join('');
+            <div class="stat-row">
+                ${secondary.map(s => `
+                    <button class="stat-secondary" data-test="${s.test}">
+                        <div class="stat-label">${s.label}</div>
+                        <div class="stat-value">${s.value}</div>
+                        <div class="stat-desc">${s.finding}</div>
+                    </button>
+                `).join('')}
+            </div>
+        `;
 
-        document.getElementById('overview-cards').addEventListener('click', (e) => {
-            const card = e.target.closest('.overview-card');
-            if (!card) return;
-            window.dispatchEvent(new CustomEvent('navigate-test', { detail: card.dataset.test }));
+        container.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-test]');
+            if (!btn) return;
+            window.dispatchEvent(new CustomEvent('navigate-test', { detail: btn.dataset.test }));
         });
     }
 
