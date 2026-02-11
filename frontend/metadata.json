@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-02-11T17:10:38.215263+00:00",
+  "data_hash": "local",
+  "github_run_url": "",
+  "git_sha": "",
+  "sources": {
+    "real": [
+      "US Census ACS 2022"
+    ],
+    "calibrated": [
+      "NCDOT NC Vision Zero crash totals"
+    ],
+    "simulated": [
+      "volume predictions",
+      "crash distributions",
+      "infrastructure recommendations",
+      "demand analysis"
+    ]
+  }
+}

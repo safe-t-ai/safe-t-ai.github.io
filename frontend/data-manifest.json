@@ -1,0 +1,80 @@
+{
+  "sources": {
+    "census_demographics": {
+      "type": "real",
+      "provider": "US Census Bureau ACS 2022",
+      "files": [
+        "census-tracts.json",
+        "choropleth-data.json"
+      ]
+    },
+    "crash_volumes": {
+      "type": "calibrated",
+      "provider": "NCDOT NC Vision Zero API",
+      "files": [
+        "crash-report.json",
+        "crash-time-series.json",
+        "confusion-matrices.json",
+        "crash-geo-data.json"
+      ]
+    },
+    "volume_predictions": {
+      "type": "simulated",
+      "rationale": "Strava Metro / StreetLight Data require institutional license",
+      "files": [
+        "volume-report.json",
+        "counter-locations.json",
+        "accuracy-by-income.json",
+        "accuracy-by-race.json",
+        "scatter-data.json"
+      ]
+    },
+    "infrastructure_recommendations": {
+      "type": "simulated",
+      "rationale": "No public dataset of Durham safety project allocations",
+      "files": [
+        "infrastructure-report.json",
+        "danger-scores.json",
+        "budget-allocation.json",
+        "recommendations.json"
+      ]
+    },
+    "suppressed_demand": {
+      "type": "simulated",
+      "rationale": "Suppressed demand is inherently unobservable",
+      "files": [
+        "demand-report.json",
+        "demand-funnel.json",
+        "detection-scorecard.json",
+        "demand-geo-data.json"
+      ]
+    }
+  },
+  "plausibility_ranges": {
+    "crashes_per_year": [
+      10000,
+      20000
+    ],
+    "crashes_total_5yr": [
+      50000,
+      100000
+    ],
+    "census_tracts": [
+      60,
+      75
+    ],
+    "durham_total_population": [
+      250000,
+      400000
+    ],
+    "median_income_range": [
+      15000,
+      250000
+    ],
+    "budget_allocation_total": [
+      4500000,
+      5500000
+    ],
+    "confusion_matrix_min_f1_spread": 0.05
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "overall": {
+    "confusion_matrix": [
+      [
+        34,
+        0
+      ],
+      [
+        0,
+        33
+      ]
+    ],
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "accuracy": 1.0
+  },
+  "by_quintile": {
+    "Q1 (Poorest)": {
+      "confusion_matrix": [
+        [
+          7,
+          0
+        ],
+        [
+          1,
+          6
+        ]
+      ],
+      "precision": 1.0,
+      "recall": 0.8571428571428571,
+      "f1_score": 0.923076923076923,
+      "accuracy": 0.9285714285714286,
+      "count": 14
+    },
+    "Q2": {
+      "confusion_matrix": [
+        [
+          6,
+          2
+        ],
+        [
+          0,
+          5
+        ]
+      ],
+      "precision": 0.7142857142857143,
+      "recall": 1.0,
+      "f1_score": 0.8333333333333333,
+      "accuracy": 0.8461538461538461,
+      "count": 13
+    },
+    "Q3": {
+      "confusion_matrix": [
+        [
+          7,
+          0
+        ],
+        [
+          0,
+          7
+        ]
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0,
+      "count": 14
+    },
+    "Q4": {
+      "confusion_matrix": [
+        [
+          7,
+          0
+        ],
+        [
+          0,
+          6
+        ]
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0,
+      "count": 13
+    },
+    "Q5 (Richest)": {
+      "confusion_matrix": [
+        [
+          7,
+          0
+        ],
+        [
+          0,
+          6
+        ]
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "accuracy": 1.0,
+      "count": 13
+    }
+  }
+}

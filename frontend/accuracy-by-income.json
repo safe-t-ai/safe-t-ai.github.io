@@ -1,0 +1,64 @@
+{
+  "by_quintile": [
+    {
+      "quintile": 1,
+      "label": "Q1",
+      "count": 3,
+      "median_income": 30858.0,
+      "mae": 11.333333333333334,
+      "mape": 41.50983519404571,
+      "bias": -41.50983519404571,
+      "mean_error_pct": -41.50983519404571
+    },
+    {
+      "quintile": 2,
+      "label": "Q2",
+      "count": 3,
+      "median_income": 45032.0,
+      "mae": 14.0,
+      "mape": 43.0460062813004,
+      "bias": -43.0460062813004,
+      "mean_error_pct": -43.0460062813004
+    },
+    {
+      "quintile": 3,
+      "label": "Q3",
+      "count": 3,
+      "median_income": 53828.0,
+      "mae": 8.666666666666666,
+      "mape": 23.65223784578623,
+      "bias": -23.65223784578623,
+      "mean_error_pct": -23.65223784578623
+    },
+    {
+      "quintile": 4,
+      "label": "Q4",
+      "count": 3,
+      "median_income": 83977.0,
+      "mae": 2.3333333333333335,
+      "mape": 5.071301247771836,
+      "bias": 5.071301247771836,
+      "mean_error_pct": 5.071301247771836
+    },
+    {
+      "quintile": 5,
+      "label": "Q5",
+      "count": 3,
+      "median_income": 104872.0,
+      "mae": 3.3333333333333335,
+      "mape": 6.449553001277138,
+      "bias": 6.449553001277138,
+      "mean_error_pct": 6.449553001277138
+    }
+  ],
+  "equity_gap": {
+    "best_group": "5",
+    "worst_group": "2",
+    "best_group_mean": 6.4495530013,
+    "worst_group_mean": -43.0460062813,
+    "gap": 49.4955592826,
+    "gap_pct": -114.98293002875346,
+    "statistically_significant": true,
+    "p_value": 0.0005628533992688715
+  }
+}

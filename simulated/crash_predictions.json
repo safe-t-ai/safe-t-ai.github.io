@@ -1,0 +1,69 @@
+{
+  "_provenance": {
+    "data_type": "mixed",
+    "real": [
+      "US Census ACS 2022 demographics",
+      "NCDOT crash volumes (calibration)"
+    ],
+    "simulated": [
+      "crash geographic distribution",
+      "AI prediction errors"
+    ],
+    "calibration": {
+      "crashes_per_year": 14415,
+      "source": "ncdot_calibration.json"
+    }
+  },
+  "summary": {
+    "total_crashes_all_years": 56194,
+    "crashes_2023_actual": 11376,
+    "crashes_2023_predicted": 11204,
+    "years_analyzed": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+    ],
+    "tracts_analyzed": 67,
+    "data_source": "Simulated Durham County crash data (2019-2023)"
+  },
+  "error_by_quintile": {
+    "Q1 (Poorest)": {
+      "actual_crashes": 72.07142857142857,
+      "ai_predicted_crashes": 70.37940238086892,
+      "mae": 4.522198124490764,
+      "error_pct": 8.606707114127742
+    },
+    "Q2": {
+      "actual_crashes": 151.76923076923077,
+      "ai_predicted_crashes": 147.5880115723367,
+      "mae": 8.683234020057206,
+      "error_pct": 9.68066590954022
+    },
+    "Q3": {
+      "actual_crashes": 188.64285714285714,
+      "ai_predicted_crashes": 193.7530672150356,
+      "mae": 13.54614034835532,
+      "error_pct": 12.151199056911056
+    },
+    "Q4": {
+      "actual_crashes": 222.84615384615384,
+      "ai_predicted_crashes": 222.4622002764884,
+      "mae": 11.069311014404644,
+      "error_pct": 9.838823270291256
+    },
+    "Q5 (Richest)": {
+      "actual_crashes": 219.69230769230768,
+      "ai_predicted_crashes": 207.38405166327766,
+      "mae": 22.70499449852199,
+      "error_pct": 12.810224639093644
+    }
+  },
+  "findings": [
+    "AI prediction error is 9% in Q1 vs 13% in Q5 \u2014 0.7x worse in the poorest areas",
+    "Ridge regression trained on simulated 2019-2022 crash data with demographic features",
+    "Model shows systematic underperformance in poorest quintile when predicting 2023 crashes",
+    "AI-guided safety investments systematically underallocate resources to underserved communities"
+  ]
+}

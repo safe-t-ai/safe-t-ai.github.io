@@ -1,0 +1,137 @@
+[
+  {
+    "true_volume": 34,
+    "predicted_volume": 35,
+    "counter_id": "CTR001",
+    "income_quintile": 4,
+    "minority_category": "Medium (30-60%)",
+    "median_income": 73500.0,
+    "pct_minority": 50.8
+  },
+  {
+    "true_volume": 51,
+    "predicted_volume": 32,
+    "counter_id": "CTR002",
+    "income_quintile": 2,
+    "minority_category": "High (>60%)",
+    "median_income": 45032.0,
+    "pct_minority": 72.6
+  },
+  {
+    "true_volume": 33,
+    "predicted_volume": 19,
+    "counter_id": "CTR003",
+    "income_quintile": 1,
+    "minority_category": "High (>60%)",
+    "median_income": 29556.0,
+    "pct_minority": 76.5
+  },
+  {
+    "true_volume": 39,
+    "predicted_volume": 21,
+    "counter_id": "CTR004",
+    "income_quintile": 3,
+    "minority_category": "High (>60%)",
+    "median_income": 49880.0,
+    "pct_minority": 73.9
+  },
+  {
+    "true_volume": 22,
+    "predicted_volume": 12,
+    "counter_id": "CTR005",
+    "income_quintile": 2,
+    "minority_category": "High (>60%)",
+    "median_income": 41125.0,
+    "pct_minority": 72.7
+  },
+  {
+    "true_volume": 28,
+    "predicted_volume": 15,
+    "counter_id": "CTR006",
+    "income_quintile": 2,
+    "minority_category": "High (>60%)",
+    "median_income": 45752.0,
+    "pct_minority": 86.1
+  },
+  {
+    "true_volume": 19,
+    "predicted_volume": 11,
+    "counter_id": "CTR007",
+    "income_quintile": 1,
+    "minority_category": "High (>60%)",
+    "median_income": 31576.0,
+    "pct_minority": 64.3
+  },
+  {
+    "true_volume": 55,
+    "predicted_volume": 59,
+    "counter_id": "CTR008",
+    "income_quintile": 4,
+    "minority_category": "Medium (30-60%)",
+    "median_income": 86552.0,
+    "pct_minority": 47.7
+  },
+  {
+    "true_volume": 31,
+    "predicted_volume": 24,
+    "counter_id": "CTR009",
+    "income_quintile": 3,
+    "minority_category": "Medium (30-60%)",
+    "median_income": 53828.0,
+    "pct_minority": 59.6
+  },
+  {
+    "true_volume": 58,
+    "predicted_volume": 66,
+    "counter_id": "CTR010",
+    "income_quintile": 5,
+    "minority_category": "Low (<30%)",
+    "median_income": 104872.0,
+    "pct_minority": 20.1
+  },
+  {
+    "true_volume": 30,
+    "predicted_volume": 18,
+    "counter_id": "CTR011",
+    "income_quintile": 1,
+    "minority_category": "High (>60%)",
+    "median_income": 30858.0,
+    "pct_minority": 63.1
+  },
+  {
+    "true_volume": 36,
+    "predicted_volume": 38,
+    "counter_id": "CTR012",
+    "income_quintile": 5,
+    "minority_category": "Medium (30-60%)",
+    "median_income": 91667.0,
+    "pct_minority": 45.1
+  },
+  {
+    "true_volume": 40,
+    "predicted_volume": 42,
+    "counter_id": "CTR013",
+    "income_quintile": 4,
+    "minority_category": "Low (<30%)",
+    "median_income": 83977.0,
+    "pct_minority": 25.4
+  },
+  {
+    "true_volume": 24,
+    "predicted_volume": 24,
+    "counter_id": "CTR014",
+    "income_quintile": 5,
+    "minority_category": "Low (<30%)",
+    "median_income": 109034.0,
+    "pct_minority": 11.7
+  },
+  {
+    "true_volume": 45,
+    "predicted_volume": 44,
+    "counter_id": "CTR015",
+    "income_quintile": 3,
+    "minority_category": "Medium (30-60%)",
+    "median_income": 70670.0,
+    "pct_minority": 32.5
+  }
+]

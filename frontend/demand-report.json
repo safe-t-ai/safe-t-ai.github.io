@@ -1,0 +1,56 @@
+{
+  "summary": {
+    "total_potential_demand": 43591,
+    "total_actual_demand": 10115,
+    "total_suppressed_demand": 33475,
+    "suppression_rate": 76.79467185677137,
+    "tracts_analyzed": 67,
+    "high_suppression_tracts": 57,
+    "naive_ai_correlation": 0.6757731953979479,
+    "sophisticated_ai_correlation": 0.8567190565702226
+  },
+  "by_quintile": {
+    "Q1 (Poorest)": {
+      "potential_demand": 541.8782897242687,
+      "actual_demand": 62.26732381208182,
+      "suppressed_demand": 479.61096591218694,
+      "suppression_pct": 88.95965623190715,
+      "infrastructure_score": 0.32721792593403176
+    },
+    "Q2": {
+      "potential_demand": 646.2157088899689,
+      "actual_demand": 109.10753098596696,
+      "suppressed_demand": 537.108177904002,
+      "suppression_pct": 83.28749825080737,
+      "infrastructure_score": 0.4074773569654847
+    },
+    "Q3": {
+      "potential_demand": 648.7323401421961,
+      "actual_demand": 142.4803765898203,
+      "suppressed_demand": 506.2519635523758,
+      "suppression_pct": 77.91347574127735,
+      "infrastructure_score": 0.46600394735024875
+    },
+    "Q4": {
+      "potential_demand": 728.5853783104983,
+      "actual_demand": 177.3861208201684,
+      "suppressed_demand": 551.1992574903298,
+      "suppression_pct": 75.60845634270362,
+      "infrastructure_score": 0.4919146783318432
+    },
+    "Q5 (Richest)": {
+      "potential_demand": 692.7926759041242,
+      "actual_demand": 261.9361299360693,
+      "suppressed_demand": 430.856545968055,
+      "suppression_pct": 61.15703690736495,
+      "infrastructure_score": 0.6094065843199232
+    }
+  },
+  "findings": [
+    "76.8% of potential active transportation demand is suppressed by poor infrastructure",
+    "Q1 (poorest) areas have 89.0% suppression vs 61.2% in Q5",
+    "Naive AI has only 0.68 correlation with potential demand (fails to detect suppressed demand)",
+    "Sophisticated AI achieves 0.86 correlation but still undercounts by 44.3% in Q1",
+    "Standard AI tools (Strava Metro) perpetuate inequity by measuring observed demand instead of potential need"
+  ]
+}
