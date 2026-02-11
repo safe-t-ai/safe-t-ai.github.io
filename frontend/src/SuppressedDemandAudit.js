@@ -163,11 +163,6 @@ export class SuppressedDemandAudit {
         ];
 
         const option = {
-            title: {
-                text: 'Demand Suppression: Q1 vs Q5',
-                left: 'center',
-                textStyle: { fontSize: 14, fontWeight: 'normal' }
-            },
             tooltip: {
                 trigger: 'item',
                 formatter: (params) => `${params.seriesName}<br/>${params.name}: ${Math.round(params.value)}%`
@@ -207,11 +202,6 @@ export class SuppressedDemandAudit {
         ];
 
         const option = {
-            title: {
-                text: 'AI Detection Capability',
-                left: 'center',
-                textStyle: { fontSize: 14, fontWeight: 'normal' }
-            },
             tooltip: {
                 trigger: 'axis',
                 axisPointer: { type: 'shadow' }
@@ -245,7 +235,8 @@ export class SuppressedDemandAudit {
                 name: s.name,
                 type: 'bar',
                 data: scorecardData(s.data),
-                itemStyle: { color: s.color }
+                itemStyle: { color: s.color, borderRadius: [3, 3, 0, 0] },
+                animationDelay: (idx) => idx * 120
             }))
         };
 

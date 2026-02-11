@@ -80,7 +80,7 @@ export class VolumeEstimationAudit {
 
         const customIcon = L.divIcon({
             className: 'custom-marker',
-            html: '<div style="background-color: #0891b2; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>',
+            html: '<div class="counter-marker"></div>',
             iconSize: [12, 12],
             iconAnchor: [6, 6]
         });
@@ -88,12 +88,10 @@ export class VolumeEstimationAudit {
         this.map.addMarkers(this.data.counters, {
             icon: customIcon,
             popupContent: (point) => `
-                <div style="font-size: 13px;">
-                    <strong>${point.counter_id}</strong><br/>
-                    <strong>Daily Volume:</strong> ${point.daily_volume}<br/>
-                    <strong>Type:</strong> ${point.type}<br/>
-                    <strong>Income:</strong> $${point.median_income?.toLocaleString() || 'N/A'}
-                </div>
+                <strong>${point.counter_id}</strong><br/>
+                <strong>Daily Volume:</strong> ${point.daily_volume}<br/>
+                <strong>Type:</strong> ${point.type}<br/>
+                <strong>Income:</strong> $${point.median_income?.toLocaleString() || 'N/A'}
             `
         });
 
