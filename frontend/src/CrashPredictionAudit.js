@@ -108,11 +108,8 @@ export class CrashPredictionAudit {
 
     renderMap() {
         this.map = new DurhamMap('map-crashes').initialize();
-
-        // Add actual crashes layer (default view)
         this.updateCrashLayer();
 
-        // Handle window resize
         window.addEventListener('resize', () => {
             if (this.map) this.map.invalidateSize();
         });
@@ -122,15 +119,12 @@ export class CrashPredictionAudit {
         const field = this.currentView === 'actual' ? 'actual_crashes' : 'ai_predicted_crashes';
         const label = this.currentView === 'actual' ? 'Actual Crashes (2023)' : 'AI Predicted Crashes (2023)';
 
-        // Same scale for both views (both are single-year 2023 data)
         const breaks = [20, 40, 60, 80, 100, 150, 200, 250];
 
-        // Clear existing layer
         if (this.map.choroplethLayer) {
             this.map.map.removeLayer(this.map.choroplethLayer);
         }
 
-        // Add choropleth layer
         this.map.addChoroplethLayer(
             this.data.crashGeoData,
             field,
@@ -147,7 +141,6 @@ export class CrashPredictionAudit {
             }
         );
 
-        // Add legend
         this.addCrashLegend(label, breaks);
     }
 
@@ -198,7 +191,6 @@ export class CrashPredictionAudit {
         const chart = echarts.init(document.getElementById('chart-confusion'));
         const { by_quintile } = this.data.confusionMatrices;
 
-        // Prepare data for heatmap
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
         const metrics = ['Precision', 'Recall', 'F1 Score'];
 
@@ -360,7 +352,6 @@ export class CrashPredictionAudit {
 
         const series = [];
 
-        // Add diagonal reference line (random classifier)
         series.push({
             name: 'Random (AUC=0.5)',
             type: 'line',
@@ -375,7 +366,6 @@ export class CrashPredictionAudit {
             z: 1
         });
 
-        // Add ROC curve for each quintile
         quintiles.forEach((quintile, idx) => {
             if (by_quintile[quintile]) {
                 const { fpr, tpr, auc } = by_quintile[quintile];

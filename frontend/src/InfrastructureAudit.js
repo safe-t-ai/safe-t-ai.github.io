@@ -103,7 +103,6 @@ export class InfrastructureAudit {
     renderMap() {
         this.map = new DurhamMap('map-infrastructure').initialize();
 
-        // Add danger scores layer
         this.map.addChoroplethLayer(
             this.data.dangerScores,
             'danger_score',
@@ -120,13 +119,9 @@ export class InfrastructureAudit {
             }
         );
 
-        // Add recommendations layer
         this.updateRecommendationsLayer();
-
-        // Add project type legend
         this.addProjectLegend();
 
-        // Handle window resize
         window.addEventListener('resize', () => {
             if (this.map) this.map.invalidateSize();
         });
@@ -171,13 +166,11 @@ export class InfrastructureAudit {
             ? this.data.recommendations.ai_recommendations
             : this.data.recommendations.need_based_recommendations;
 
-        // Clear existing markers
         if (this.map.markers) {
             this.map.markers.forEach(m => this.map.map.removeLayer(m));
         }
         this.map.markers = [];
 
-        // Add markers for recommendations
         recs.features.forEach(feature => {
             const props = feature.properties;
             const coords = feature.geometry.coordinates;
@@ -204,8 +197,7 @@ export class InfrastructureAudit {
     }
 
     getPolygonCenter(coords) {
-        // Simple centroid calculation
-        const ring = coords[0]; // First ring (outer boundary)
+        const ring = coords[0];
         let sumLat = 0, sumLon = 0;
         ring.forEach(([lon, lat]) => {
             sumLon += lon;
@@ -233,7 +225,6 @@ export class InfrastructureAudit {
         const chart = echarts.init(document.getElementById('chart-sankey'));
         const { ai_allocation } = this.data.budgetAllocation;
 
-        // Create Sankey data
         const nodes = [
             { name: 'Total Budget\n$5M' },
             { name: 'Q1 (Poorest)' },
@@ -289,7 +280,6 @@ export class InfrastructureAudit {
         const chart = echarts.init(document.getElementById('chart-radar'));
         const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
 
-        // Normalize metrics for radar (0-100 scale)
         const normalize = (val, max) => (val / max) * 100;
 
         const option = {
