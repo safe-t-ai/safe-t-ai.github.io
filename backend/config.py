@@ -87,4 +87,5 @@ PLAUSIBILITY_RANGES = {
     'durham_total_population': (250_000, 400_000),  # Census 2022 estimate ~311k
     'median_income_range': (15_000, 250_000),     # Per-tract median household income
     'budget_allocation_total': (4_500_000, 5_500_000),  # INFRASTRUCTURE_DEFAULT_BUDGET ± margin
+    'confusion_matrix_min_f1_spread': 0.05,      # Min spread between best/worst quintile F1
 }

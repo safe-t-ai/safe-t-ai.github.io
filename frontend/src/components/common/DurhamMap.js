@@ -178,12 +178,12 @@ export class DurhamMap {
         ];
     }
 
-    highlightByQuintile(quintile) {
+    highlightByProperty(property, value) {
         if (!this.choroplethLayer) return;
         this.choroplethLayer.eachLayer(layer => {
-            const q = layer.feature?.properties?.income_quintile;
-            if (q == null) return;
-            const match = q === quintile;
+            const v = layer.feature?.properties?.[property];
+            if (v == null) return;
+            const match = v === value;
             layer.setStyle({
                 fillOpacity: match ? 0.9 : 0.15,
                 weight: match ? 2 : 1,

@@ -18,6 +18,7 @@ sys.path.insert(0, str(backend_dir))
 from config import RAW_DATA_DIR, SIMULATED_DATA_DIR, PLAUSIBILITY_RANGES
 from models.volume_estimator import VolumeEstimationAuditor, load_test1_data
 from utils.geospatial import geojson_to_dict, simplify_geometry
+from utils.demographic_analysis import calculate_income_quintiles, calculate_minority_category
 
 
 def copy_json(source_path, dest_path, indent=2):
@@ -86,6 +87,10 @@ def main():
 
     print(f"  Created {len(tract_errors_gdf)} census tract polygons")
 
+    # Add demographic categories for cross-filtering
+    tract_errors_gdf = calculate_income_quintiles(tract_errors_gdf)
+    tract_errors_gdf = calculate_minority_category(tract_errors_gdf)
+
     tract_errors_gdf = simplify_geometry(tract_errors_gdf, tolerance=0.001)
     choropleth_geojson = geojson_to_dict(tract_errors_gdf)
     with open(output_dir / 'choropleth-data.json', 'w') as f:
@@ -122,6 +127,12 @@ def main():
     danger_gdf = census_gdf.merge(
         pd.DataFrame(danger_scores),
         on='tract_id'
+    )
+    # Add income quintile for cross-filtering
+    income_col = 'median_income_y' if 'median_income_y' in danger_gdf.columns else 'median_income'
+    danger_gdf['income_quintile'] = pd.qcut(
+        danger_gdf[income_col], q=5,
+        labels=['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']
     )
     danger_gdf = simplify_geometry(danger_gdf, tolerance=0.001)
     danger_geojson = geojson_to_dict(danger_gdf)
