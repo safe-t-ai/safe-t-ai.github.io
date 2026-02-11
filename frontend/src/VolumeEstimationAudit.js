@@ -104,9 +104,12 @@ export class VolumeEstimationAudit {
         this.map.addLegend();
         this.map.fitBounds(this.data.choroplethData);
 
-        window.addEventListener('resize', () => {
-            if (this.map) this.map.invalidateSize();
-        });
+        this._onResize = () => {
+            if (this.map && document.getElementById('map')?.offsetParent !== null) {
+                this.map.invalidateSize();
+            }
+        };
+        window.addEventListener('resize', this._onResize);
     }
 
     renderCharts() {
@@ -182,8 +185,8 @@ export class VolumeEstimationAudit {
                 const item = params.data[2];
                 return `
                     <strong>${item.counter_id}</strong><br/>
-                    Actual: ${item.true_volume}<br/>
-                    Predicted: ${item.predicted_volume}<br/>
+                    Actual: ${Math.round(item.true_volume)}<br/>
+                    Predicted: ${Math.round(item.predicted_volume)}<br/>
                     Income: $${item.median_income.toLocaleString()}<br/>
                     Minority %: ${item.pct_minority.toFixed(1)}%
                 `;
@@ -200,6 +203,19 @@ export class VolumeEstimationAudit {
         });
 
         this.charts.histogram = initChart('chart-histogram', config);
+    }
+
+    cleanup() {
+        if (this._onResize) {
+            window.removeEventListener('resize', this._onResize);
+            this._onResize = null;
+        }
+        Object.values(this.charts).forEach(chart => chart.dispose());
+        this.charts = {};
+        if (this.map) {
+            this.map.cleanup();
+            this.map = null;
+        }
     }
 
     initChartWithZeroLine(elementId, config, dataLength) {

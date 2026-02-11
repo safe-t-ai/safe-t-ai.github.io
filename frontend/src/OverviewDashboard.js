@@ -56,9 +56,23 @@ export class OverviewDashboard {
 
         this.map.fitBounds(this.data.choroplethData);
 
-        window.addEventListener('resize', () => {
-            if (this.map) this.map.invalidateSize();
-        });
+        this._onResize = () => {
+            if (this.map && document.getElementById('overview-map')?.offsetParent !== null) {
+                this.map.invalidateSize();
+            }
+        };
+        window.addEventListener('resize', this._onResize);
+    }
+
+    cleanup() {
+        if (this._onResize) {
+            window.removeEventListener('resize', this._onResize);
+            this._onResize = null;
+        }
+        if (this.map) {
+            this.map.cleanup();
+            this.map = null;
+        }
     }
 
     renderTestCards() {

@@ -5,7 +5,7 @@
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
 import { initChart, COLORS } from './services/chartConfig.js';
-import { renderMetrics, renderInterpretation } from './services/renderUtils.js';
+import { renderMetrics, renderInterpretation, initViewToggle } from './services/renderUtils.js';
 
 export class InfrastructureAudit {
     constructor() {
@@ -103,9 +103,12 @@ export class InfrastructureAudit {
             footer: 'Marker size = project cost'
         });
 
-        window.addEventListener('resize', () => {
-            if (this.map) this.map.invalidateSize();
-        });
+        this._onResize = () => {
+            if (this.map && document.getElementById('map-infrastructure')?.offsetParent !== null) {
+                this.map.invalidateSize();
+            }
+        };
+        window.addEventListener('resize', this._onResize);
     }
 
     updateRecommendationsLayer() {
@@ -226,7 +229,7 @@ export class InfrastructureAudit {
 
         const option = {
             title: {
-                text: 'Equity Metrics Comparison',
+                text: 'Equity Comparison: AI vs Need-Based',
                 left: 'center',
                 textStyle: { fontSize: 14, fontWeight: 'normal' }
             },
@@ -277,16 +280,17 @@ export class InfrastructureAudit {
     }
 
     setupAllocationToggle() {
-        const radios = document.querySelectorAll('input[name="allocation-type"]');
-        radios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                this.currentAllocation = e.target.value;
-                this.updateRecommendationsLayer();
-            });
+        initViewToggle('toggle-allocation-type', (value) => {
+            this.currentAllocation = value;
+            this.updateRecommendationsLayer();
         });
     }
 
     cleanup() {
+        if (this._onResize) {
+            window.removeEventListener('resize', this._onResize);
+            this._onResize = null;
+        }
         Object.values(this.charts).forEach(chart => chart.dispose());
         this.charts = {};
         if (this.map) {

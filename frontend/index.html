@@ -550,8 +550,7 @@
 
             .leaflet-control-zoom { transform: scale(0.9); }
             .leaflet-popup-content { font-size: 0.85rem; }
-            input[type="radio"] { width: 20px; height: 20px; margin-right: 0.5rem; }
-            label { display: inline-flex; align-items: center; padding: 0.5rem; cursor: pointer; }
+            .view-toggle-option { font-size: 0.78rem; padding: 0.35rem 0.65rem; }
             body { font-size: 14px; }
         }
 
@@ -573,11 +572,55 @@
         .tab, button, label { -webkit-tap-highlight-color: rgba(0,0,0,0.1); }
         button, .tab, input, label { touch-action: manipulation; }
 
-        /* Focus */
+        /* View Toggle (segmented control) */
+        .view-toggle {
+            display: inline-flex;
+            position: relative;
+            background: #e8e8ed;
+            border-radius: 8px;
+            padding: 3px;
+            margin-bottom: 1rem;
+        }
+
+        .view-toggle-option {
+            position: relative;
+            z-index: 1;
+            padding: 0.4rem 0.85rem;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: #636366;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: color 0.15s;
+            white-space: nowrap;
+        }
+
+        .view-toggle-option.active {
+            color: #1a202c;
+        }
+
+        .view-toggle-indicator {
+            position: absolute;
+            top: 3px;
+            left: 0;
+            height: calc(100% - 6px);
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, width 0.2s ease;
+            pointer-events: none;
+        }
+
+        .tab:focus,
         .tab:focus-visible,
-        .overview-card:focus-visible {
-            outline: 2px solid #0891b2;
-            outline-offset: 2px;
+        .overview-card:focus,
+        .overview-card:focus-visible,
+        .view-toggle-option:focus,
+        .view-toggle-option:focus-visible {
+            outline: none;
         }
     </style>
 </head>
@@ -728,13 +771,10 @@
                                 </span>
                             </div>
                             <p class="chart-description">Actual vs predicted crash counts by census tract. Toggle between views to compare.</p>
-                            <div style="margin-bottom: 1rem;">
-                                <label style="margin-right: 1rem;">
-                                    <input type="radio" name="crash-view" value="actual" checked> Actual Crashes
-                                </label>
-                                <label>
-                                    <input type="radio" name="crash-view" value="predicted"> AI Predicted Crashes
-                                </label>
+                            <div class="view-toggle" id="toggle-crash-view">
+                                <button class="view-toggle-option active" data-value="actual">Actual</button>
+                                <button class="view-toggle-option" data-value="predicted">AI Predicted</button>
+                                <div class="view-toggle-indicator"></div>
                             </div>
                             <div id="map-crashes" class="map"></div>
                         </div>
@@ -798,13 +838,10 @@
                                 </span>
                             </div>
                             <p class="chart-description">Safety project locations from AI vs need-based allocation. Shading shows danger scores; markers show projects. Toggle to compare.</p>
-                            <div style="margin-bottom: 1rem;">
-                                <label style="margin-right: 1rem;">
-                                    <input type="radio" name="allocation-type" value="ai" checked> AI Allocation (Biased)
-                                </label>
-                                <label>
-                                    <input type="radio" name="allocation-type" value="need"> Need-Based (Equitable)
-                                </label>
+                            <div class="view-toggle" id="toggle-allocation-type">
+                                <button class="view-toggle-option active" data-value="ai">AI Allocation</button>
+                                <button class="view-toggle-option" data-value="need">Need-Based</button>
+                                <div class="view-toggle-indicator"></div>
                             </div>
                             <div id="map-infrastructure" class="map"></div>
                         </div>
@@ -856,16 +893,11 @@
                                 </span>
                             </div>
                             <p class="chart-description">Suppressed, potential, and actual cycling/walking demand across Durham. High suppression (red) indicates latent demand AI tools miss.</p>
-                            <div style="margin-bottom: 1rem;">
-                                <label style="margin-right: 1rem;">
-                                    <input type="radio" name="demand-view" value="suppressed" checked> Suppressed Demand
-                                </label>
-                                <label style="margin-right: 1rem;">
-                                    <input type="radio" name="demand-view" value="potential"> Potential Demand
-                                </label>
-                                <label>
-                                    <input type="radio" name="demand-view" value="actual"> Actual Demand
-                                </label>
+                            <div class="view-toggle" id="toggle-demand-view">
+                                <button class="view-toggle-option active" data-value="suppressed">Suppressed</button>
+                                <button class="view-toggle-option" data-value="potential">Potential</button>
+                                <button class="view-toggle-option" data-value="actual">Actual</button>
+                                <div class="view-toggle-indicator"></div>
                             </div>
                             <div id="map-demand" class="map"></div>
                         </div>

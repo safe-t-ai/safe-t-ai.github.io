@@ -3,6 +3,8 @@
  * Thin orchestrator — all test modules lazy-loaded
  */
 
+import { resizeVisibleCharts } from './services/chartConfig.js';
+
 const DESCRIPTIONS = {
     overview: '',
     test1: 'Does AI count pedestrians and cyclists equally across all neighborhoods?',
@@ -37,7 +39,10 @@ class App {
     }
 
     setupNavigation() {
-        document.querySelectorAll('.tab').forEach(tab => {
+        const tabs = [...document.querySelectorAll('.tab')];
+        const tabIds = tabs.map(t => t.dataset.test);
+
+        tabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
                 this.switchTest(e.currentTarget.dataset.test);
             });
@@ -45,6 +50,17 @@ class App {
 
         window.addEventListener('navigate-test', (e) => {
             this.switchTest(e.detail);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+
+            const idx = tabIds.indexOf(this.currentTest);
+            const next = e.key === 'ArrowRight'
+                ? tabIds[idx + 1]
+                : tabIds[idx - 1];
+            if (next) this.switchTest(next);
         });
     }
 
@@ -71,7 +87,10 @@ class App {
         }
 
         this.currentTest = testId;
-        setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+        setTimeout(() => {
+            resizeVisibleCharts();
+            this.modules[testId]?.map?.invalidateSize();
+        }, 50);
     }
 }
 

@@ -5,7 +5,7 @@
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
 import { initChart, COLORS } from './services/chartConfig.js';
-import { renderMetrics, renderInterpretation } from './services/renderUtils.js';
+import { renderMetrics, renderInterpretation, initViewToggle } from './services/renderUtils.js';
 
 export class CrashPredictionAudit {
     constructor() {
@@ -75,9 +75,12 @@ export class CrashPredictionAudit {
         this.map = new DurhamMap('map-crashes').initialize();
         this.updateCrashLayer();
 
-        window.addEventListener('resize', () => {
-            if (this.map) this.map.invalidateSize();
-        });
+        this._onResize = () => {
+            if (this.map && document.getElementById('map-crashes')?.offsetParent !== null) {
+                this.map.invalidateSize();
+            }
+        };
+        window.addEventListener('resize', this._onResize);
     }
 
     updateCrashLayer() {
@@ -141,7 +144,7 @@ export class CrashPredictionAudit {
 
         const option = {
             title: {
-                text: 'Model Performance by Income Quintile',
+                text: 'Model Performance by Quintile',
                 left: 'center',
                 textStyle: { fontSize: 14, fontWeight: 'normal' }
             },
@@ -155,9 +158,11 @@ export class CrashPredictionAudit {
                 }
             },
             grid: {
-                height: '60%',
                 top: '15%',
-                left: '15%'
+                left: '3%',
+                right: '3%',
+                bottom: '15%',
+                containLabel: true
             },
             xAxis: {
                 type: 'category',
@@ -205,7 +210,7 @@ export class CrashPredictionAudit {
 
         const option = {
             title: {
-                text: 'Crashes Over Time by Quintile',
+                text: 'Crashes Over Time',
                 left: 'center',
                 textStyle: { fontSize: 14, fontWeight: 'normal' }
             },
@@ -341,10 +346,11 @@ export class CrashPredictionAudit {
                 type: 'scroll'
             },
             grid: {
-                left: '10%',
+                left: '3%',
                 right: '5%',
                 bottom: '20%',
-                top: '15%'
+                top: '15%',
+                containLabel: true
             },
             xAxis: {
                 type: 'value',
@@ -369,16 +375,17 @@ export class CrashPredictionAudit {
     }
 
     setupViewToggle() {
-        const radios = document.querySelectorAll('input[name="crash-view"]');
-        radios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                this.currentView = e.target.value;
-                this.updateCrashLayer();
-            });
+        initViewToggle('toggle-crash-view', (value) => {
+            this.currentView = value;
+            this.updateCrashLayer();
         });
     }
 
     cleanup() {
+        if (this._onResize) {
+            window.removeEventListener('resize', this._onResize);
+            this._onResize = null;
+        }
         Object.values(this.charts).forEach(chart => chart.dispose());
         this.charts = {};
         if (this.map) {

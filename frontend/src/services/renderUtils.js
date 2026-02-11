@@ -1,3 +1,5 @@
+/* global setTimeout, clearTimeout */
+
 /**
  * Shared rendering utilities for metric cards and interpretation sections
  */
@@ -10,6 +12,42 @@ export function renderMetrics(elementId, metrics) {
             <div class="subtext">${m.subtext}</div>
         </div>
     `).join('');
+}
+
+export function initViewToggle(containerId, onChange) {
+    const container = document.getElementById(containerId);
+    const options = container.querySelectorAll('.view-toggle-option');
+    const indicator = container.querySelector('.view-toggle-indicator');
+    let hoverTimer;
+
+    function activate(option) {
+        const current = container.querySelector('.view-toggle-option.active');
+        if (current === option) return;
+        options.forEach(o => o.classList.remove('active'));
+        option.classList.add('active');
+        indicator.style.width = `${option.offsetWidth}px`;
+        indicator.style.transform = `translateX(${option.offsetLeft}px)`;
+        onChange(option.dataset.value);
+    }
+
+    // Position indicator on initial active option
+    const active = container.querySelector('.view-toggle-option.active');
+    indicator.style.width = `${active.offsetWidth}px`;
+    indicator.style.transform = `translateX(${active.offsetLeft}px)`;
+
+    options.forEach(option => {
+        option.addEventListener('mouseenter', () => {
+            clearTimeout(hoverTimer);
+            hoverTimer = setTimeout(() => activate(option), 120);
+        });
+        option.addEventListener('mouseleave', () => {
+            clearTimeout(hoverTimer);
+        });
+        option.addEventListener('click', () => {
+            clearTimeout(hoverTimer);
+            activate(option);
+        });
+    });
 }
 
 export function renderInterpretation(elementId, findings, title = 'Key Findings') {

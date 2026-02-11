@@ -5,7 +5,7 @@
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
 import { initChart, COLORS } from './services/chartConfig.js';
-import { renderMetrics, renderInterpretation } from './services/renderUtils.js';
+import { renderMetrics, renderInterpretation, initViewToggle } from './services/renderUtils.js';
 
 export class SuppressedDemandAudit {
     constructor() {
@@ -72,9 +72,12 @@ export class SuppressedDemandAudit {
 
         this.updateDemandLayer();
 
-        window.addEventListener('resize', () => {
-            if (this.map) this.map.invalidateSize();
-        });
+        this._onResize = () => {
+            if (this.map && document.getElementById('map-demand')?.offsetParent !== null) {
+                this.map.invalidateSize();
+            }
+        };
+        window.addEventListener('resize', this._onResize);
     }
 
     updateDemandLayer() {
@@ -144,77 +147,53 @@ export class SuppressedDemandAudit {
     renderFunnelChart() {
         const { 'Q1 (Poorest)': q1, 'Q5 (Richest)': q5 } = this.data.funnel;
 
+        const funnelFormatter = (params) => `${params.name}: ${Math.round(params.value)}%`;
+
+        const funnelSeries = (name, data, position, color, labelPos) => ({
+            name,
+            type: 'funnel',
+            left: position,
+            width: '22%',
+            label: {
+                position: labelPos,
+                formatter: funnelFormatter,
+                fontSize: 11
+            },
+            labelLine: { show: true },
+            itemStyle: { borderColor: '#fff', borderWidth: 1 },
+            emphasis: { label: { fontSize: 13 } },
+            data,
+            color
+        });
+
+        const stages = [
+            { key: 'stage1_potential', name: 'Potential' },
+            { key: 'stage2_destinations', name: 'Destinations' },
+            { key: 'stage3_would_use_if_safe', name: 'Would Use' },
+            { key: 'stage4_actually_use', name: 'Actually Use' }
+        ];
+
         const option = {
             title: {
-                text: 'Demand Suppression Pipeline',
+                text: 'Demand Suppression: Q1 vs Q5',
                 left: 'center',
                 textStyle: { fontSize: 14, fontWeight: 'normal' }
             },
             tooltip: {
                 trigger: 'item',
-                formatter: '{b}: {c}%'
+                formatter: (params) => `${params.seriesName}<br/>${params.name}: ${Math.round(params.value)}%`
             },
             legend: {
                 data: ['Q1 (Poorest)', 'Q5 (Richest)'],
                 bottom: 10
             },
             series: [
-                {
-                    name: 'Q1 (Poorest)',
-                    type: 'funnel',
-                    left: '5%',
-                    width: '40%',
-                    label: {
-                        formatter: '{b}: {c}%'
-                    },
-                    labelLine: {
-                        show: true
-                    },
-                    itemStyle: {
-                        borderColor: '#fff',
-                        borderWidth: 1
-                    },
-                    emphasis: {
-                        label: {
-                            fontSize: 14
-                        }
-                    },
-                    data: [
-                        { value: q1.stage1_potential, name: 'Potential' },
-                        { value: q1.stage2_destinations, name: 'Has Destinations' },
-                        { value: q1.stage3_would_use_if_safe, name: 'Would Use If Safe' },
-                        { value: q1.stage4_actually_use, name: 'Actually Use' }
-                    ],
-                    color: COLORS.error
-                },
-                {
-                    name: 'Q5 (Richest)',
-                    type: 'funnel',
-                    left: '55%',
-                    width: '40%',
-                    label: {
-                        formatter: '{b}: {c}%'
-                    },
-                    labelLine: {
-                        show: true
-                    },
-                    itemStyle: {
-                        borderColor: '#fff',
-                        borderWidth: 1
-                    },
-                    emphasis: {
-                        label: {
-                            fontSize: 14
-                        }
-                    },
-                    data: [
-                        { value: q5.stage1_potential, name: 'Potential' },
-                        { value: q5.stage2_destinations, name: 'Has Destinations' },
-                        { value: q5.stage3_would_use_if_safe, name: 'Would Use If Safe' },
-                        { value: q5.stage4_actually_use, name: 'Actually Use' }
-                    ],
-                    color: COLORS.success
-                }
+                funnelSeries('Q1 (Poorest)',
+                    stages.map(s => ({ value: q1[s.key], name: s.name })),
+                    '25%', COLORS.error, 'left'),
+                funnelSeries('Q5 (Richest)',
+                    stages.map(s => ({ value: q5[s.key], name: s.name })),
+                    '53%', COLORS.success, 'right')
             ]
         };
 
@@ -240,7 +219,7 @@ export class SuppressedDemandAudit {
 
         const option = {
             title: {
-                text: 'AI Detection Capability Comparison',
+                text: 'AI Detection Capability',
                 left: 'center',
                 textStyle: { fontSize: 14, fontWeight: 'normal' }
             },
@@ -285,16 +264,17 @@ export class SuppressedDemandAudit {
     }
 
     setupViewToggle() {
-        const radios = document.querySelectorAll('input[name="demand-view"]');
-        radios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                this.currentView = e.target.value;
-                this.updateDemandLayer();
-            });
+        initViewToggle('toggle-demand-view', (value) => {
+            this.currentView = value;
+            this.updateDemandLayer();
         });
     }
 
     cleanup() {
+        if (this._onResize) {
+            window.removeEventListener('resize', this._onResize);
+            this._onResize = null;
+        }
         Object.values(this.charts).forEach(chart => chart.dispose());
         this.charts = {};
         if (this.map) {

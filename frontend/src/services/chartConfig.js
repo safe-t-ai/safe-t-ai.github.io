@@ -5,11 +5,41 @@
 
 import echarts from './echarts.js';
 
+/* global setTimeout, clearTimeout */
+
+// Single debounced resize handler for all charts
+const activeCharts = new Set();
+let resizeTimer;
+
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        activeCharts.forEach(chart => {
+            if (!chart.isDisposed() && chart.getDom().offsetParent !== null) {
+                chart.resize();
+            }
+        });
+    }, 150);
+});
+
 export function initChart(elementId, config) {
     const chart = echarts.init(document.getElementById(elementId));
     chart.setOption(config);
-    window.addEventListener('resize', () => chart.resize());
+    activeCharts.add(chart);
+    const originalDispose = chart.dispose.bind(chart);
+    chart.dispose = () => {
+        activeCharts.delete(chart);
+        originalDispose();
+    };
     return chart;
+}
+
+export function resizeVisibleCharts() {
+    activeCharts.forEach(chart => {
+        if (!chart.isDisposed() && chart.getDom().offsetParent !== null) {
+            chart.resize();
+        }
+    });
 }
 
 const isMobile = () => window.innerWidth <= 768;
