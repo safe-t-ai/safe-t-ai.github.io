@@ -17,9 +17,6 @@ export class InfrastructureAudit {
 
     async initialize() {
         try {
-            console.log('Loading Test 3 data...');
-
-            // Load infrastructure data
             const [report, dangerScores, budgetAllocation, recommendations] = await Promise.all([
                 api.getInfrastructureReport(),
                 api.getDangerScores(),
@@ -34,9 +31,6 @@ export class InfrastructureAudit {
                 recommendations
             };
 
-            console.log('Test 3 data loaded:', this.data);
-
-            // Render components
             this.renderInterpretation();
             this.renderMetrics();
             this.renderMap();

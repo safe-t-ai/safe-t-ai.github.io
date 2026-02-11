@@ -17,15 +17,11 @@ export class SuppressedDemandAudit {
 
     async initialize() {
         try {
-            console.log('Loading Test 4 data...');
-
-            // Load suppressed demand data
-            const [report, funnel, correlationMatrix, scorecard, networkFlow, demandGeoData] = await Promise.all([
+            const [report, funnel, correlationMatrix, scorecard, demandGeoData] = await Promise.all([
                 api.getDemandReport(),
                 api.getDemandFunnel(),
                 api.getCorrelationMatrix(),
                 api.getDetectionScorecard(),
-                api.getNetworkFlow(),
                 api.getDemandGeoData()
             ]);
 
@@ -34,13 +30,9 @@ export class SuppressedDemandAudit {
                 funnel,
                 correlationMatrix,
                 scorecard,
-                networkFlow,
                 demandGeoData
             };
 
-            console.log('Test 4 data loaded:', this.data);
-
-            // Render components
             this.renderInterpretation();
             this.renderMetrics();
             this.renderMap();
@@ -406,6 +398,20 @@ export class SuppressedDemandAudit {
         const chart = echarts.init(document.getElementById('chart-scorecard'));
         const { naive_ai, sophisticated_ai, human_expert_baseline } = this.data.scorecard;
 
+        function scorecardData(d) {
+            const correlation = d.correlation_with_potential * 100;
+            const detection = d.detection_rate_high_suppression;
+            const inverseBias = Math.max(0, 100 + d.bias_q1);
+            const overall = (correlation + detection + inverseBias) / 3;
+            return [correlation.toFixed(1), detection.toFixed(1), inverseBias.toFixed(1), overall.toFixed(1)];
+        }
+
+        const seriesEntries = [
+            { name: 'Naive AI (Strava-style)', data: naive_ai, color: '#f44336' },
+            { name: 'Sophisticated AI', data: sophisticated_ai, color: '#ff9800' },
+            { name: 'Human Expert', data: human_expert_baseline, color: COLORS.success },
+        ];
+
         const option = {
             title: {
                 text: 'AI Detection Capability Comparison',
@@ -417,7 +423,7 @@ export class SuppressedDemandAudit {
                 axisPointer: { type: 'shadow' }
             },
             legend: {
-                data: ['Naive AI (Strava-style)', 'Sophisticated AI', 'Human Expert'],
+                data: seriesEntries.map(s => s.name),
                 bottom: 10
             },
             grid: {
@@ -441,41 +447,12 @@ export class SuppressedDemandAudit {
                 name: 'Score (0-100)',
                 max: 100
             },
-            series: [
-                {
-                    name: 'Naive AI (Strava-style)',
-                    type: 'bar',
-                    data: [
-                        (naive_ai.correlation_with_potential * 100).toFixed(1),
-                        naive_ai.detection_rate_high_suppression.toFixed(1),
-                        Math.max(0, 100 + naive_ai.bias_q1).toFixed(1),  // Inverse bias (less negative = better)
-                        ((naive_ai.correlation_with_potential * 100 + naive_ai.detection_rate_high_suppression + Math.max(0, 100 + naive_ai.bias_q1)) / 3).toFixed(1)
-                    ],
-                    itemStyle: { color: '#f44336' }
-                },
-                {
-                    name: 'Sophisticated AI',
-                    type: 'bar',
-                    data: [
-                        (sophisticated_ai.correlation_with_potential * 100).toFixed(1),
-                        sophisticated_ai.detection_rate_high_suppression.toFixed(1),
-                        Math.max(0, 100 + sophisticated_ai.bias_q1).toFixed(1),
-                        ((sophisticated_ai.correlation_with_potential * 100 + sophisticated_ai.detection_rate_high_suppression + Math.max(0, 100 + sophisticated_ai.bias_q1)) / 3).toFixed(1)
-                    ],
-                    itemStyle: { color: '#ff9800' }
-                },
-                {
-                    name: 'Human Expert',
-                    type: 'bar',
-                    data: [
-                        (human_expert_baseline.correlation_with_potential * 100).toFixed(1),
-                        human_expert_baseline.detection_rate_high_suppression.toFixed(1),
-                        Math.max(0, 100 + human_expert_baseline.bias_q1).toFixed(1),
-                        ((human_expert_baseline.correlation_with_potential * 100 + human_expert_baseline.detection_rate_high_suppression + Math.max(0, 100 + human_expert_baseline.bias_q1)) / 3).toFixed(1)
-                    ],
-                    itemStyle: { color: COLORS.success }
-                }
-            ]
+            series: seriesEntries.map(s => ({
+                name: s.name,
+                type: 'bar',
+                data: scorecardData(s.data),
+                itemStyle: { color: s.color }
+            }))
         };
 
         chart.setOption(option);
@@ -500,9 +477,6 @@ export class SuppressedDemandAudit {
         if (this.map) {
             this.map.cleanup();
             this.map = null;
-        }
-        if (this.legend) {
-            this.legend = null;
         }
     }
 }
