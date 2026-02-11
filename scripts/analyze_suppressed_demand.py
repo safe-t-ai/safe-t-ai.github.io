@@ -16,33 +16,9 @@ import json
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
-import geopandas as gpd
+from config import HIGH_SUPPRESSION_THRESHOLD
 from models.demand_analyzer import SuppressedDemandAnalyzer
-
-
-def load_census_data():
-    """Load Durham census tract data."""
-    census_path = os.path.join(
-        os.path.dirname(__file__),
-        '../backend/data/raw/durham_census_tracts.geojson'
-    )
-
-    if not os.path.exists(census_path):
-        raise FileNotFoundError(
-            f"Census data not found at {census_path}. "
-            "Run fetch_durham_data.py first."
-        )
-
-    gdf = gpd.read_file(census_path)
-    print(f"Loaded {len(gdf)} census tracts")
-
-    # Verify required columns
-    required = ['tract_id', 'median_income', 'total_population', 'geometry']
-    missing = [col for col in required if col not in gdf.columns]
-    if missing:
-        raise ValueError(f"Missing required columns: {missing}")
-
-    return gdf
+from utils import load_census_data
 
 
 def main():
@@ -65,7 +41,7 @@ def main():
     print(f"   Total actual demand: {results['summary']['total_actual_demand']:,} trips/day")
     print(f"   Total suppressed demand: {results['summary']['total_suppressed_demand']:,} trips/day")
     print(f"   Overall suppression rate: {results['summary']['suppression_rate']:.1f}%")
-    print(f"   High-suppression tracts (>70%): {results['summary']['high_suppression_tracts']}")
+    print(f"   High-suppression tracts (>{HIGH_SUPPRESSION_THRESHOLD}%): {results['summary']['high_suppression_tracts']}")
 
     print("\n4. Demand by Income Quintile:")
     print(f"   {'Quintile':<15} {'Potential':>10} {'Actual':>10} {'Suppressed':>10} {'Supp %':>8}")
@@ -105,6 +81,7 @@ def main():
     print("\n6. Exporting demand analysis report...")
     demand_report = {
         'summary': results['summary'],
+        'high_suppression_threshold': HIGH_SUPPRESSION_THRESHOLD,
         'by_quintile': results['by_quintile'],
         'findings': [
             f"{results['summary']['suppression_rate']:.1f}% of potential active transportation demand is suppressed by poor infrastructure",

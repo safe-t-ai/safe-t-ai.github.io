@@ -8,8 +8,9 @@ if infrastructure were safe, but currently don't due to poor infrastructure.
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-from typing import Dict, List, Tuple
+from typing import Dict
 from scipy.stats import pearsonr
+from config import SUPPRESSED_DEMAND_CONFIG, HIGH_SUPPRESSION_THRESHOLD, DEFAULT_RANDOM_SEED, QUINTILE_LABELS
 
 
 class SuppressedDemandAnalyzer:
@@ -37,7 +38,7 @@ class SuppressedDemandAnalyzer:
             (self.census_gdf['median_income'] - min_income) / (max_income - min_income)
         )
 
-    def calculate_potential_demand(self, base_rate: float = 0.10, seed: int = 42) -> pd.DataFrame:
+    def calculate_potential_demand(self, base_rate: float = SUPPRESSED_DEMAND_CONFIG['base_rate'], seed: int = DEFAULT_RANDOM_SEED) -> pd.DataFrame:
         """
         Calculate potential demand: how many would bike/walk if infrastructure were safe.
 
@@ -193,17 +194,15 @@ class SuppressedDemandAnalyzer:
         Returns:
             Dict with funnel stages by quintile
         """
-        # Add income quintiles
-        demand_df['income_quintile'] = pd.qcut(
-            demand_df['median_income'],
-            q=5,
-            labels=['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']
-        )
+        if 'income_quintile' not in demand_df.columns:
+            demand_df['income_quintile'] = pd.qcut(
+                demand_df['median_income'], q=5, labels=QUINTILE_LABELS
+            )
 
         # Calculate funnel stages by quintile
         funnel_data = {}
 
-        for quintile in ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']:
+        for quintile in QUINTILE_LABELS:
             quintile_data = demand_df[demand_df['income_quintile'] == quintile]
 
             # Funnel stages (normalized to 100% at potential)
@@ -307,15 +306,13 @@ class SuppressedDemandAnalyzer:
             ((demand_df['ai_sophisticated_prediction'] - demand_df['potential_demand']) ** 2).mean()
         )
 
-        # Bias by quintile
-        demand_df['income_quintile'] = pd.qcut(
-            demand_df['median_income'],
-            q=5,
-            labels=['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']
-        )
+        if 'income_quintile' not in demand_df.columns:
+            demand_df['income_quintile'] = pd.qcut(
+                demand_df['median_income'], q=5, labels=QUINTILE_LABELS
+            )
 
-        q1_data = demand_df[demand_df['income_quintile'] == 'Q1 (Poorest)']
-        q5_data = demand_df[demand_df['income_quintile'] == 'Q5 (Richest)']
+        q1_data = demand_df[demand_df['income_quintile'] == QUINTILE_LABELS[0]]
+        q5_data = demand_df[demand_df['income_quintile'] == QUINTILE_LABELS[-1]]
 
         q1_naive_error = (
             (q1_data['ai_naive_prediction'].mean() - q1_data['potential_demand'].mean()) /
@@ -336,7 +333,7 @@ class SuppressedDemandAnalyzer:
         )
 
         # Detection rate in high-suppression areas
-        high_suppression = demand_df[demand_df['suppression_pct'] > 70]
+        high_suppression = demand_df[demand_df['suppression_pct'] > HIGH_SUPPRESSION_THRESHOLD]
 
         if len(high_suppression) > 0:
             detection_naive = (
@@ -432,13 +429,16 @@ class SuppressedDemandAnalyzer:
         Returns:
             Dict with complete analysis results
         """
-        # Calculate all metrics
         demand_df = self.calculate_potential_demand()
         demand_df = self.calculate_infrastructure_quality(demand_df)
         demand_df = self.calculate_demand_suppression(demand_df)
         demand_df = self.simulate_ai_detection(demand_df)
 
-        # Generate visualizations data
+        # Calculate quintiles once for all sub-methods
+        demand_df['income_quintile'] = pd.qcut(
+            demand_df['median_income'], q=5, labels=QUINTILE_LABELS
+        )
+
         funnel_data = self.generate_funnel_data(demand_df)
         correlation_matrix = self.generate_correlation_matrix(demand_df)
         detection_scorecard = self.calculate_detection_scorecard(demand_df)
@@ -455,20 +455,13 @@ class SuppressedDemandAnalyzer:
             'total_suppressed_demand': int(total_suppressed),
             'suppression_rate': float(total_suppressed / total_potential * 100),
             'tracts_analyzed': len(demand_df),
-            'high_suppression_tracts': int((demand_df['suppression_pct'] > 70).sum()),
+            'high_suppression_tracts': int((demand_df['suppression_pct'] > HIGH_SUPPRESSION_THRESHOLD).sum()),
             'naive_ai_correlation': float(detection_scorecard['naive_ai']['correlation_with_potential']),
             'sophisticated_ai_correlation': float(detection_scorecard['sophisticated_ai']['correlation_with_potential'])
         }
 
-        # By quintile summary
-        demand_df['income_quintile'] = pd.qcut(
-            demand_df['median_income'],
-            q=5,
-            labels=['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']
-        )
-
         by_quintile = {}
-        for quintile in ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']:
+        for quintile in QUINTILE_LABELS:
             q_data = demand_df[demand_df['income_quintile'] == quintile]
             by_quintile[quintile] = {
                 'potential_demand': float(q_data['potential_demand'].mean()),

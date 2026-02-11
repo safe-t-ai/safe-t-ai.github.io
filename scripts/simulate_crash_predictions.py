@@ -18,34 +18,9 @@ from pathlib import Path
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
-import geopandas as gpd
-import pandas as pd
+from config import CRASH_ANALYSIS_YEARS
 from models.crash_predictor import CrashPredictionAuditor
-
-
-def load_census_data():
-    """Load Durham census tract data."""
-    census_path = os.path.join(
-        os.path.dirname(__file__),
-        '../backend/data/raw/durham_census_tracts.geojson'
-    )
-
-    if not os.path.exists(census_path):
-        raise FileNotFoundError(
-            f"Census data not found at {census_path}. "
-            "Run fetch_durham_data.py first."
-        )
-
-    gdf = gpd.read_file(census_path)
-    print(f"Loaded {len(gdf)} census tracts")
-
-    # Verify required columns
-    required = ['tract_id', 'median_income', 'total_population', 'pct_minority', 'geometry']
-    missing = [col for col in required if col not in gdf.columns]
-    if missing:
-        raise ValueError(f"Missing required columns: {missing}")
-
-    return gdf
+from utils import load_census_data
 
 
 def main():
@@ -129,7 +104,7 @@ def main():
             'total_crashes_all_years': int(total_crashes_all_years),
             'crashes_2023_actual': int(crashes_2023),
             'crashes_2023_predicted': int(predicted_2023),
-            'years_analyzed': [2019, 2020, 2021, 2022, 2023],
+            'years_analyzed': CRASH_ANALYSIS_YEARS,
             'tracts_analyzed': len(census_gdf),
             'data_source': 'Simulated Durham County crash data (2019-2023)'
         },
@@ -151,7 +126,7 @@ def main():
     # Generate time series data (2019-2023)
     print("\n7. Exporting time series data...")
     time_series_data = {
-        'years': [2019, 2020, 2021, 2022, 2023],
+        'years': CRASH_ANALYSIS_YEARS,
         'by_quintile': {},
         'overall': {}
     }

@@ -745,13 +745,13 @@
                 <div class="overview-banner">
                     <h2>Durham Transportation Equity Audit</h2>
                     <p class="banner-description">AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities. This audit tests whether those tools treat Durham's communities equitably. Four tests measure how income and race correlate with AI accuracy, resource allocation, and demand visibility.</p>
-                    <p class="banner-stats">67 Tracts &middot; 4 Equity Tests &middot; Simulated Data</p>
+                    <p class="banner-stats"><span id="tract-count"></span> Tracts &middot; 4 Equity Tests &middot; Simulated Data</p>
                 </div>
                 <div class="content-split">
                     <div class="content-map">
                         <div class="map-container">
                             <h2>Durham Income Distribution by Census Tract</h2>
-                            <p class="chart-description">Median household income across Durham's 67 census tracts. The equity tests that follow measure how AI transportation tools treat these areas differently.</p>
+                            <p class="chart-description">Median household income across Durham census tracts. The equity tests that follow measure how AI transportation tools treat these areas differently.</p>
                             <div id="overview-map" class="map"></div>
                         </div>
                     </div>
@@ -867,7 +867,7 @@
                                 <h2>Model Performance by Quintile</h2>
                                 <span class="data-source-badge simulated">
                                     Simulated
-                                    <span class="tooltip">AI trained on simulated Durham crash data (2019-2023). Demonstrates documented pattern: AI shows 25-40% higher error rates in low-income areas.</span>
+                                    <span class="tooltip">AI trained on simulated Durham crash data (2019-2023). AI shows systematically higher error rates in low-income areas.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Precision, recall, and F1 scores across income quintiles. Model quality degrades systematically in lower-income tracts.</p>
@@ -934,10 +934,10 @@
                                 <h2>Budget Allocation by Income</h2>
                                 <span class="data-source-badge simulated">
                                         Simulated
-                                    <span class="tooltip">$5M budget allocation simulated across income quintiles. Shows AI allocates 29.5% as much per-capita to Q1 as Q5 (disparate impact).</span>
+                                    <span class="tooltip">Budget allocation simulated across income quintiles. AI-driven allocation exhibits disparate impact, disproportionately favoring wealthier areas.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">$5M safety budget distribution across income quintiles. Width represents funding amount. Low-income areas receive disproportionately less.</p>
+                            <p class="chart-description">Safety budget distribution across income quintiles. Width represents funding amount. Low-income areas receive disproportionately less.</p>
                             <div id="chart-sankey" class="chart"></div>
                         </div>
 
@@ -990,7 +990,7 @@
                                 <h2>Demand Suppression: Q1 vs Q5</h2>
                                 <span class="data-source-badge simulated">
                                         Simulated
-                                    <span class="tooltip">Funnel analysis comparing potential → actual demand conversion in Q1 (poorest) vs Q5 (richest) areas. Q1 shows 70%+ suppression.</span>
+                                    <span class="tooltip">Funnel analysis comparing potential to actual demand conversion in Q1 (poorest) vs Q5 (richest) areas. Low-income areas show severe demand suppression due to poor infrastructure.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Demand suppression stages from potential to actual usage. Width represents trip volume at each stage. Q1 areas show severe drop-off.</p>
@@ -1002,7 +1002,7 @@
                                 <h2>AI Detection Capability</h2>
                                 <span class="data-source-badge simulated">
                                         Simulated
-                                    <span class="tooltip">Scorecard comparing naive AI (actual demand only) vs sophisticated AI (demographics + infrastructure). Even advanced AI misses 30-40% of suppressed demand.</span>
+                                    <span class="tooltip">Scorecard comparing naive AI (actual demand only) vs sophisticated AI (demographics + infrastructure). Advanced AI achieves partial detection but still underestimates suppressed demand.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Detection accuracy for suppressed demand. Naive AI fails; sophisticated AI achieves partial detection. Neither matches human expert baseline.</p>

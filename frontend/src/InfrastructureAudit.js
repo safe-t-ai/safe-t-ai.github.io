@@ -175,9 +175,10 @@ export class InfrastructureAudit {
 
     renderSankeyChart() {
         const { ai_allocation } = this.data.budgetAllocation;
+        const budgetLabel = `Total Budget\n$${(this.data.report.summary.total_budget / 1e6).toFixed(0)}M`;
 
         const nodes = [
-            { name: 'Total Budget\n$5M' },
+            { name: budgetLabel },
             { name: 'Q1 (Poorest)' },
             { name: 'Q2' },
             { name: 'Q3' },
@@ -186,7 +187,7 @@ export class InfrastructureAudit {
         ];
 
         const links = Object.entries(ai_allocation.by_quintile).map(([quintile, amount]) => ({
-            source: 'Total Budget\n$5M',
+            source: budgetLabel,
             target: quintile,
             value: amount
         }));

@@ -23,6 +23,9 @@ export class OverviewDashboard {
 
         this.data = { volumeReport, crashReport, budgetAllocation, demandReport, choroplethData };
 
+        const tractCountEl = document.getElementById('tract-count');
+        if (tractCountEl) tractCountEl.textContent = choroplethData.features.length;
+
         this.renderMap();
         this.renderTestCards();
         this.renderFindings();
@@ -31,10 +34,18 @@ export class OverviewDashboard {
     renderMap() {
         this.map = new DurhamMap('overview-map').initialize();
 
+        const incomes = this.data.choroplethData.features
+            .map(f => f.properties.median_income)
+            .filter(v => v != null)
+            .sort((a, b) => a - b);
+        const quantile = (arr, q) => arr[Math.floor(arr.length * q)];
+        const breaks = [0.2, 0.4, 0.6, 0.8].map(q => quantile(incomes, q));
+        const fmt = v => `$${Math.round(v / 1000)}k`;
+
         this.map.addChoroplethLayer(this.data.choroplethData, {
             valueField: 'median_income',
             colors: ['#b45309', '#d97706', '#e2e8f0', '#0891b2', '#155e75'],
-            breaks: [48000, 65000, 80000, 93000, Infinity],
+            breaks: [...breaks, Infinity],
             fillOpacity: 0.7,
             popupFields: [
                 { label: 'Median Income', field: 'median_income', format: v => `$${v?.toLocaleString()}` },
@@ -46,11 +57,11 @@ export class OverviewDashboard {
         this.map.addLegend({
             title: 'Median Household Income',
             colorScale: [
-                { color: '#b45309', label: '< $48k' },
-                { color: '#d97706', label: '$48k – $65k' },
-                { color: '#e2e8f0', label: '$65k – $80k' },
-                { color: '#0891b2', label: '$80k – $93k' },
-                { color: '#155e75', label: '> $93k' }
+                { color: '#b45309', label: `< ${fmt(breaks[0])}` },
+                { color: '#d97706', label: `${fmt(breaks[0])} – ${fmt(breaks[1])}` },
+                { color: '#e2e8f0', label: `${fmt(breaks[1])} – ${fmt(breaks[2])}` },
+                { color: '#0891b2', label: `${fmt(breaks[2])} – ${fmt(breaks[3])}` },
+                { color: '#155e75', label: `> ${fmt(breaks[3])}` }
             ]
         });
 
