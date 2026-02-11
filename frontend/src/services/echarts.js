@@ -9,7 +9,6 @@ import {
     LineChart,
     ScatterChart,
     HeatmapChart,
-    SankeyChart,
     RadarChart,
     FunnelChart,
 } from 'echarts/charts';
@@ -28,7 +27,6 @@ echarts.use([
     LineChart,
     ScatterChart,
     HeatmapChart,
-    SankeyChart,
     RadarChart,
     FunnelChart,
     TitleComponent,

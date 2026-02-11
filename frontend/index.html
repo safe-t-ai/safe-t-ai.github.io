@@ -1146,7 +1146,7 @@
                                     <span class="tooltip">Ridge regression trained on NCDOT-calibrated crash data (2019-2022), evaluated on 2023. Real census demographics with simulated geographic distribution.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Precision, recall, and F1 scores across income quintiles. Model quality degrades systematically in lower-income tracts.</p>
+                            <p class="chart-description">Precision, recall, and F1 scores across income quintiles. Variation indicates uneven classification accuracy by income level.</p>
                             <div id="chart-confusion" class="chart"></div>
                         </div>
 
@@ -1164,14 +1164,14 @@
 
                         <div class="chart-container">
                             <div class="chart-header">
-                                <h2>Classification Accuracy by Quintile</h2>
+                                <h2>Prediction Error by Income Quintile</h2>
                                 <span class="data-source-badge calibrated">
                                     Calibrated
-                                    <span class="tooltip">ROC analysis from Ridge regression on NCDOT-calibrated crash data. AUC measures the model's ability to distinguish high-risk from low-risk tracts per quintile.</span>
+                                    <span class="tooltip">Mean absolute error of Ridge regression predictions on NCDOT-calibrated crash data, grouped by neighborhood income quintile.</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Ability to distinguish high-risk vs low-risk areas by income level. Lower AUC = worse discrimination, concentrated in poorer quintiles.</p>
-                            <div id="chart-roc" class="chart"></div>
+                            <p class="chart-description">Relative prediction error by income level. Higher error in poorer quintiles indicates systematic bias in model accuracy.</p>
+                            <div id="chart-error-quintile" class="chart"></div>
                         </div>
                     </div>
 
@@ -1213,8 +1213,8 @@
                                     <span class="tooltip">$5M budget allocated across income quintiles using two methods: AI-driven (biased by data availability) and need-based (proportional to danger scores).</span>
                                 </span>
                             </div>
-                            <p class="chart-description">Safety budget distribution across income quintiles. Width represents funding amount. Low-income areas receive disproportionately less.</p>
-                            <div id="chart-sankey" class="chart"></div>
+                            <p class="chart-description">AI-driven vs need-based safety budget allocation per income quintile.</p>
+                            <div id="chart-allocation" class="chart"></div>
                         </div>
 
                         <div class="chart-container">

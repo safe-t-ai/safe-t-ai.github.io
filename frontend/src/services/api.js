@@ -22,7 +22,6 @@ class APIClient {
     // Test 2 endpoints
     getCrashReport() { return this.get('crash-report'); }
     getConfusionMatrices() { return this.get('confusion-matrices'); }
-    getRocCurves() { return this.get('roc-curves'); }
     getCrashTimeSeries() { return this.get('crash-time-series'); }
     getCrashGeoData() { return this.get('crash-geo-data'); }
 

@@ -170,7 +170,6 @@ def main():
 
     crash_files = {
         'confusion_matrices.json': 'confusion-matrices.json',
-        'roc_curves.json': 'roc-curves.json',
         'crash_time_series.json': 'crash-time-series.json',
         'crash_geo_data.json': 'crash-geo-data.json',
     }
@@ -188,9 +187,7 @@ def main():
 
     demand_files = {
         'demand_funnel.json': 'demand-funnel.json',
-        'correlation_matrix.json': 'correlation-matrix.json',
         'detection_scorecard.json': 'detection-scorecard.json',
-        'network_flow.json': 'network-flow.json',
         'demand_geo_data.json': 'demand-geo-data.json',
     }
     for src_name, dest_name in demand_files.items():
@@ -213,7 +210,7 @@ def main():
                 'type': 'calibrated',
                 'provider': 'NCDOT NC Vision Zero API',
                 'files': ['crash-report.json', 'crash-time-series.json',
-                          'confusion-matrices.json', 'roc-curves.json', 'crash-geo-data.json'],
+                          'confusion-matrices.json', 'crash-geo-data.json'],
             },
             'volume_predictions': {
                 'type': 'simulated',
@@ -232,8 +229,7 @@ def main():
                 'type': 'simulated',
                 'rationale': 'Suppressed demand is inherently unobservable',
                 'files': ['demand-report.json', 'demand-funnel.json',
-                          'correlation-matrix.json', 'detection-scorecard.json',
-                          'network-flow.json', 'demand-geo-data.json'],
+                          'detection-scorecard.json', 'demand-geo-data.json'],
             },
         },
         'plausibility_ranges': PLAUSIBILITY_RANGES,

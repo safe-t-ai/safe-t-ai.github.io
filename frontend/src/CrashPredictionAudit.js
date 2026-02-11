@@ -4,7 +4,7 @@
 
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
-import { initChart, COLORS } from './services/chartConfig.js';
+import { initChart, createBarChartConfig, COLORS } from './services/chartConfig.js';
 import { renderMetrics, renderInterpretation, initViewToggle } from './services/renderUtils.js';
 
 export class CrashPredictionAudit {
@@ -16,15 +16,14 @@ export class CrashPredictionAudit {
     }
 
     async initialize() {
-        const [report, confusionMatrices, rocCurves, timeSeries, crashGeoData] = await Promise.all([
+        const [report, confusionMatrices, timeSeries, crashGeoData] = await Promise.all([
             api.getCrashReport(),
             api.getConfusionMatrices(),
-            api.getRocCurves(),
             api.getCrashTimeSeries(),
             api.getCrashGeoData()
         ]);
 
-        this.data = { report, confusionMatrices, rocCurves, timeSeries, crashGeoData };
+        this.data = { report, confusionMatrices, timeSeries, crashGeoData };
 
         renderInterpretation('test2-interpretation', report.findings);
         this.renderMetrics();
@@ -120,7 +119,7 @@ export class CrashPredictionAudit {
     renderCharts() {
         this.renderConfusionMatrix();
         this.renderTimeSeriesChart();
-        this.renderRocCurves();
+        this.renderErrorByQuintile();
         this.setupCrossFiltering();
     }
 
@@ -280,97 +279,33 @@ export class CrashPredictionAudit {
         this.charts.timeseries = initChart('chart-timeseries', option);
     }
 
-    renderRocCurves() {
-        const { by_quintile } = this.data.rocCurves;
+    renderErrorByQuintile() {
+        const { error_by_quintile } = this.data.report;
 
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
-        const colors = [COLORS.error, '#e8903e', '#9ca3af', '#3ab7a5', COLORS.success];
+        const chartData = quintiles.map(q => ({
+            label: q,
+            value: error_by_quintile[q].error_pct
+        }));
 
-        const series = [];
-
-        series.push({
-            name: 'Random (AUC=0.5)',
-            type: 'line',
-            data: [[0, 0], [1, 1]],
-            lineStyle: {
-                color: '#c7c7cc',
-                type: 'dashed',
-                width: 2
-            },
-            symbol: 'none',
-            silent: true,
-            z: 1
-        });
-
-        quintiles.forEach((quintile, idx) => {
-            if (by_quintile[quintile]) {
-                const { fpr, tpr, auc } = by_quintile[quintile];
-                const data = fpr.map((f, i) => [f, tpr[i]]);
-
-                series.push({
-                    name: `${quintile} (AUC=${auc.toFixed(3)})`,
-                    type: 'line',
-                    data: data,
-                    smooth: true,
-                    lineStyle: {
-                        color: colors[idx],
-                        width: 2
-                    },
-                    itemStyle: {
-                        color: colors[idx]
-                    },
-                    symbol: 'none',
-                    z: 10
-                });
+        const config = createBarChartConfig(chartData, {
+            yAxisLabel: 'Prediction Error (%)',
+            color: COLORS.quintiles,
+            formatter: (params) => {
+                const item = params[0];
+                const q = quintiles[item.dataIndex];
+                const d = error_by_quintile[q];
+                return `
+                    <strong>${q}</strong><br/>
+                    Error: ${d.error_pct.toFixed(1)}%<br/>
+                    MAE: ${d.mae.toFixed(1)} crashes<br/>
+                    Actual: ${d.actual_crashes.toFixed(1)}<br/>
+                    Predicted: ${d.ai_predicted_crashes.toFixed(1)}
+                `;
             }
         });
 
-        const option = {
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: { type: 'cross' },
-                formatter: (params) => {
-                    let result = `FPR: ${params[0].data[0].toFixed(3)}<br/>`;
-                    params.forEach(p => {
-                        if (p.seriesName !== 'Random (AUC=0.5)') {
-                            result += `${p.marker} ${p.seriesName}<br/>TPR: ${p.data[1].toFixed(3)}<br/>`;
-                        }
-                    });
-                    return result;
-                }
-            },
-            legend: {
-                data: series.map(s => s.name),
-                bottom: 10,
-                type: 'scroll'
-            },
-            grid: {
-                left: '3%',
-                right: '5%',
-                bottom: '20%',
-                top: '15%',
-                containLabel: true
-            },
-            xAxis: {
-                type: 'value',
-                name: 'False Positive Rate',
-                nameLocation: 'middle',
-                nameGap: 30,
-                min: 0,
-                max: 1
-            },
-            yAxis: {
-                type: 'value',
-                name: 'True Positive Rate',
-                nameLocation: 'middle',
-                nameGap: 40,
-                min: 0,
-                max: 1
-            },
-            series: series
-        };
-
-        this.charts.roc = initChart('chart-roc', option);
+        this.charts.errorQuintile = initChart('chart-error-quintile', config);
     }
 
     setupViewToggle() {

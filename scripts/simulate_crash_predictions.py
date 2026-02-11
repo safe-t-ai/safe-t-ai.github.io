@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
 import geopandas as gpd
-from config import CRASH_ANALYSIS_YEARS, RAW_DATA_DIR, NCDOT_DATA_YEARS
+from config import CRASH_ANALYSIS_YEARS, RAW_DATA_DIR
 from models.crash_predictor import CrashPredictionAuditor
 
 
@@ -251,50 +251,8 @@ def main():
         json.dump(confusion_data, f, indent=2)
     print(f"   ✓ Exported confusion_matrices.json")
 
-    # Generate ROC curves
-    print("\n9. Exporting ROC curves...")
-    from sklearn.metrics import roc_curve, auc
-
-    predictions_df['prediction_score'] = (
-        predictions_df['ai_predicted_crashes'] / predictions_df['ai_predicted_crashes'].max()
-    )
-
-    roc_data = {
-        'overall': {},
-        'by_quintile': {}
-    }
-
-    # Overall
-    fpr, tpr, _ = roc_curve(predictions_df['actual_high_crash'], predictions_df['prediction_score'])
-    roc_auc = auc(fpr, tpr)
-
-    roc_data['overall'] = {
-        'fpr': fpr.tolist(),
-        'tpr': tpr.tolist(),
-        'auc': float(roc_auc)
-    }
-
-    # By quintile
-    for quintile in ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']:
-        q_data = predictions_df[predictions_df['income_quintile'] == quintile]
-        if len(q_data) < 2:
-            continue
-
-        fpr_q, tpr_q, _ = roc_curve(q_data['actual_high_crash'], q_data['prediction_score'])
-        auc_q = auc(fpr_q, tpr_q)
-
-        roc_data['by_quintile'][quintile] = {
-            'fpr': fpr_q.tolist(),
-            'tpr': tpr_q.tolist(),
-            'auc': float(auc_q)
-        }
-
-    with open(os.path.join(output_dir, 'roc_curves.json'), 'w') as f:
-        json.dump(roc_data, f, indent=2)
-    print(f"   ✓ Exported roc_curves.json")
-
     # Export geospatial crash data for maps
-    print("\n10. Exporting geospatial crash data...")
+    print("\n9. Exporting geospatial crash data...")
 
     # Use 2023 actuals alongside 2023 predictions (same time scale)
     tract_summary = predictions_df[['tract_id', 'crash_count', 'ai_predicted_crashes',

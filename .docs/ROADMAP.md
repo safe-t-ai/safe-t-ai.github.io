@@ -44,7 +44,7 @@
 **Visualizations:**
 1. Geographic crash distribution map
 2. Confusion matrices by income quintile
-3. ROC curves by demographic group
+3. Prediction error by income quintile
 4. Time series showing actual vs reported vs predicted crashes
 5. Error metrics dashboard
 

@@ -56,6 +56,8 @@ export function initChart(elementId, config) {
     if (!config.animationDuration) {
         Object.assign(config, ANIMATION_DEFAULTS);
     }
+    // Colorblind-accessible decal patterns on all series
+    config.aria = { decal: { show: true }, ...(config.aria || {}) };
 
     const chart = echarts.init(document.getElementById(elementId));
     chart.setOption(config);
@@ -138,13 +140,10 @@ export function createBarChartConfig(data, options = {}) {
             type: 'bar',
             data: data.map(d => d[yField]),
             itemStyle: {
-                color: typeof color === 'string' ? color : (params) => {
-                    return color[params.dataIndex % color.length];
-                },
+                color: typeof color === 'string'
+                    ? color
+                    : (params) => color[params.dataIndex % color.length],
                 borderRadius: [3, 3, 0, 0]
-            },
-            label: {
-                show: false
             },
             animationDelay: (idx) => idx * 120
         }]

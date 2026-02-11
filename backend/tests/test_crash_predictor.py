@@ -85,21 +85,6 @@ def test_calculate_confusion_matrices(sample_census_gdf):
     assert 'f1_score' in results['overall']
 
 
-def test_calculate_roc_curves(sample_census_gdf):
-    """Test ROC curve calculation."""
-    auditor = CrashPredictionAuditor(sample_census_gdf)
-    crash_data = auditor.generate_crash_data(seed=42)
-    crash_data = auditor.simulate_reporting_bias(crash_data)
-    crash_data = auditor.simulate_ai_predictions(crash_data)
-
-    results = auditor.calculate_roc_curves(crash_data)
-
-    assert 'overall' in results
-    assert 'by_quintile' in results
-    assert 'auc' in results['overall']
-    assert 0 <= results['overall']['auc'] <= 1
-
-
 def test_generate_time_series(sample_census_gdf):
     """Test time series generation."""
     auditor = CrashPredictionAuditor(sample_census_gdf)
@@ -123,7 +108,6 @@ def test_run_audit_complete(sample_census_gdf):
     assert 'summary' in results
     assert 'bias_by_quintile' in results
     assert 'confusion_matrices' in results
-    assert 'roc_curves' in results
     assert 'time_series' in results
     assert 'crash_data' in results
 

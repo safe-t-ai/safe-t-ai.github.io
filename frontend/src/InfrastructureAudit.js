@@ -169,55 +169,64 @@ export class InfrastructureAudit {
     }
 
     renderCharts() {
-        this.renderSankeyChart();
+        this.renderAllocationChart();
         this.renderRadarChart();
     }
 
-    renderSankeyChart() {
-        const { ai_allocation } = this.data.budgetAllocation;
-        const budgetLabel = `Total Budget\n$${(this.data.report.summary.total_budget / 1e6).toFixed(0)}M`;
-
-        const nodes = [
-            { name: budgetLabel },
-            { name: 'Q1 (Poorest)' },
-            { name: 'Q2' },
-            { name: 'Q3' },
-            { name: 'Q4' },
-            { name: 'Q5 (Richest)' }
-        ];
-
-        const links = Object.entries(ai_allocation.by_quintile).map(([quintile, amount]) => ({
-            source: budgetLabel,
-            target: quintile,
-            value: amount
-        }));
+    renderAllocationChart() {
+        const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
+        const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
 
         const option = {
             tooltip: {
-                trigger: 'item',
-                formatter: (params) => {
-                    if (params.dataType === 'edge') {
-                        return `${params.data.target}<br>$${params.value.toLocaleString()}`;
-                    }
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                formatter: (params) =>
+                    params.map(p =>
+                        `${p.marker} ${p.seriesName}: $${Number(p.value).toLocaleString()}`
+                    ).join('<br/>')
+            },
+            legend: {
+                data: ['AI Allocation', 'Need-Based'],
+                bottom: 10
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '15%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: quintiles,
+                axisLabel: { fontSize: 11 }
+            },
+            yAxis: {
+                type: 'value',
+                name: 'Budget ($)',
+                axisLabel: {
+                    formatter: (v) => v >= 1e6 ? `$${v / 1e6}M` : `$${v / 1e3}k`
                 }
             },
-            series: [{
-                type: 'sankey',
-                layout: 'none',
-                emphasis: { focus: 'adjacency' },
-                data: nodes,
-                links: links,
-                lineStyle: {
-                    color: 'gradient',
-                    curveness: 0.5
+            series: [
+                {
+                    name: 'AI Allocation',
+                    type: 'bar',
+                    data: quintiles.map(q => ai_allocation.by_quintile[q]),
+                    itemStyle: { color: COLORS.error, borderRadius: [3, 3, 0, 0] },
+                    animationDelay: (idx) => idx * 120
                 },
-                label: {
-                    fontSize: 12
+                {
+                    name: 'Need-Based',
+                    type: 'bar',
+                    data: quintiles.map(q => need_based_allocation.by_quintile[q]),
+                    itemStyle: { color: COLORS.success, borderRadius: [3, 3, 0, 0] },
+                    animationDelay: (idx) => idx * 120 + 60
                 }
-            }]
+            ]
         };
 
-        this.charts.sankey = initChart('chart-sankey', option);
+        this.charts.allocation = initChart('chart-allocation', option);
     }
 
     renderRadarChart() {
