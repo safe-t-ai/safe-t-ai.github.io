@@ -17,9 +17,6 @@ export class CrashPredictionAudit {
 
     async initialize() {
         try {
-            console.log('Loading Test 2 data...');
-
-            // Load crash prediction data
             const [report, confusionMatrices, rocCurves, timeSeries, crashGeoData] = await Promise.all([
                 api.getCrashReport(),
                 api.getConfusionMatrices(),
@@ -36,9 +33,6 @@ export class CrashPredictionAudit {
                 crashGeoData
             };
 
-            console.log('Test 2 data loaded:', this.data);
-
-            // Render components
             this.renderInterpretation();
             this.renderMetrics();
             this.renderMap();
@@ -476,9 +470,6 @@ export class CrashPredictionAudit {
         if (this.map) {
             this.map.cleanup();
             this.map = null;
-        }
-        if (this.legend) {
-            this.legend = null;
         }
     }
 }

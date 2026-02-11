@@ -16,13 +16,8 @@ class APIClient {
 
     // Test 1 endpoints
     getTest1Report() { return this.get('volume-report'); }
-    getCensusTracts() { return this.get('census-tracts'); }
     getChoroplethData() { return this.get('choropleth-data'); }
     getCounterLocations() { return this.get('counter-locations'); }
-    getAccuracyByIncome() { return this.get('accuracy-by-income'); }
-    getAccuracyByRace() { return this.get('accuracy-by-race'); }
-    getScatterData() { return this.get('scatter-data'); }
-    getErrorDistribution() { return this.get('error-distribution'); }
 
     // Test 2 endpoints
     getCrashReport() { return this.get('crash-report'); }
@@ -42,7 +37,6 @@ class APIClient {
     getDemandFunnel() { return this.get('demand-funnel'); }
     getCorrelationMatrix() { return this.get('correlation-matrix'); }
     getDetectionScorecard() { return this.get('detection-scorecard'); }
-    getNetworkFlow() { return this.get('network-flow'); }
     getDemandGeoData() { return this.get('demand-geo-data'); }
 }
 

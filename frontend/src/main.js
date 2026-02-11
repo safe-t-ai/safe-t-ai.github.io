@@ -6,7 +6,6 @@
 import echarts from './services/echarts.js';
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
-// Test 2-4 loaded on demand via dynamic import
 import {
     createBarChartConfig,
     createScatterChartConfig,
@@ -27,9 +26,6 @@ class App {
 
     async initialize() {
         try {
-            console.log('Loading Test 1 data...');
-
-            // Load Test 1 data
             const [report, choroplethData, counters] = await Promise.all([
                 api.getTest1Report(),
                 api.getChoroplethData(),
@@ -42,22 +38,16 @@ class App {
                 counters
             };
 
-            console.log('Test 1 data loaded:', this.data);
-
             // Hide loading, show app
             document.getElementById('loading').style.display = 'none';
             document.getElementById('app').style.display = 'block';
 
-            // Render Test 1 components
             this.renderInterpretation();
             this.renderMetrics();
             this.renderMap();
             this.renderCharts();
 
-            // Setup tab navigation
             this.setupTabs();
-
-            console.log('App initialized successfully');
         } catch (error) {
             console.error('Failed to initialize app:', error);
             document.getElementById('loading').textContent =
@@ -351,7 +341,7 @@ class App {
         };
         document.getElementById('test-description').textContent = descriptions[testId];
 
-        // Load test-specific data
+        // Lazy-load test modules on first visit (literal paths required for code splitting)
         if (testId === 'test2' && !this.crashPredictionAudit) {
             document.getElementById('loading').style.display = 'flex';
             const { CrashPredictionAudit } = await import('./CrashPredictionAudit.js');
