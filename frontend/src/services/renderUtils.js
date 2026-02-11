@@ -16,7 +16,6 @@ export function initViewToggle(containerId, onChange) {
     const container = document.getElementById(containerId);
     const options = container.querySelectorAll('.view-toggle-option');
     const indicator = container.querySelector('.view-toggle-indicator');
-    let hoverTimer;
 
     function activate(option) {
         const current = container.querySelector('.view-toggle-option.active');
@@ -28,23 +27,12 @@ export function initViewToggle(containerId, onChange) {
         onChange(option.dataset.value);
     }
 
-    // Position indicator on initial active option
     const active = container.querySelector('.view-toggle-option.active');
     indicator.style.width = `${active.offsetWidth}px`;
     indicator.style.transform = `translateX(${active.offsetLeft}px)`;
 
     options.forEach(option => {
-        option.addEventListener('mouseenter', () => {
-            clearTimeout(hoverTimer);
-            hoverTimer = setTimeout(() => activate(option), 120);
-        });
-        option.addEventListener('mouseleave', () => {
-            clearTimeout(hoverTimer);
-        });
-        option.addEventListener('click', () => {
-            clearTimeout(hoverTimer);
-            activate(option);
-        });
+        option.addEventListener('click', () => activate(option));
     });
 }
 
