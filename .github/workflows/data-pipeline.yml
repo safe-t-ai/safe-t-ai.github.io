@@ -353,6 +353,21 @@ jobs:
               if tract_count != danger_count:
                   errors.append(f'Feature count mismatch: census-tracts has {tract_count}, danger-scores has {danger_count}')
 
+          # Check confusion matrices have meaningful variation (not trivially perfect)
+          cm_path = os.path.join(data_dir, 'confusion-matrices.json')
+          if os.path.exists(cm_path):
+              with open(cm_path) as f:
+                  cm_data = json.load(f)
+              f1_scores = [v['f1_score'] for v in cm_data['by_quintile'].values()]
+              if len(f1_scores) >= 2:
+                  f1_spread = max(f1_scores) - min(f1_scores)
+                  min_spread = PLAUSIBILITY_RANGES['confusion_matrix_min_f1_spread']
+                  if f1_spread < min_spread:
+                      errors.append(
+                          f'Confusion matrix F1 spread {f1_spread:.3f} below {min_spread} — '
+                          f'classification may be trivially easy (all F1: {[round(f, 2) for f in f1_scores]})'
+                      )
+
           if errors:
               print('Generated data validation failed:')
               for e in errors:

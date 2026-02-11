@@ -114,18 +114,27 @@ export class VolumeEstimationAudit {
     }
 
     setupCrossFiltering() {
-        if (!this.charts.income || !this.map) return;
-        const quintileMap = { 0: 'Q1', 1: 'Q2', 2: 'Q3', 3: 'Q4', 4: 'Q5' };
+        if (!this.map) return;
 
-        this.charts.income.on('mouseover', (params) => {
-            if (params.dataIndex != null && quintileMap[params.dataIndex]) {
-                this.map.highlightByQuintile(quintileMap[params.dataIndex]);
-            }
-        });
+        const quintileForIndex = [1, 2, 3, 4, 5];
+        if (this.charts.income) {
+            this.charts.income.on('mouseover', (params) => {
+                if (params.dataIndex != null) {
+                    this.map.highlightByProperty('income_quintile', quintileForIndex[params.dataIndex]);
+                }
+            });
+            this.charts.income.on('mouseout', () => this.map.resetHighlight());
+        }
 
-        this.charts.income.on('mouseout', () => {
-            this.map.resetHighlight();
-        });
+        const categories = ['Low (<30%)', 'Medium (30-60%)', 'High (>60%)'];
+        if (this.charts.race) {
+            this.charts.race.on('mouseover', (params) => {
+                if (params.dataIndex != null) {
+                    this.map.highlightByProperty('minority_category', categories[params.dataIndex]);
+                }
+            });
+            this.charts.race.on('mouseout', () => this.map.resetHighlight());
+        }
     }
 
     renderIncomeChart() {

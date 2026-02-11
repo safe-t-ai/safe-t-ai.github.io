@@ -170,6 +170,19 @@ export class InfrastructureAudit {
     renderCharts() {
         this.renderAllocationChart();
         this.renderEquityComparison();
+        this.setupCrossFiltering();
+    }
+
+    setupCrossFiltering() {
+        if (!this.charts.allocation || !this.map) return;
+        const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
+
+        this.charts.allocation.on('mouseover', (params) => {
+            if (params.dataIndex != null && quintiles[params.dataIndex]) {
+                this.map.highlightByProperty('income_quintile', quintiles[params.dataIndex]);
+            }
+        });
+        this.charts.allocation.on('mouseout', () => this.map.resetHighlight());
     }
 
     renderAllocationChart() {

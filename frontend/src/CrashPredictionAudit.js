@@ -124,19 +124,27 @@ export class CrashPredictionAudit {
     }
 
     setupCrossFiltering() {
-        if (!this.charts.confusion || !this.map) return;
-        const quintileMap = { 0: 'Q1', 1: 'Q2', 2: 'Q3', 3: 'Q4', 4: 'Q5' };
+        if (!this.map) return;
+        const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
 
-        this.charts.confusion.on('mouseover', (params) => {
-            const qIdx = params.data?.[0];
-            if (qIdx != null && quintileMap[qIdx]) {
-                this.map.highlightByQuintile(quintileMap[qIdx]);
-            }
-        });
+        if (this.charts.confusion) {
+            this.charts.confusion.on('mouseover', (params) => {
+                const qIdx = params.data?.[0];
+                if (qIdx != null && quintiles[qIdx]) {
+                    this.map.highlightByProperty('income_quintile', quintiles[qIdx]);
+                }
+            });
+            this.charts.confusion.on('mouseout', () => this.map.resetHighlight());
+        }
 
-        this.charts.confusion.on('mouseout', () => {
-            this.map.resetHighlight();
-        });
+        if (this.charts.errorQuintile) {
+            this.charts.errorQuintile.on('mouseover', (params) => {
+                if (params.dataIndex != null && quintiles[params.dataIndex]) {
+                    this.map.highlightByProperty('income_quintile', quintiles[params.dataIndex]);
+                }
+            });
+            this.charts.errorQuintile.on('mouseout', () => this.map.resetHighlight());
+        }
     }
 
     renderConfusionMatrix() {
