@@ -83,7 +83,3 @@
 - Emojis are fine as status indicators (✅, ⚠️, ❌) — not as decoration or emphasis
 - Only docs integral to system
 - Text should be direct and informative — state what something is, not what it isn't
-
-## Git
-
-- Commit title only
