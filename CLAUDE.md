@@ -16,4 +16,4 @@
 
 ## Documentation
 
-- Unicode symbols (✓, ⚠️, ❌, ○) are fine for status indicators
+- Emojis are fine as status indicators (✅, ⚠️, ❌) — not as decoration or emphasis
