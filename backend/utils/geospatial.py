@@ -3,12 +3,10 @@ Geospatial utility functions for processing Durham GeoJSON data
 """
 
 import json
+import numpy as np
+import pandas as pd
 import geopandas as gpd
-from shapely.geometry import shape, mapping
-
-def load_geojson(filepath):
-    """Load GeoJSON file as GeoDataFrame"""
-    return gpd.read_file(filepath)
+from shapely.geometry import Point
 
 def geojson_to_dict(gdf):
     """Convert GeoDataFrame to GeoJSON dict"""
@@ -26,11 +24,9 @@ def calculate_centroid(geometry):
 
 def point_in_tract(point_lon, point_lat, tracts_gdf):
     """Find which census tract a point falls in"""
-    from shapely.geometry import Point
-
     point = Point(point_lon, point_lat)
 
-    for idx, tract in tracts_gdf.iterrows():
+    for _, tract in tracts_gdf.iterrows():
         if tract.geometry.contains(point):
             return tract
 
@@ -66,8 +62,6 @@ def calculate_area_demographics(gdf, weight_column='total_population'):
 
     Returns summary stats weighted by population
     """
-    import numpy as np
-
     if len(gdf) == 0:
         return None
 
@@ -88,5 +82,3 @@ def calculate_area_demographics(gdf, weight_column='total_population'):
         'weighted_minority_pct': float(weighted_minority_pct),
         'num_tracts': len(gdf),
     }
-
-import pandas as pd

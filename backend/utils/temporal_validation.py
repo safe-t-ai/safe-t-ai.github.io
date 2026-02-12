@@ -2,9 +2,8 @@
 Temporal validation utilities for data freshness and time-based splits.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 import pandas as pd
-from config import CRASH_TRAINING_YEARS, CRASH_TEST_YEARS
 
 
 def validate_data_freshness(fetch_date_str, max_age_days=365):

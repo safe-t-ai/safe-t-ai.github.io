@@ -12,7 +12,7 @@ from typing import Dict
 from pathlib import Path
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, mean_absolute_error
 from sklearn.linear_model import Ridge
-from config import CRASH_ANALYSIS_YEARS
+from config import CRASH_ANALYSIS_YEARS, CRASH_TRAINING_YEARS, CRASH_TEST_YEARS
 
 
 class CrashPredictionAuditor:
@@ -125,11 +125,10 @@ class CrashPredictionAuditor:
         """
         print("Training AI model on real crash data...")
 
-        # Split data: train on 2019-2022, test on 2023
-        train_data = crash_df[crash_df['year'].isin([2019, 2020, 2021, 2022])].copy()
-        test_data = crash_df[crash_df['year'] == 2023].copy()
+        train_data = crash_df[crash_df['year'].isin(CRASH_TRAINING_YEARS)].copy()
+        test_data = crash_df[crash_df['year'].isin(CRASH_TEST_YEARS)].copy()
 
-        # Calculate historical features (average crashes 2019-2022)
+        # Calculate historical features (average crashes over training years)
         train_avg = train_data.groupby('tract_id').agg({
             'crash_count': 'mean',
             'median_income': 'first',

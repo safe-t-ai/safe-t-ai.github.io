@@ -7,19 +7,13 @@ by comparing predictions against ground truth counter data, stratified by demogr
 
 import pandas as pd
 import geopandas as gpd
-from pathlib import Path
-import sys
-
-sys.path.append(str(Path(__file__).parent.parent))
 
 from utils.demographic_analysis import (
     calculate_income_quintiles,
     calculate_minority_category,
     calculate_error_metrics,
-    demographic_stratified_analysis,
     equity_gap_analysis
 )
-from utils.geospatial import point_in_tract, create_choropleth_data
 
 class VolumeEstimationAuditor:
     """
@@ -109,9 +103,6 @@ class VolumeEstimationAuditor:
                 'mean_error_pct': metrics['mean_pct_error'],
             })
 
-        df = pd.DataFrame(results)
-
-        # Calculate equity gap
         gap = equity_gap_analysis(
             self.ai_predictions_df,
             'error_pct',
@@ -150,8 +141,6 @@ class VolumeEstimationAuditor:
                 'bias': metrics['bias'],
                 'mean_error_pct': metrics['mean_pct_error'],
             })
-
-        df = pd.DataFrame(results)
 
         gap = equity_gap_analysis(
             self.ai_predictions_df,
