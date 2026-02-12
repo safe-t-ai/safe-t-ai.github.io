@@ -39,12 +39,12 @@ class App {
     }
 
     setupNavigation() {
-        const tabs = [...document.querySelectorAll('.tab')];
+        const tabs = /** @type {HTMLElement[]} */ ([...document.querySelectorAll('.tab')]);
         const tabIds = tabs.map(t => t.dataset.test);
 
         // Gradient fade for scrollable tabs
-        const tabsContainer = document.querySelector('.tabs');
-        const tabsBarInner = document.querySelector('.tabs-bar-inner');
+        const tabsContainer = /** @type {HTMLElement} */ (document.querySelector('.tabs'));
+        const tabsBarInner = /** @type {HTMLElement} */ (document.querySelector('.tabs-bar-inner'));
         const checkOverflow = () => {
             const hasOverflow = tabsContainer.scrollWidth > tabsContainer.clientWidth;
             const atEnd = tabsContainer.scrollLeft + tabsContainer.clientWidth >= tabsContainer.scrollWidth - 4;
@@ -56,16 +56,17 @@ class App {
 
         tabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
-                this.switchTest(e.currentTarget.dataset.test);
+                this.switchTest(/** @type {HTMLElement} */ (e.currentTarget).dataset.test);
             });
         });
 
-        window.addEventListener('navigate-test', (e) => {
+        window.addEventListener('navigate-test', (/** @type {CustomEvent} */ e) => {
             this.switchTest(e.detail);
         });
 
         document.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            const target = /** @type {HTMLElement} */ (e.target);
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
             if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
 
             const idx = tabIds.indexOf(this.currentTest);
@@ -80,19 +81,21 @@ class App {
         if (testId === this.currentTest) return;
 
         document.querySelectorAll('.tab').forEach(tab => {
-            const isActive = tab.dataset.test === testId;
-            tab.classList.toggle('active', isActive);
-            tab.setAttribute('aria-selected', isActive);
+            const el = /** @type {HTMLElement} */ (tab);
+            const isActive = el.dataset.test === testId;
+            el.classList.toggle('active', isActive);
+            el.setAttribute('aria-selected', String(isActive));
         });
 
         document.querySelectorAll('.test-content').forEach(content => {
-            const isTarget = content.id === `${testId}-content`;
-            content.classList.toggle('active', isTarget);
+            const el = /** @type {HTMLElement} */ (content);
+            const isTarget = el.id === `${testId}-content`;
+            el.classList.toggle('active', isTarget);
             // Re-trigger fade-in animation
             if (isTarget) {
-                content.style.animation = 'none';
-                content.offsetHeight; // force reflow
-                content.style.animation = '';
+                el.style.animation = 'none';
+                el.offsetHeight; // force reflow
+                el.style.animation = '';
             }
         });
 

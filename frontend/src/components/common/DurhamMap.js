@@ -3,6 +3,19 @@
  */
 
 export class DurhamMap {
+    /** @type {import('leaflet').Map | null} */
+    map;
+    /** @type {import('leaflet').GeoJSON | undefined} */
+    choroplethLayer;
+    /** @type {import('leaflet').Control | undefined} */
+    legendControl;
+    /** @type {any[] | undefined} */
+    markers;
+
+    /**
+     * @param {string} containerId
+     * @param {DurhamMapOptions} [options]
+     */
     constructor(containerId, options = {}) {
         this.containerId = containerId;
         this.options = {
@@ -14,9 +27,10 @@ export class DurhamMap {
         this.map = null;
     }
 
+    /** @returns {this} */
     initialize() {
         this.map = L.map(this.containerId).setView(
-            this.options.center,
+            /** @type {[number, number]} */ (this.options.center),
             this.options.zoom
         );
 
@@ -28,6 +42,12 @@ export class DurhamMap {
         return this;
     }
 
+    /**
+     * @param {GeoJSONFeatureCollection} geojson
+     * @param {string | ChoroplethLayerOptions} [fieldOrOptions]
+     * @param {ChoroplethLayerOptions} [extraOptions]
+     * @returns {this}
+     */
     addChoroplethLayer(geojson, fieldOrOptions = {}, extraOptions) {
         let options;
         if (typeof fieldOrOptions === 'string') {
@@ -96,6 +116,11 @@ export class DurhamMap {
         return this;
     }
 
+    /**
+     * @param {{ lat: number; lon: number; [key: string]: unknown }[]} points
+     * @param {MarkerOptions} options
+     * @returns {this}
+     */
     addMarkers(points, options = {}) {
         const { icon = null, popupContent } = options;
 
@@ -110,6 +135,10 @@ export class DurhamMap {
         return this;
     }
 
+    /**
+     * @param {LegendOptions} [options]
+     * @returns {this}
+     */
     addLegend(options = {}) {
         const {
             position = 'bottomright',
@@ -120,7 +149,7 @@ export class DurhamMap {
 
         if (this.legendControl) this.map.removeControl(this.legendControl);
 
-        const legend = L.control({ position });
+        const legend = new L.Control({ position: /** @type {import('leaflet').ControlPosition} */ (position) });
 
         legend.onAdd = () => {
             const div = L.DomUtil.create('div', 'legend');
@@ -153,6 +182,11 @@ export class DurhamMap {
         return this;
     }
 
+    /**
+     * @param {number | null | undefined} value
+     * @param {ColorScaleEntry[]} colorScale
+     * @returns {string}
+     */
     getColor(value, colorScale) {
         if (value === null || value === undefined) {
             return '#c7c7cc';
@@ -167,6 +201,7 @@ export class DurhamMap {
         return colorScale[colorScale.length - 1].color;
     }
 
+    /** @returns {ColorScaleEntry[]} */
     getDefaultColorScale() {
         return [
             { max: -20, color: '#b35806', label: '< -20% (severe undercount)' },
@@ -178,9 +213,13 @@ export class DurhamMap {
         ];
     }
 
+    /**
+     * @param {string} property
+     * @param {unknown} value
+     */
     highlightByProperty(property, value) {
         if (!this.choroplethLayer) return;
-        this.choroplethLayer.eachLayer(layer => {
+        this.choroplethLayer.eachLayer((/** @type {any} */ layer) => {
             const v = layer.feature?.properties?.[property];
             if (v == null) return;
             const match = v === value;
@@ -194,17 +233,22 @@ export class DurhamMap {
 
     resetHighlight() {
         if (!this.choroplethLayer) return;
-        this.choroplethLayer.eachLayer(layer => {
+        this.choroplethLayer.eachLayer((/** @type {any} */ layer) => {
             layer.setStyle({ fillOpacity: 0.7, weight: 1, color: '#ffffff' });
         });
     }
 
+    /**
+     * @param {GeoJSONFeatureCollection} geojson
+     * @returns {this}
+     */
     fitBounds(geojson) {
         const layer = L.geoJSON(geojson);
         this.map.fitBounds(layer.getBounds());
         return this;
     }
 
+    /** @returns {this} */
     invalidateSize() {
         if (this.map) {
             this.map.invalidateSize();

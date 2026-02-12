@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "noImplicitAny": false,
+    "strict": false,
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "target": "ES2022",
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "echarts/*": ["node_modules/echarts/*"]
+    }
+  },
+  "include": ["src/**/*.js", "src/**/*.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}
