@@ -116,8 +116,8 @@ PLAUSIBILITY_RANGES = {
     'median_income_range': (15_000, 250_000),     # Per-tract median household income
     'budget_allocation_total': (4_500_000, 5_500_000),  # INFRASTRUCTURE_DEFAULT_BUDGET ± margin
     'confusion_matrix_min_f1_spread': 0.05,      # Min spread between best/worst quintile F1
-    'osm_crossings_total': (200, 3000),           # Pedestrian crossings in Durham
-    'osm_bike_infra_total': (50, 2000),            # Cycleways and shared paths
-    'osm_traffic_signals_total': (100, 2000),      # Traffic signals
-    'osm_footways_total': (200, 5000),             # Dedicated footways
+    'osm_crossings_total': (500, 10_000),           # Pedestrian crossings in Durham (~3,200)
+    'osm_bike_infra_total': (50, 5_000),            # Cycleways and shared paths (~1,300)
+    'osm_traffic_signals_total': (100, 5_000),      # Traffic signals (~1,000)
+    'osm_footways_total': (2_000, 50_000),          # Dedicated footways (~22,500)
 }
