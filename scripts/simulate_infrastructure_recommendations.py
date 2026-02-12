@@ -16,25 +16,10 @@ from pathlib import Path
 # Add backend to path
 sys.path.insert(0, str(Path(__file__).parent.parent / 'backend'))
 
-import pandas as pd
 import geopandas as gpd
-from config import INFRASTRUCTURE_DEFAULT_BUDGET, DEFAULT_RANDOM_SEED, RAW_DATA_DIR
+from config import INFRASTRUCTURE_DEFAULT_BUDGET, DEFAULT_RANDOM_SEED, RAW_DATA_DIR, SIMULATED_DATA_DIR
 from models.infrastructure_auditor import InfrastructureRecommendationAuditor
-
-
-def load_infrastructure_data():
-    """Load OSM infrastructure scores."""
-    infra_path = RAW_DATA_DIR / 'osm_infrastructure.json'
-    if not infra_path.exists():
-        raise FileNotFoundError(
-            f"Infrastructure data not found at {infra_path}. "
-            "Run fetch_osm_infrastructure.py first."
-        )
-
-    with open(infra_path) as f:
-        data = json.load(f)
-
-    return pd.DataFrame(data['tracts'])
+from utils.data_loading import load_infrastructure_data
 
 
 def main():
@@ -45,14 +30,11 @@ def main():
     print("="*60)
 
     # Paths
-    base_dir = Path(__file__).parent.parent
-    data_dir = base_dir / 'backend' / 'data'
-    census_file = data_dir / 'raw' / 'durham_census_tracts.geojson'
-    output_dir = data_dir / 'simulated'
-    output_file = output_dir / 'infrastructure_recommendations.json'
+    census_file = RAW_DATA_DIR / 'durham_census_tracts.geojson'
+    output_file = SIMULATED_DATA_DIR / 'infrastructure_recommendations.json'
 
     # Ensure output directory exists
-    output_dir.mkdir(parents=True, exist_ok=True)
+    SIMULATED_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     # Load census data
     print(f"\nLoading census data from: {census_file}")

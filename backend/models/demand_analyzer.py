@@ -98,10 +98,10 @@ class SuppressedDemandAnalyzer:
         """
         demand_df = demand_df.copy()
 
-        osm_scores = self.infrastructure_df[['tract_id', 'osm_infrastructure_score']].copy()
+        osm_scores = self.infrastructure_df[['tract_id', 'osm_infrastructure_score']].rename(
+            columns={'osm_infrastructure_score': 'infrastructure_score'}
+        )
         demand_df = demand_df.merge(osm_scores, on='tract_id', how='left')
-        demand_df['infrastructure_score'] = demand_df['osm_infrastructure_score']
-        demand_df = demand_df.drop(columns=['osm_infrastructure_score'])
 
         # Fill any unmatched tracts with a conservative low score
         demand_df['infrastructure_score'] = demand_df['infrastructure_score'].fillna(0.1)

@@ -100,15 +100,16 @@ Evaluates whether AI-driven infrastructure recommendation systems allocate safet
 
 **Need-Based Allocation Strategy:**
 - Prioritizes actual danger scores (income-weighted)
-- Considers infrastructure quality gaps
+- Infrastructure quality gaps from OpenStreetMap feature density per tract
 - Focuses on equity metrics
 
 **Danger Score Calculation:**
 ```
 danger_score = base_danger × income_multiplier × infrastructure_deficit
 ```
+Infrastructure deficit derived from real OSM pedestrian/cyclist feature density (crossings, cycleways, traffic signals, speed calming, footways).
 
-**Project Types:**
+**Project Types** (selected per tract by largest infrastructure gap):
 - Crosswalk: $50K, 15% crash reduction
 - Bike Lane: $200K, 25% crash reduction
 - Traffic Signal: $150K, 30% crash reduction
@@ -289,10 +290,11 @@ suppression_rate = f(infrastructure_quality, safety, connectivity)
 observed_demand = latent_demand × (1 - suppression_rate)
 ai_detected_demand = observed_demand × detection_accuracy
 ```
+Infrastructure quality scores derived from real OpenStreetMap pedestrian/cyclist feature density per census tract.
 
 **Analysis:**
 1. Estimate latent demand from demographics
-2. Calculate infrastructure-based suppression
+2. Calculate infrastructure-based suppression (using OSM density scores)
 3. Simulate AI detection accuracy
 4. Compare AI allocations to true need
 

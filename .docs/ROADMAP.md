@@ -24,12 +24,14 @@
 - ✅ Centralized config with plausibility ranges
 - ✅ Data provenance tracking
 
+### Phase 4: Real Infrastructure Data
+- ✅ OpenStreetMap infrastructure density (Overpass API)
+
 ## Future Enhancements
 
 ### Data Integration
 - [ ] NCDOT TEAAS crash records (requires training program access)
 - [ ] Strava Metro / StreetLight real volume data (requires institutional license)
-- [ ] OpenStreetMap infrastructure geometry
 - [ ] GoDurham GTFS transit routes
 
 ### Platform

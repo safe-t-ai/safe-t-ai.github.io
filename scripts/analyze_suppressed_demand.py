@@ -10,16 +10,16 @@ This script:
 """
 
 import sys
-import os
 import json
+from pathlib import Path
 
 # Add backend to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
+sys.path.insert(0, str(Path(__file__).parent.parent / 'backend'))
 
-import pandas as pd
 import geopandas as gpd
-from config import HIGH_SUPPRESSION_THRESHOLD, RAW_DATA_DIR
+from config import HIGH_SUPPRESSION_THRESHOLD, RAW_DATA_DIR, SIMULATED_DATA_DIR
 from models.demand_analyzer import SuppressedDemandAnalyzer
+from utils.data_loading import load_infrastructure_data
 
 
 def load_census_data():
@@ -40,21 +40,6 @@ def load_census_data():
         raise ValueError(f"Missing required columns: {missing}")
 
     return gdf
-
-
-def load_infrastructure_data():
-    """Load OSM infrastructure scores."""
-    infra_path = RAW_DATA_DIR / 'osm_infrastructure.json'
-    if not infra_path.exists():
-        raise FileNotFoundError(
-            f"Infrastructure data not found at {infra_path}. "
-            "Run fetch_osm_infrastructure.py first."
-        )
-
-    with open(infra_path) as f:
-        data = json.load(f)
-
-    return pd.DataFrame(data['tracts'])
 
 
 def main():
@@ -112,11 +97,8 @@ def main():
           f"{expert['detection_rate_high_suppression']:>14.1f}%")
 
     # Create output directory
-    output_dir = os.path.join(
-        os.path.dirname(__file__),
-        '../backend/data/simulated'
-    )
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir = SIMULATED_DATA_DIR
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Export demand report
     print("\n6. Exporting demand analysis report...")
@@ -139,32 +121,32 @@ def main():
         ]
     }
 
-    with open(os.path.join(output_dir, 'demand_analysis.json'), 'w') as f:
+    with open(output_dir / 'demand_analysis.json', 'w') as f:
         json.dump(demand_report, f, indent=2)
 
     print(f"   ✓ Exported demand_analysis.json")
 
     # Export funnel data
     print("\n7. Exporting demand suppression funnel...")
-    with open(os.path.join(output_dir, 'demand_funnel.json'), 'w') as f:
+    with open(output_dir / 'demand_funnel.json', 'w') as f:
         json.dump(results['funnel_data'], f, indent=2)
     print(f"   ✓ Exported demand_funnel.json")
 
     # Export correlation matrix
     print("\n8. Exporting correlation matrix...")
-    with open(os.path.join(output_dir, 'correlation_matrix.json'), 'w') as f:
+    with open(output_dir / 'correlation_matrix.json', 'w') as f:
         json.dump(results['correlation_matrix'], f, indent=2)
     print(f"   ✓ Exported correlation_matrix.json")
 
     # Export detection scorecard
     print("\n9. Exporting AI detection scorecard...")
-    with open(os.path.join(output_dir, 'detection_scorecard.json'), 'w') as f:
+    with open(output_dir / 'detection_scorecard.json', 'w') as f:
         json.dump(results['detection_scorecard'], f, indent=2)
     print(f"   ✓ Exported detection_scorecard.json")
 
     # Export network flow (simplified)
     print("\n10. Exporting network flow data...")
-    with open(os.path.join(output_dir, 'network_flow.json'), 'w') as f:
+    with open(output_dir / 'network_flow.json', 'w') as f:
         json.dump(results['network_flow'], f, indent=2)
     print(f"   ✓ Exported network_flow.json")
 
@@ -187,7 +169,7 @@ def main():
     # Export as GeoJSON
     demand_geo_dict = json.loads(demand_geo.to_json())
 
-    with open(os.path.join(output_dir, 'demand_geo_data.json'), 'w') as f:
+    with open(output_dir / 'demand_geo_data.json', 'w') as f:
         json.dump(demand_geo_dict, f)
 
     print(f"   ✓ Exported demand_geo_data.json ({len(demand_geo)} tracts)")

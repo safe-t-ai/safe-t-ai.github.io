@@ -91,30 +91,23 @@ class InfrastructureRecommendationAuditor:
         self.danger_scores = pd.DataFrame(danger_data)
         return self.danger_scores
 
+    # Map OSM density columns to project types
+    DENSITY_TO_PROJECT = {
+        'crossings_density': 'crosswalk',
+        'bike_infra_density': 'bike_lane',
+        'traffic_signals_density': 'traffic_signal',
+        'speed_calming_density': 'speed_reduction',
+    }
+
     def _select_project_type_for_gap(self, tract_id: str) -> str:
         """Pick the project type addressing the tract's biggest infrastructure gap."""
-        # Map OSM density columns to project types
-        density_to_project = {
-            'crossings_density': 'crosswalk',
-            'bike_infra_density': 'bike_lane',
-            'traffic_signals_density': 'traffic_signal',
-            'speed_calming_density': 'speed_reduction',
-        }
-
         row = self.infrastructure_df[self.infrastructure_df['tract_id'] == tract_id]
         if row.empty:
-            return 'crosswalk'  # default for unmatched tracts
+            return 'crosswalk'
 
         row = row.iloc[0]
-        lowest_density = None
-        best_project = 'crosswalk'
-        for density_col, project_type in density_to_project.items():
-            val = row.get(density_col, 0)
-            if lowest_density is None or val < lowest_density:
-                lowest_density = val
-                best_project = project_type
-
-        return best_project
+        weakest = min(self.DENSITY_TO_PROJECT, key=lambda col: row.get(col, 0))
+        return self.DENSITY_TO_PROJECT[weakest]
 
     def _merge_danger_data(self, seed: int) -> pd.DataFrame:
         """Merge danger scores with census data, computing scores if needed."""
