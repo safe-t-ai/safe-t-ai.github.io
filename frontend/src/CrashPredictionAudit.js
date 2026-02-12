@@ -83,7 +83,17 @@ export class CrashPredictionAudit {
         const field = isActual ? 'actual_crashes' : 'ai_predicted_crashes';
         const label = isActual ? 'Actual Crashes (2023)' : 'AI Predicted Crashes (2023)';
 
-        const breaks = [20, 40, 60, 80, 100, 150, 200, 250];
+        // Compute breaks from data (quantile-based) so the scale adapts to any data range
+        const values = this.data.crashGeoData.features
+            .map(f => f.properties[field])
+            .filter(v => v != null && v > 0)
+            .sort((a, b) => a - b);
+        const quantile = (arr, q) => arr[Math.min(Math.floor(arr.length * q), arr.length - 1)];
+        const breaks = [
+            quantile(values, 0.125), quantile(values, 0.25), quantile(values, 0.375),
+            quantile(values, 0.5), quantile(values, 0.625), quantile(values, 0.75),
+            quantile(values, 0.875), Math.ceil(quantile(values, 1))
+        ];
 
         if (this.map.choroplethLayer) {
             this.map.map.removeLayer(this.map.choroplethLayer);
