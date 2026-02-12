@@ -82,143 +82,16 @@ Evaluates whether AI volume estimation tools (like Strava Metro, StreetLight Dat
 
 ## Test 3: Infrastructure Recommendation Audit
 
-### Overview
+Evaluates whether AI-driven infrastructure recommendation systems allocate safety improvement budgets equitably, or optimize for metrics that favor already well-served areas. Compares AI allocation (biased by volume predictions) against need-based allocation (driven by danger scores and real infrastructure gaps from OpenStreetMap).
 
-Evaluates whether AI-driven infrastructure recommendation systems allocate safety improvement budgets equitably across demographic groups, or if they optimize for metrics that favor already well-served areas.
-
-### Methodology
-
-**Scenario:**
-- $5M budget for safety improvements
-- 238 census tracts in Durham
-- Compare AI allocation vs need-based allocation
-
-**AI Allocation Strategy:**
-- Optimizes for predicted volume × crash risk
-- Uses biased volume predictions from Test 1
-- Favors high-visibility, high-traffic areas
-
-**Need-Based Allocation Strategy:**
-- Prioritizes actual danger scores (income-weighted)
-- Infrastructure quality gaps from OpenStreetMap feature density per tract
-- Focuses on equity metrics
-
-**Danger Score Calculation:**
-```
-danger_score = base_danger × income_multiplier × infrastructure_deficit
-```
-Infrastructure deficit derived from real OSM pedestrian/cyclist feature density (crossings, cycleways, traffic signals, speed calming, footways).
-
-**Project Types** (selected per tract by largest infrastructure gap):
-- Crosswalk: $50K, 15% crash reduction
-- Bike Lane: $200K, 25% crash reduction
-- Traffic Signal: $150K, 30% crash reduction
-- Speed Reduction: $75K, 20% crash reduction
-
-### Visualizations
-
-1. **Interactive Infrastructure Map**
-   - Choropleth showing danger scores by tract
-   - Toggle between AI recommendations vs need-based
-   - Project markers (color-coded by type)
-   - Click for tract details and project list
-
-2. **Budget Allocation Sankey Diagram**
-   - Flow from $5M budget → income quintiles → project types
-   - Compare AI vs need-based flows side-by-side
-   - Hover for exact dollar amounts
-
-3. **Equity Radar Chart**
-   - 6 dimensions: Coverage, Per-Capita, Safety Impact, Gini, Gap, Disparate Impact
-   - AI allocation (red) vs need-based (blue)
-   - Shows AI underperformance on all equity metrics
-
-4. **Metrics Cards Dashboard**
-   - Disparate Impact Ratio (80% rule)
-   - Gini Coefficient (inequality measure)
-   - Equity Gap (Q1 vs Q5 difference)
-   - Coverage Rate by quintile
-
-### Key Findings
-
-#### Disparate Impact
-
-| Strategy | Q1 Per-Capita | Q5 Per-Capita | Ratio | Passes 80% Rule? |
-|----------|---------------|---------------|-------|------------------|
-| **AI Allocation** | $4.20 | $14.23 | **29.5%** | ❌ Fails |
-| **Need-Based** | $11.87 | $9.52 | **83.8%** | ✅ Passes |
-
-**Gap:** 54.3 percentage points worse with AI
-
-#### Budget Distribution
-
-| Quintile | Population | AI Allocation | Need-Based | Difference |
-|----------|-----------|---------------|------------|------------|
-| Q1 (Poorest) | 58,234 | $244K (4.9%) | $691K (13.8%) | -$447K |
-| Q2 | 52,103 | $389K (7.8%) | $628K (12.6%) | -$239K |
-| Q3 | 47,892 | $612K (12.2%) | $541K (10.8%) | +$71K |
-| Q4 | 43,256 | $1.12M (22.4%) | $478K (9.6%) | +$642K |
-| Q5 (Richest) | 39,871 | $2.64M (52.7%) | $1.66M (33.2%) | +$980K |
-
-**AI shifts $1.4M from Q1-Q2 to Q4-Q5**
-
-#### Inequality Metrics
-
-| Metric | AI | Need-Based | Improvement |
-|--------|-----|-----------|-------------|
-| **Gini Coefficient** | 0.302 | 0.189 | 37% less unequal |
-| **Equity Gap** | 238% | 27% | 88% reduction |
-| **Coverage Rate (Q1)** | 32% | 67% | 2.1x better |
-| **Safety Impact (Q1)** | 3.2 crashes/yr | 8.7 crashes/yr | 2.7x better |
-
-#### Project Type Distribution
-
-**AI Allocation:**
-- Traffic Signals: 47% ($2.35M) - high-volume intersections
-- Bike Lanes: 31% ($1.55M) - arterial corridors
-- Speed Reduction: 15% ($750K)
-- Crosswalks: 7% ($350K)
-
-**Need-Based Allocation:**
-- Crosswalks: 34% ($1.70M) - neighborhood connectivity
-- Speed Reduction: 28% ($1.40M) - residential safety
-- Bike Lanes: 23% ($1.15M)
-- Traffic Signals: 15% ($750K)
-
-**AI favors expensive, high-visibility projects in wealthy areas**
-
-### Equity Implications
-
-1. **Systematic Bias:**
-   - AI allocates 52.7% of budget to wealthiest 20% of residents
-   - Poorest 20% receive only 4.9% of budget
-   - Violates disparate impact threshold by 50+ percentage points
-
-2. **Compounding Inequality:**
-   - Areas with existing infrastructure get more
-   - Areas with greatest safety need get least investment
-   - AI optimizes for wrong objectives (visibility over equity)
-
-3. **Policy Recommendations:**
-   - Require equity constraints in optimization algorithms
-   - Weight allocations by infrastructure deficit
-   - Use need-based metrics, not volume-based metrics
-   - Audit AI recommendations before implementation
+See [TEST3_METHODOLOGY.md](TEST3_METHODOLOGY.md) for simulation design, equity metric formulas, and validation details.
 
 ### Data Files
 
-- `infrastructure-report.json` - Complete audit (55 KB)
-- `danger-scores.json` - Tract danger scores with geometry (1.4 MB)
-- `recommendations.json` - AI/need-based projects (940 KB)
-- `budget-allocation.json` - Equity metrics (1 KB)
-
-### References
-
-See [TEST3_METHODOLOGY.md](TEST3_METHODOLOGY.md) for:
-- Detailed danger score calculation
-- Project selection algorithm
-- Equity metric formulas
-- Sensitivity analysis
+- `infrastructure-report.json` - Complete audit
+- `danger-scores.json` - Tract danger scores with geometry
+- `recommendations.json` - AI/need-based projects
+- `budget-allocation.json` - Equity metrics
 
 ---
 
