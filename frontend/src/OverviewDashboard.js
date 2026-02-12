@@ -24,7 +24,7 @@ export class OverviewDashboard {
         this.data = { volumeReport, crashReport, budgetAllocation, demandReport, choroplethData };
 
         const tractCountEl = document.getElementById('tract-count');
-        if (tractCountEl) tractCountEl.textContent = choroplethData.features.length;
+        if (tractCountEl) tractCountEl.textContent = String(choroplethData.features.length);
 
         this.renderMap();
         this.renderTestCards();
@@ -139,9 +139,9 @@ export class OverviewDashboard {
         `;
 
         container.addEventListener('click', (e) => {
-            const btn = e.target.closest('[data-test]');
+            const btn = /** @type {HTMLElement} */ (e.target).closest('[data-test]');
             if (!btn) return;
-            window.dispatchEvent(new CustomEvent('navigate-test', { detail: btn.dataset.test }));
+            window.dispatchEvent(new CustomEvent('navigate-test', { detail: /** @type {HTMLElement} */ (btn).dataset.test }));
         });
     }
 

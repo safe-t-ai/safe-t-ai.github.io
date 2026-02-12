@@ -16,6 +16,14 @@ repos:
         files: '^frontend/.*\.js$'
         stages: [commit]
 
+      - id: typecheck
+        name: Run TypeScript check
+        entry: bash -c 'cd frontend && npx tsc -p jsconfig.json --noEmit'
+        language: system
+        pass_filenames: false
+        files: '^frontend/.*\.(js|d\.ts)$'
+        stages: [commit]
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:

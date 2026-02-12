@@ -6,7 +6,9 @@
 import echarts from './echarts.js';
 
 // Single debounced resize handler for all charts
+/** @type {Set<any>} */
 const activeCharts = new Set();
+/** @type {ReturnType<typeof setTimeout> | undefined} */
 let resizeTimer;
 
 function resizeVisibleCharts() {
@@ -45,9 +47,14 @@ const TOOLTIP_STYLE = {
 const ANIMATION_DEFAULTS = {
     animationDuration: 600,
     animationEasing: 'cubicOut',
-    animationDelay: (idx) => idx * 80
+    animationDelay: (/** @type {number} */ idx) => idx * 80
 };
 
+/**
+ * @param {string} elementId
+ * @param {any} config
+ * @returns {any}
+ */
 export function initChart(elementId, config) {
     // Global font family for all text rendered on canvas
     config.textStyle = { fontFamily: FONT_FAMILY, ...(config.textStyle || {}) };
@@ -74,6 +81,11 @@ function isMobile() {
     return window.innerWidth <= 768;
 }
 
+/**
+ * @param {number} desktop
+ * @param {number} mobile
+ * @returns {number}
+ */
 function getResponsiveFontSize(desktop, mobile) {
     return isMobile() ? mobile : desktop;
 }
@@ -95,6 +107,11 @@ export const COLORS = {
     gradient: ['#0891b2', '#3ab7a5', '#e8903e', '#c2410c']
 };
 
+/**
+ * @param {Record<string, any>[]} data
+ * @param {BarChartOptions} [options]
+ * @returns {any}
+ */
 export function createBarChartConfig(data, options = {}) {
     const {
         xField = 'label',
@@ -111,7 +128,7 @@ export function createBarChartConfig(data, options = {}) {
                 type: 'shadow'
             },
             confine: true,
-            formatter: formatter || ((params) => {
+            formatter: formatter || ((/** @type {any[]} */ params) => {
                 const item = params[0];
                 return `${item.name}<br/>${item.seriesName}: ${item.value.toFixed(1)}%`;
             })
@@ -150,6 +167,11 @@ export function createBarChartConfig(data, options = {}) {
     };
 }
 
+/**
+ * @param {Record<string, any>[]} data
+ * @param {ScatterChartOptions} [options]
+ * @returns {any}
+ */
 export function createScatterChartConfig(data, options = {}) {
     const {
         xField = 'x',
@@ -199,7 +221,7 @@ export function createScatterChartConfig(data, options = {}) {
         tooltip: {
             trigger: 'item',
             confine: true,
-            formatter: formatter || ((params) => {
+            formatter: formatter || ((/** @type {any} */ params) => {
                 const item = params.data[2];
                 return `Counter: ${item.counter_id}<br/>` +
                        `Actual: ${Math.round(params.data[0])}<br/>` +
