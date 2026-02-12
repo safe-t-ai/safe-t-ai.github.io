@@ -115,13 +115,14 @@ export class CrashPredictionAudit {
             }
         );
 
+        const fmt = v => Number.isInteger(v) ? v : v.toFixed(1);
         this.map.addLegend({
             title: label,
             colorScale: [
-                { color: '#ffffcc', label: `<${breaks[2]}` },
-                { color: '#fed976', label: `${breaks[2]}-${breaks[5]}` },
-                { color: '#fc4e2a', label: `${breaks[5]}-${breaks[7]}` },
-                { color: '#b10026', label: `>${breaks[7]}` }
+                { color: '#ffffcc', label: `<${fmt(breaks[2])}` },
+                { color: '#fed976', label: `${fmt(breaks[2])}\u2013${fmt(breaks[5])}` },
+                { color: '#fc4e2a', label: `${fmt(breaks[5])}\u2013${fmt(breaks[7])}` },
+                { color: '#b10026', label: `>${fmt(breaks[7])}` }
             ]
         });
     }
