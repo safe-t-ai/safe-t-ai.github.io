@@ -78,22 +78,29 @@ export class CrashPredictionAudit {
         window.addEventListener('resize', this._onResize);
     }
 
+    /** Compute shared color breaks from both actual and predicted values. */
+    _computeSharedBreaks() {
+        if (this._sharedBreaks) return this._sharedBreaks;
+        const allValues = this.data.crashGeoData.features
+            .flatMap(f => [f.properties.actual_crashes, f.properties.ai_predicted_crashes])
+            .filter(v => v != null && v > 0)
+            .sort((a, b) => a - b);
+        const q = (arr, p) => arr[Math.min(Math.floor(arr.length * p), arr.length - 1)];
+        this._sharedBreaks = [
+            q(allValues, 0.125), q(allValues, 0.25), q(allValues, 0.375),
+            q(allValues, 0.5), q(allValues, 0.625), q(allValues, 0.75),
+            q(allValues, 0.875), Math.ceil(q(allValues, 1))
+        ];
+        return this._sharedBreaks;
+    }
+
     updateCrashLayer() {
         const isActual = this.currentView === 'actual';
         const field = isActual ? 'actual_crashes' : 'ai_predicted_crashes';
         const label = isActual ? 'Actual Crashes (2023)' : 'AI Predicted Crashes (2023)';
 
-        // Compute breaks from data (quantile-based) so the scale adapts to any data range
-        const values = this.data.crashGeoData.features
-            .map(f => f.properties[field])
-            .filter(v => v != null && v > 0)
-            .sort((a, b) => a - b);
-        const quantile = (arr, q) => arr[Math.min(Math.floor(arr.length * q), arr.length - 1)];
-        const breaks = [
-            quantile(values, 0.125), quantile(values, 0.25), quantile(values, 0.375),
-            quantile(values, 0.5), quantile(values, 0.625), quantile(values, 0.75),
-            quantile(values, 0.875), Math.ceil(quantile(values, 1))
-        ];
+        // Shared scale so toggling views reveals over/underprediction by color shift
+        const breaks = this._computeSharedBreaks();
 
         if (this.map.choroplethLayer) {
             this.map.map.removeLayer(this.map.choroplethLayer);
