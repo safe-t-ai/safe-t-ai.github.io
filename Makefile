@@ -38,9 +38,10 @@ dev: ## Start frontend dev server (data served from frontend/public/data/)
 
 data: fetch-data generate-data ## Fetch and generate all data
 
-fetch-data: ## Fetch Durham census, geographic, and crash data
+fetch-data: ## Fetch Durham census, geographic, crash, and infrastructure data
 	$(PYTHON) scripts/fetch_durham_data.py
 	$(PYTHON) scripts/fetch_ncdot_crash_data.py
+	$(PYTHON) scripts/fetch_osm_infrastructure.py
 
 generate-data: ## Generate static data files for frontend
 	$(PYTHON) scripts/simulate_ai_predictions.py
@@ -78,9 +79,6 @@ lint-fix: ## Run linters with auto-fix
 
 hooks: ## Run pre-commit hooks manually
 	pre-commit run --all-files
-
-test-setup: ## Run original setup validation
-	$(PYTHON) test_setup.py
 
 ##@ Cleanup
 

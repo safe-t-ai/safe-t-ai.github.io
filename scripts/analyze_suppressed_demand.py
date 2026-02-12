@@ -16,6 +16,7 @@ import json
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
+import pandas as pd
 import geopandas as gpd
 from config import HIGH_SUPPRESSION_THRESHOLD, RAW_DATA_DIR
 from models.demand_analyzer import SuppressedDemandAnalyzer
@@ -41,6 +42,21 @@ def load_census_data():
     return gdf
 
 
+def load_infrastructure_data():
+    """Load OSM infrastructure scores."""
+    infra_path = RAW_DATA_DIR / 'osm_infrastructure.json'
+    if not infra_path.exists():
+        raise FileNotFoundError(
+            f"Infrastructure data not found at {infra_path}. "
+            "Run fetch_osm_infrastructure.py first."
+        )
+
+    with open(infra_path) as f:
+        data = json.load(f)
+
+    return pd.DataFrame(data['tracts'])
+
+
 def main():
     print("=" * 80)
     print("Test 4: Suppressed Demand Analysis")
@@ -50,9 +66,14 @@ def main():
     print("\n1. Loading census data...")
     census_gdf = load_census_data()
 
+    # Load infrastructure data
+    print("\n1b. Loading OSM infrastructure data...")
+    infrastructure_df = load_infrastructure_data()
+    print(f"Loaded infrastructure scores for {len(infrastructure_df)} tracts")
+
     # Run suppressed demand analysis
     print("\n2. Running suppressed demand analysis...")
-    analyzer = SuppressedDemandAnalyzer(census_gdf)
+    analyzer = SuppressedDemandAnalyzer(census_gdf, infrastructure_df)
     results = analyzer.run_analysis()
 
     # Print summary
@@ -101,7 +122,8 @@ def main():
     print("\n6. Exporting demand analysis report...")
     demand_report = {
         '_provenance': {
-            'data_type': 'simulated',
+            'data_type': 'mixed',
+            'real': ['infrastructure scores (OpenStreetMap)'],
             'simulated': ['potential demand', 'actual demand', 'AI detection models'],
             'parameters': {'high_suppression_threshold': HIGH_SUPPRESSION_THRESHOLD},
         },

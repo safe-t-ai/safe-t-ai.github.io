@@ -22,14 +22,20 @@ class SuppressedDemandAnalyzer:
     This creates inequitable investment patterns favoring already-served areas.
     """
 
-    def __init__(self, census_gdf: gpd.GeoDataFrame):
+    def __init__(self, census_gdf: gpd.GeoDataFrame, infrastructure_df: pd.DataFrame = None):
         """
-        Initialize analyzer with census tract data.
+        Initialize analyzer with census tract data and OSM infrastructure scores.
 
         Args:
             census_gdf: GeoDataFrame with census tracts and demographics
+            infrastructure_df: DataFrame with per-tract OSM infrastructure scores
         """
+        if infrastructure_df is None:
+            raise ValueError(
+                "infrastructure_df is required. Run fetch_osm_infrastructure.py first."
+            )
         self.census_gdf = census_gdf.copy()
+        self.infrastructure_df = infrastructure_df
 
         # Normalize income for calculations
         min_income = self.census_gdf['median_income'].min()
@@ -82,25 +88,23 @@ class SuppressedDemandAnalyzer:
 
     def calculate_infrastructure_quality(self, demand_df: pd.DataFrame) -> pd.DataFrame:
         """
-        Calculate infrastructure quality score by tract.
-
-        Quality correlates with income (wealthier areas have better infrastructure).
+        Merge real OSM infrastructure scores into the demand DataFrame.
 
         Args:
             demand_df: DataFrame with demand data
 
         Returns:
-            DataFrame with infrastructure scores added
+            DataFrame with infrastructure_score column from OSM data
         """
         demand_df = demand_df.copy()
 
-        # Infrastructure score: 0.3 (poor) to 0.9 (excellent)
-        # Strongly correlates with income (0.65 correlation)
-        base_score = 0.3 + demand_df['norm_income'] * 0.6
+        osm_scores = self.infrastructure_df[['tract_id', 'osm_infrastructure_score']].copy()
+        demand_df = demand_df.merge(osm_scores, on='tract_id', how='left')
+        demand_df['infrastructure_score'] = demand_df['osm_infrastructure_score']
+        demand_df = demand_df.drop(columns=['osm_infrastructure_score'])
 
-        # Add some noise (infrastructure isn't perfectly predicted by income)
-        noise = np.random.normal(0, 0.05, len(demand_df))
-        demand_df['infrastructure_score'] = np.clip(base_score + noise, 0.2, 0.95)
+        # Fill any unmatched tracts with a conservative low score
+        demand_df['infrastructure_score'] = demand_df['infrastructure_score'].fillna(0.1)
 
         return demand_df
 

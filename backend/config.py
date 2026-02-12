@@ -77,6 +77,34 @@ SUPPRESSED_DEMAND_CONFIG = {
 
 HIGH_SUPPRESSION_THRESHOLD = 70  # Suppression % that defines "high suppression"
 
+# OpenStreetMap / Overpass API
+OVERPASS_API = "https://overpass-api.de/api/interpreter"
+OVERPASS_TIMEOUT = 60
+
+# OSM infrastructure features: Overpass QL tag filters and composite score weights
+OSM_INFRASTRUCTURE_FEATURES = {
+    'crossings': {
+        'tags': '["highway"="crossing"]',
+        'weight': 0.25,
+    },
+    'bike_infra': {
+        'tags': '["highway"~"cycleway|path"]["bicycle"!="no"]',
+        'weight': 0.25,
+    },
+    'traffic_signals': {
+        'tags': '["highway"="traffic_signals"]',
+        'weight': 0.15,
+    },
+    'speed_calming': {
+        'tags': '["traffic_calming"]',
+        'weight': 0.10,
+    },
+    'footways': {
+        'tags': '["highway"="footway"]',
+        'weight': 0.25,
+    },
+}
+
 QUINTILE_LABELS = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']
 
 # Plausibility ranges for CI validation (catch order-of-magnitude errors)
@@ -88,4 +116,8 @@ PLAUSIBILITY_RANGES = {
     'median_income_range': (15_000, 250_000),     # Per-tract median household income
     'budget_allocation_total': (4_500_000, 5_500_000),  # INFRASTRUCTURE_DEFAULT_BUDGET ± margin
     'confusion_matrix_min_f1_spread': 0.05,      # Min spread between best/worst quintile F1
+    'osm_crossings_total': (200, 3000),           # Pedestrian crossings in Durham
+    'osm_bike_infra_total': (50, 2000),            # Cycleways and shared paths
+    'osm_traffic_signals_total': (100, 2000),      # Traffic signals
+    'osm_footways_total': (200, 5000),             # Dedicated footways
 }

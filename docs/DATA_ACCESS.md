@@ -53,16 +53,18 @@ Complete NC crash database with detailed records.
 - **Would provide:** Individual crash records with road-level location data (all reportable NC crashes since 1990)
 - **Current substitute:** Simulated crash records calibrated to NC Vision Zero API totals
 
-## Potential Additions
+### OpenStreetMap (Infrastructure Density)
 
-### OpenStreetMap (Infrastructure Geometry)
+Pedestrian and cyclist infrastructure features (crossings, cycleways, traffic signals, speed calming, footways) within Durham County bounds.
 
-Crowdsourced map data with pedestrian and cyclist infrastructure tagging (footways, crossings, bike routes). The US saw record pedestrian mapping growth in 2024 driven by the OSM US Pedestrian Working Group and Meta's Walkabout Initiative.
-
-- **Extract:** Custom bounding-box extract via https://extract.bbbike.org/ (Durham is not pre-made; draw a region). Alternatively, query directly via the Overpass API.
+- **Endpoint:** Overpass API (`https://overpass-api.de/api/interpreter`)
+- **Auth:** None (public)
 - **License:** ODbL (open)
-- **Formats:** OSM/PBF, Shapefile, GeoJSON, GeoParquet
-- **Useful for:** Test 3 (Infrastructure Audit) and Test 4 (Suppressed Demand). Map actual infrastructure presence per census tract against income quintiles to validate whether AI allocation recommendations match real-world conditions.
+- **Provides:** Per-tract infrastructure feature counts and densities, composite infrastructure quality score
+- **Used by:** Test 3 (Infrastructure Audit) project type selection, Test 4 (Suppressed Demand) infrastructure quality scores
+- **Script:** `scripts/fetch_osm_infrastructure.py`
+
+## Potential Additions
 
 ### Durham Vision Zero Dashboard (Crash Validation)
 

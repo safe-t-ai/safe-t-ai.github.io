@@ -52,6 +52,7 @@ jobs:
           python scripts/fetch_durham_data.py &
           python scripts/fetch_ncdot_crash_data.py &
           wait
+          python scripts/fetch_osm_infrastructure.py
 
       - name: Validate source data
         run: |
@@ -103,12 +104,25 @@ jobs:
           if missing_sev:
               errors.append(f'Missing severity categories: {missing_sev}')
 
+          # OSM infrastructure
+          with open('backend/data/raw/osm_infrastructure.json') as f:
+              osm = json.load(f)
+          osm_totals = osm['totals']
+          for key in ['crossings', 'bike_infra', 'traffic_signals', 'footways']:
+              range_key = f'osm_{key}_total'
+              if range_key in PLAUSIBILITY_RANGES:
+                  lo, hi = PLAUSIBILITY_RANGES[range_key]
+                  val = osm_totals.get(key, 0)
+                  if not (lo <= val <= hi):
+                      errors.append(f'OSM {key} count {val} outside expected range {lo}-{hi}')
+
           if errors:
               print('Source data validation failed:')
               for e in errors:
                   print(f'  - {e}')
               sys.exit(1)
-          print(f'Source data valid: {count} tracts, {len(rows)} crashes, years {min(years)}-{max(years)}')
+          osm_total = sum(osm_totals.values())
+          print(f'Source data valid: {count} tracts, {len(rows)} crashes, years {min(years)}-{max(years)}, {osm_total} OSM features')
           "
 
       - name: Compute data hash
@@ -117,6 +131,7 @@ jobs:
           HASH=$(cat \
             backend/data/raw/durham_census_tracts.geojson \
             backend/data/raw/ncdot_crashes_durham.csv \
+            backend/data/raw/osm_infrastructure.json \
             | sha256sum | cut -d' ' -f1 | cut -c1-16)
           echo "hash=$HASH" >> $GITHUB_OUTPUT
 
@@ -394,8 +409,13 @@ jobs:
           echo "### Source Data" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          OSM_FEATURES=$(python3 -c "import json; d=json.load(open('backend/data/raw/osm_infrastructure.json')); print(sum(d['totals'].values()))")
+          OSM_SIZE=$(du -h backend/data/raw/osm_infrastructure.json | cut -f1)
+
           echo "| Census Tracts | $TRACTS |" >> $GITHUB_STEP_SUMMARY
           echo "| Census File | $CENSUS_SIZE |" >> $GITHUB_STEP_SUMMARY
+          echo "| OSM Features | $OSM_FEATURES |" >> $GITHUB_STEP_SUMMARY
+          echo "| OSM File | $OSM_SIZE |" >> $GITHUB_STEP_SUMMARY
 
           python3 -c "
           import csv

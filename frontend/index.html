@@ -1189,9 +1189,9 @@
                         <div class="map-container">
                             <div class="chart-header">
                                 <h2>Infrastructure Recommendations Map</h2>
-                                <span class="data-source-badge simulated">
-                                    Simulated
-                                    <span class="tooltip">Simulated safety projects using census demographics and danger scores. AI allocation uses income-correlated bias; need-based allocation uses danger scores alone.</span>
+                                <span class="data-source-badge calibrated">
+                                    Calibrated
+                                    <span class="tooltip">Project types selected by actual infrastructure gaps (OpenStreetMap feature density per tract). Allocation priority and danger scores are simulated.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Safety project locations from AI vs need-based allocation. Shading shows danger scores; markers show projects. Toggle to compare.</p>
@@ -1208,9 +1208,9 @@
                         <div class="chart-container">
                             <div class="chart-header">
                                 <h2>Budget Allocation by Income</h2>
-                                <span class="data-source-badge simulated">
-                                        Simulated
-                                    <span class="tooltip">$5M budget allocated across income quintiles using two methods: AI-driven (biased by data availability) and need-based (proportional to danger scores).</span>
+                                <span class="data-source-badge calibrated">
+                                        Calibrated
+                                    <span class="tooltip">$5M budget allocated across income quintiles. Project types reflect real infrastructure gaps from OpenStreetMap density data.</span>
                                 </span>
                             </div>
                             <p class="chart-description">AI-driven vs need-based safety budget allocation per income quintile.</p>
@@ -1220,9 +1220,9 @@
                         <div class="chart-container">
                             <div class="chart-header">
                                 <h2>Equity Comparison: AI vs Need-Based</h2>
-                                <span class="data-source-badge simulated">
-                                        Simulated
-                                    <span class="tooltip">Equity metrics (disparate impact ratio, Gini coefficient, coverage rate, per-capita spending) comparing AI-driven vs need-based allocation strategies.</span>
+                                <span class="data-source-badge calibrated">
+                                        Calibrated
+                                    <span class="tooltip">Equity metrics comparing AI-driven vs need-based allocation. Infrastructure gaps derived from OpenStreetMap feature density per census tract.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Four normalized equity metrics (0-100) comparing AI-driven and need-based allocation strategies.</p>
@@ -1244,9 +1244,9 @@
                         <div class="map-container">
                             <div class="chart-header">
                                 <h2>Demand Distribution Map</h2>
-                                <span class="data-source-badge simulated">
-                                    Simulated
-                                    <span class="tooltip">Demand modeled from infrastructure quality, safety perception, and census demographics. Potential demand estimated independent of current infrastructure conditions.</span>
+                                <span class="data-source-badge calibrated">
+                                    Calibrated
+                                    <span class="tooltip">Infrastructure quality scores derived from OpenStreetMap feature density per census tract. Demand suppression modeled from these real infrastructure conditions.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Suppressed, potential, and actual cycling/walking demand across Durham. High suppression (red) indicates latent demand AI tools miss.</p>
@@ -1264,9 +1264,9 @@
                         <div class="chart-container">
                             <div class="chart-header">
                                 <h2>Demand Suppression: Q1 vs Q5</h2>
-                                <span class="data-source-badge simulated">
-                                        Simulated
-                                    <span class="tooltip">Funnel comparing potential-to-actual demand conversion in Q1 (poorest) vs Q5 (richest) areas. Suppression modeled from infrastructure quality and safety factors.</span>
+                                <span class="data-source-badge calibrated">
+                                        Calibrated
+                                    <span class="tooltip">Funnel comparing potential-to-actual demand conversion by income quintile. Infrastructure quality from OpenStreetMap pedestrian/cyclist feature density.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Demand suppression stages from potential to actual usage. Width represents trip volume at each stage. Q1 areas show severe drop-off.</p>
@@ -1276,9 +1276,9 @@
                         <div class="chart-container">
                             <div class="chart-header">
                                 <h2>AI Detection Capability</h2>
-                                <span class="data-source-badge simulated">
-                                        Simulated
-                                    <span class="tooltip">Three detection approaches compared: naive AI (observed demand only), sophisticated AI (demographics + infrastructure), and human expert baseline.</span>
+                                <span class="data-source-badge calibrated">
+                                        Calibrated
+                                    <span class="tooltip">AI detection accuracy evaluated against infrastructure scores from OpenStreetMap. Three approaches: naive, sophisticated, and human expert baseline.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Detection accuracy for suppressed demand. Naive AI fails; sophisticated AI achieves partial detection. Neither matches human expert baseline.</p>

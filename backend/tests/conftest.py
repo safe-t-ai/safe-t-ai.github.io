@@ -49,6 +49,25 @@ def sample_crash_data():
 
 
 @pytest.fixture
+def sample_infrastructure_df():
+    """Sample OSM infrastructure data matching sample_census_gdf tract_ids."""
+    return pd.DataFrame({
+        'tract_id': ['001', '002', '003', '004', '005'],
+        'osm_infrastructure_score': [0.15, 0.30, 0.50, 0.70, 0.85],
+        'crossings_count': [2, 5, 10, 15, 20],
+        'bike_infra_count': [0, 1, 3, 8, 12],
+        'traffic_signals_count': [1, 3, 6, 10, 14],
+        'speed_calming_count': [0, 0, 2, 4, 6],
+        'footways_count': [1, 4, 8, 14, 22],
+        'crossings_density': [0.5, 1.2, 2.5, 3.8, 5.0],
+        'bike_infra_density': [0.0, 0.3, 0.8, 2.0, 3.0],
+        'traffic_signals_density': [0.2, 0.8, 1.5, 2.5, 3.5],
+        'speed_calming_density': [0.0, 0.0, 0.5, 1.0, 1.5],
+        'footways_density': [0.2, 1.0, 2.0, 3.5, 5.5],
+    })
+
+
+@pytest.fixture
 def sample_temporal_data():
     """Sample temporal data for validation testing."""
     return pd.DataFrame({

@@ -16,9 +16,25 @@ from pathlib import Path
 # Add backend to path
 sys.path.insert(0, str(Path(__file__).parent.parent / 'backend'))
 
+import pandas as pd
 import geopandas as gpd
-from config import INFRASTRUCTURE_DEFAULT_BUDGET, DEFAULT_RANDOM_SEED
+from config import INFRASTRUCTURE_DEFAULT_BUDGET, DEFAULT_RANDOM_SEED, RAW_DATA_DIR
 from models.infrastructure_auditor import InfrastructureRecommendationAuditor
+
+
+def load_infrastructure_data():
+    """Load OSM infrastructure scores."""
+    infra_path = RAW_DATA_DIR / 'osm_infrastructure.json'
+    if not infra_path.exists():
+        raise FileNotFoundError(
+            f"Infrastructure data not found at {infra_path}. "
+            "Run fetch_osm_infrastructure.py first."
+        )
+
+    with open(infra_path) as f:
+        data = json.load(f)
+
+    return pd.DataFrame(data['tracts'])
 
 
 def main():
@@ -47,9 +63,14 @@ def main():
     census_gdf = gpd.read_file(census_file)
     print(f"Loaded {len(census_gdf)} census tracts")
 
+    # Load infrastructure data
+    print("\nLoading OSM infrastructure data...")
+    infrastructure_df = load_infrastructure_data()
+    print(f"Loaded infrastructure scores for {len(infrastructure_df)} tracts")
+
     # Initialize auditor
     print(f"\nInitializing auditor with ${INFRASTRUCTURE_DEFAULT_BUDGET:,} total budget")
-    auditor = InfrastructureRecommendationAuditor(census_gdf)
+    auditor = InfrastructureRecommendationAuditor(census_gdf, infrastructure_df)
 
     # Simulate danger scores
     print("\nSimulating crash/danger scores by tract...")
@@ -113,7 +134,8 @@ def main():
     report = auditor.generate_report()
 
     report['_provenance'] = {
-        'data_type': 'simulated',
+        'data_type': 'mixed',
+        'real': ['infrastructure gap analysis (OpenStreetMap)'],
         'simulated': ['danger scores', 'AI recommendations', 'need-based recommendations'],
         'parameters': {'budget': INFRASTRUCTURE_DEFAULT_BUDGET, 'seed': DEFAULT_RANDOM_SEED},
     }

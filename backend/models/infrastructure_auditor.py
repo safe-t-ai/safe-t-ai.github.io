@@ -21,15 +21,22 @@ class InfrastructureRecommendationAuditor:
 
     PROJECT_TYPES = INFRASTRUCTURE_PROJECT_TYPES
 
-    def __init__(self, census_gdf: gpd.GeoDataFrame, total_budget: float = INFRASTRUCTURE_DEFAULT_BUDGET):
+    def __init__(self, census_gdf: gpd.GeoDataFrame, infrastructure_df: pd.DataFrame = None,
+                 total_budget: float = INFRASTRUCTURE_DEFAULT_BUDGET):
         """
-        Initialize auditor with census data.
+        Initialize auditor with census data and OSM infrastructure scores.
 
         Args:
             census_gdf: GeoDataFrame with census tracts and demographics
+            infrastructure_df: DataFrame with per-tract OSM infrastructure densities
             total_budget: Total infrastructure budget to allocate ($)
         """
+        if infrastructure_df is None:
+            raise ValueError(
+                "infrastructure_df is required. Run fetch_osm_infrastructure.py first."
+            )
         self.census_gdf = census_gdf.copy()
+        self.infrastructure_df = infrastructure_df
         self.total_budget = total_budget
         self.danger_scores = None
         self.ai_recommendations = None
@@ -84,6 +91,31 @@ class InfrastructureRecommendationAuditor:
         self.danger_scores = pd.DataFrame(danger_data)
         return self.danger_scores
 
+    def _select_project_type_for_gap(self, tract_id: str) -> str:
+        """Pick the project type addressing the tract's biggest infrastructure gap."""
+        # Map OSM density columns to project types
+        density_to_project = {
+            'crossings_density': 'crosswalk',
+            'bike_infra_density': 'bike_lane',
+            'traffic_signals_density': 'traffic_signal',
+            'speed_calming_density': 'speed_reduction',
+        }
+
+        row = self.infrastructure_df[self.infrastructure_df['tract_id'] == tract_id]
+        if row.empty:
+            return 'crosswalk'  # default for unmatched tracts
+
+        row = row.iloc[0]
+        lowest_density = None
+        best_project = 'crosswalk'
+        for density_col, project_type in density_to_project.items():
+            val = row.get(density_col, 0)
+            if lowest_density is None or val < lowest_density:
+                lowest_density = val
+                best_project = project_type
+
+        return best_project
+
     def _merge_danger_data(self, seed: int) -> pd.DataFrame:
         """Merge danger scores with census data, computing scores if needed."""
         if self.danger_scores is None:
@@ -126,14 +158,8 @@ class InfrastructureRecommendationAuditor:
             if remaining_budget <= 0:
                 break
 
-            # Determine project type based on income (bias!)
-            # Wealthy areas get expensive projects
-            if tract['median_income'] > data['median_income'].quantile(0.75):
-                project_type = 'bike_lane'
-            elif tract['median_income'] > data['median_income'].median():
-                project_type = 'traffic_signal'
-            else:
-                project_type = 'crosswalk'
+            # Project type based on actual infrastructure gap
+            project_type = self._select_project_type_for_gap(tract['tract_id'])
 
             project_cost = self.PROJECT_TYPES[project_type]['cost']
 
@@ -173,13 +199,8 @@ class InfrastructureRecommendationAuditor:
             if remaining_budget <= 0:
                 break
 
-            # Determine project type based on danger level (equitable!)
-            if tract['danger_score'] > data['danger_score'].quantile(0.75):
-                project_type = 'bike_lane'  # Highest danger gets most effective
-            elif tract['danger_score'] > data['danger_score'].median():
-                project_type = 'traffic_signal'
-            else:
-                project_type = 'speed_reduction'
+            # Project type based on actual infrastructure gap
+            project_type = self._select_project_type_for_gap(tract['tract_id'])
 
             project_cost = self.PROJECT_TYPES[project_type]['cost']
 
