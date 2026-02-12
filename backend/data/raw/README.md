@@ -5,8 +5,8 @@ This directory contains raw data fetched from external sources.
 ## Files
 
 - `durham_census_tracts.geojson` - Durham census tracts with demographics (US Census Bureau)
-- `ncdot_crashes_durham.csv` - Simulated Durham crash data calibrated to real NCDOT volumes
-- `ncdot_calibration.json` - Cached NCDOT API crash total for offline use
+- `ncdot_nonmotorist_durham.csv` - Real NCDOT non-motorist crash data, Durham County (ArcGIS Feature Service)
+- `osm_infrastructure.json` - Pedestrian/cyclist infrastructure features (OpenStreetMap)
 
 ## Generating Data
 
@@ -18,10 +18,9 @@ Or individually:
 
 ```bash
 python3 scripts/fetch_durham_data.py
-python3 scripts/fetch_ncdot_crash_data.py
+python3 scripts/fetch_ncdot_nonmotorist.py
+python3 scripts/fetch_osm_infrastructure.py
 ```
-
-The crash script queries the NCDOT NC Vision Zero API for Durham County totals and generates simulated records at that volume. See `docs/DATA_ACCESS.md` for details.
 
 **Note:** Census data requires a Census API key:
 ```bash

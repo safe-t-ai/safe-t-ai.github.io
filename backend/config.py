@@ -46,12 +46,11 @@ DANGER_SCORE_CONFIG = {
 # Model reproducibility
 DEFAULT_RANDOM_SEED = 42
 
-# NCDOT NC Vision Zero Power BI API
-NCDOT_POWERBI_API = "https://wabi-us-east2-c-primary-api.analysis.windows.net/public/reports/querydata?synchronous=true"
-NCDOT_DATASET_ID = "4d0f3aae-2892-40e8-93a3-b7c3df04713c"
-NCDOT_REPORT_ID = "8dd4c4ae-1b7e-4e8f-816e-8d85f432685f"
-NCDOT_MODEL_ID = 3769678
-NCDOT_DATA_YEARS = 7  # estimated years of data in API (2018-2024)
+# NCDOT Non-Motorist Crash Feature Service (public ArcGIS)
+NCDOT_NONMOTORIST_SERVICE = (
+    "https://services.arcgis.com/NuWFvHYDMVmmxMeM/arcgis/rest/services"
+    "/NCDOT_NonMotoristCrashes/FeatureServer/0"
+)
 
 # Volume simulation parameters
 VOLUME_SIMULATION_CONFIG = {
@@ -109,8 +108,8 @@ QUINTILE_LABELS = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']
 
 # Plausibility ranges for CI validation (catch order-of-magnitude errors)
 PLAUSIBILITY_RANGES = {
-    'crashes_per_year': (10_000, 20_000),        # NCDOT calibration: ~14,400/yr
-    'crashes_total_5yr': (50_000, 100_000),       # 5 years of Durham crash data
+    'crashes_per_year': (50, 500),                # NCDOT non-motorist: ~148/yr
+    'crashes_total_5yr': (250, 2_500),            # 5 years of non-motorist crash data
     'census_tracts': (60, 75),                    # US Census ACS Durham County
     'durham_total_population': (250_000, 400_000),  # Census 2022 estimate ~311k
     'median_income_range': (15_000, 250_000),     # Per-tract median household income

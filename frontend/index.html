@@ -1122,9 +1122,9 @@
                         <div class="map-container">
                             <div class="chart-header">
                                 <h2>Crash Distribution Map</h2>
-                                <span class="data-source-badge calibrated">
-                                    Calibrated
-                                    <span class="tooltip">Crash volumes calibrated to NCDOT NC Vision Zero totals (~14,400/year). Geographic distribution across tracts is simulated using census demographics.</span>
+                                <span class="data-source-badge real">
+                                    Real Data
+                                    <span class="tooltip">NCDOT non-motorist crash locations (pedestrian/bicycle), geocoded to census tracts via spatial join.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Actual vs predicted crash counts by census tract. Toggle between views to compare.</p>
@@ -1141,9 +1141,9 @@
                         <div class="chart-container">
                             <div class="chart-header">
                                 <h2>Model Performance by Quintile</h2>
-                                <span class="data-source-badge calibrated">
-                                    Calibrated
-                                    <span class="tooltip">Ridge regression trained on NCDOT-calibrated crash data (2019-2022), evaluated on 2023. Real census demographics with simulated geographic distribution.</span>
+                                <span class="data-source-badge real">
+                                    Real Data
+                                    <span class="tooltip">Ridge regression trained on real NCDOT non-motorist crash data (2019-2022), evaluated on 2023. Census demographics as features.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Binary classification (above/below within-quintile median) evaluated per income group. Lower scores in poorer quintiles indicate the model struggles to rank tracts within those areas.</p>
@@ -1153,9 +1153,9 @@
                         <div class="chart-container">
                             <div class="chart-header">
                                 <h2>Crashes Over Time</h2>
-                                <span class="data-source-badge calibrated">
-                                    Calibrated
-                                    <span class="tooltip">5-year crash trends (2019-2023) with volumes calibrated to NCDOT totals. Year-over-year distribution across tracts is simulated.</span>
+                                <span class="data-source-badge real">
+                                    Real Data
+                                    <span class="tooltip">5-year non-motorist crash trends (2019-2023) from NCDOT ArcGIS Feature Service, aggregated by census tract.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Actual vs predicted crashes over 5 years. Shows persistent over/underprediction patterns by income level.</p>
@@ -1165,9 +1165,9 @@
                         <div class="chart-container">
                             <div class="chart-header">
                                 <h2>Prediction Error by Income Quintile</h2>
-                                <span class="data-source-badge calibrated">
-                                    Calibrated
-                                    <span class="tooltip">Mean absolute error of Ridge regression predictions on NCDOT-calibrated crash data, grouped by neighborhood income quintile.</span>
+                                <span class="data-source-badge real">
+                                    Real Data
+                                    <span class="tooltip">Mean absolute error of Ridge regression predictions on real NCDOT non-motorist crash data, grouped by neighborhood income quintile.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Relative prediction error by income level. Higher error in poorer quintiles indicates systematic bias in model accuracy.</p>
