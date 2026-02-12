@@ -403,21 +403,26 @@ jobs:
             exit 0
           fi
 
-          TRACTS=$(python3 -c "import json; d=json.load(open('backend/data/raw/durham_census_tracts.geojson')); print(len(d['features']))")
-          CENSUS_SIZE=$(du -h backend/data/raw/durham_census_tracts.geojson | cut -f1)
-
           echo "### Source Data" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          OSM_FEATURES=$(python3 -c "import json; d=json.load(open('backend/data/raw/osm_infrastructure.json')); print(sum(d['totals'].values()))")
-          OSM_SIZE=$(du -h backend/data/raw/osm_infrastructure.json | cut -f1)
 
-          echo "| Census Tracts | $TRACTS |" >> $GITHUB_STEP_SUMMARY
-          echo "| Census File | $CENSUS_SIZE |" >> $GITHUB_STEP_SUMMARY
-          echo "| OSM Features | $OSM_FEATURES |" >> $GITHUB_STEP_SUMMARY
-          echo "| OSM File | $OSM_SIZE |" >> $GITHUB_STEP_SUMMARY
+          if [ -f backend/data/raw/durham_census_tracts.geojson ]; then
+            TRACTS=$(python3 -c "import json; d=json.load(open('backend/data/raw/durham_census_tracts.geojson')); print(len(d['features']))")
+            CENSUS_SIZE=$(du -h backend/data/raw/durham_census_tracts.geojson | cut -f1)
+            echo "| Census Tracts | $TRACTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| Census File | $CENSUS_SIZE |" >> $GITHUB_STEP_SUMMARY
+          fi
 
-          python3 -c "
+          if [ -f backend/data/raw/osm_infrastructure.json ]; then
+            OSM_FEATURES=$(python3 -c "import json; d=json.load(open('backend/data/raw/osm_infrastructure.json')); print(sum(d['totals'].values()))")
+            OSM_SIZE=$(du -h backend/data/raw/osm_infrastructure.json | cut -f1)
+            echo "| OSM Features | $OSM_FEATURES |" >> $GITHUB_STEP_SUMMARY
+            echo "| OSM File | $OSM_SIZE |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f backend/data/raw/ncdot_crashes_durham.csv ]; then
+            python3 -c "
           import csv
           with open('backend/data/raw/ncdot_crashes_durham.csv') as f:
               rows = list(csv.DictReader(f))
@@ -431,12 +436,13 @@ jobs:
           print(f'SEVERITY=\"{sev_str}\"')
           " > /tmp/crash_stats.txt
 
-          source /tmp/crash_stats.txt
-          CRASH_SIZE=$(du -h backend/data/raw/ncdot_crashes_durham.csv | cut -f1)
+            source /tmp/crash_stats.txt
+            CRASH_SIZE=$(du -h backend/data/raw/ncdot_crashes_durham.csv | cut -f1)
 
-          echo "| Total Crashes | $TOTAL |" >> $GITHUB_STEP_SUMMARY
-          echo "| Year Range | $YEARS |" >> $GITHUB_STEP_SUMMARY
-          echo "| Crash File | $CRASH_SIZE |" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Crashes | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| Year Range | $YEARS |" >> $GITHUB_STEP_SUMMARY
+            echo "| Crash File | $CRASH_SIZE |" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ -d "frontend/public/data" ]; then

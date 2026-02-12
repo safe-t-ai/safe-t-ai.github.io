@@ -11,6 +11,7 @@ Depends on durham_census_tracts.geojson existing (run fetch_durham_data.py first
 import sys
 import json
 from pathlib import Path
+from typing import Optional
 
 sys.path.append(str(Path(__file__).parent.parent / 'backend'))
 
@@ -37,20 +38,16 @@ def build_overpass_query() -> str:
     bbox = f"{s},{w},{n},{e}"
 
     statements = []
-    for category, spec in OSM_INFRASTRUCTURE_FEATURES.items():
+    for spec in OSM_INFRASTRUCTURE_FEATURES.values():
         tags = spec['tags']
         statements.append(f'  node{tags}({bbox});')
         statements.append(f'  way{tags}({bbox});')
 
-    query = f"""[out:json][timeout:{OVERPASS_TIMEOUT}];
-(
-{"".join(chr(10) + s for s in statements)}
-);
-out center;"""
-    return query
+    body = "\n".join(statements)
+    return f"[out:json][timeout:{OVERPASS_TIMEOUT}];\n(\n{body}\n);\nout center;"
 
 
-def classify_element(element: dict) -> str | None:
+def classify_element(element: dict) -> Optional[str]:
     """Classify an OSM element into an infrastructure category based on tags."""
     tags = element.get('tags', {})
 
@@ -69,7 +66,7 @@ def classify_element(element: dict) -> str | None:
     return None
 
 
-def element_to_point(element: dict) -> Point | None:
+def element_to_point(element: dict) -> Optional[Point]:
     """Extract a Point geometry from an OSM element (node or way center)."""
     if element['type'] == 'node':
         return Point(element['lon'], element['lat'])
