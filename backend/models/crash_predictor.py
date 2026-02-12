@@ -5,12 +5,10 @@ Evaluates whether AI crash prediction models accurately predict actual danger
 or simply reflect enforcement/reporting bias.
 """
 
-import numpy as np
 import pandas as pd
 import geopandas as gpd
-from typing import Dict
 from pathlib import Path
-from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, mean_absolute_error
+from sklearn.metrics import mean_absolute_error
 from sklearn.linear_model import Ridge
 from config import CRASH_ANALYSIS_YEARS, CRASH_TRAINING_YEARS, CRASH_TEST_YEARS
 
@@ -37,21 +35,31 @@ class CrashPredictionAuditor:
 
     def load_real_crash_data(self, crash_csv_path: Path) -> pd.DataFrame:
         """
-        Load real NCDOT crash data and geocode to census tracts.
+        Load real NCDOT non-motorist crash data and geocode to census tracts.
 
         Args:
-            crash_csv_path: Path to ncdot_crashes_durham.csv
+            crash_csv_path: Path to ncdot_nonmotorist_durham.csv
 
         Returns:
             DataFrame with crashes aggregated by tract and year
         """
-        print("Loading NCDOT crash data...")
+        print("Loading NCDOT non-motorist crash data...")
 
-        # Load crash data
+        # Load crash data (ArcGIS column names)
         crash_df = pd.read_csv(crash_csv_path)
+        crash_df = crash_df.rename(columns={
+            'CrashDate': 'crash_date',
+            'CrashYear': 'year',
+            'Latitude': 'latitude',
+            'Longitude': 'longitude',
+        })
         crash_df['crash_date'] = pd.to_datetime(crash_df['crash_date'])
+        crash_df['year'] = crash_df['year'].astype(int)
 
-        print(f"Loaded {len(crash_df)} crash records")
+        # Filter to analysis window (real data spans 2007-2024)
+        crash_df = crash_df[crash_df['year'].isin(self.years)]
+
+        print(f"Loaded {len(crash_df)} crash records ({min(self.years)}-{max(self.years)})")
 
         # Create Point geometries for crashes
         crash_gdf = gpd.GeoDataFrame(
@@ -192,311 +200,3 @@ class CrashPredictionAuditor:
         print(f"\nOverall MAE: {overall_mae:.2f}")
 
         return test_with_history
-
-    def generate_crash_data(self, base_rate: float = 35.0, seed: int = 42) -> pd.DataFrame:
-        """
-        Generate realistic crash data with income correlation.
-
-        Ground truth: Low-income areas have worse infrastructure → more crashes.
-
-        Args:
-            base_rate: Average crashes per tract per year
-            seed: Random seed for reproducibility
-
-        Returns:
-            DataFrame with actual crashes by tract and year
-        """
-        np.random.seed(seed)
-
-        # Normalize income for calculations
-        min_income = self.census_gdf['median_income'].min()
-        max_income = self.census_gdf['median_income'].max()
-        self.census_gdf['norm_income'] = (
-            (self.census_gdf['median_income'] - min_income) / (max_income - min_income)
-        )
-
-        crash_data = []
-
-        for _, tract in self.census_gdf.iterrows():
-            norm_income = tract['norm_income']
-
-            # Income multiplier: 1.5x in poorest areas, 0.7x in richest
-            income_multiplier = 1.5 - norm_income * 0.8
-
-            for year in self.years:
-                # Base crash rate with income correlation
-                expected_crashes = base_rate * income_multiplier
-
-                # Add temporal variation (±10%)
-                temporal_noise = np.random.normal(1.0, 0.1)
-                actual_crashes = max(0, int(expected_crashes * temporal_noise))
-
-                crash_data.append({
-                    'tract_id': tract['tract_id'],
-                    'year': year,
-                    'actual_crashes': actual_crashes,
-                    'median_income': tract['median_income'],
-                    'norm_income': norm_income,
-                    'total_population': tract['total_population'],
-                    'pct_minority': tract['pct_minority']
-                })
-
-        return pd.DataFrame(crash_data)
-
-    def simulate_reporting_bias(self, crash_data: pd.DataFrame) -> pd.DataFrame:
-        """
-        Simulate enforcement bias in crash reporting.
-
-        Wealthier areas have better police coverage → higher reporting rates.
-
-        Args:
-            crash_data: DataFrame with actual crashes
-
-        Returns:
-            DataFrame with reported crashes added
-        """
-        crash_data = crash_data.copy()
-
-        # Reporting rate: 60% in poorest areas, 90% in richest areas
-        reporting_rate = 0.6 + crash_data['norm_income'] * 0.3
-
-        # Reported crashes = actual crashes * reporting rate (with some noise)
-        crash_data['reported_crashes'] = (
-            crash_data['actual_crashes'] * reporting_rate
-        ).apply(lambda x: max(0, int(np.random.normal(x, x * 0.05))))
-
-        crash_data['reporting_rate'] = reporting_rate
-
-        return crash_data
-
-    def simulate_ai_predictions(self, crash_data: pd.DataFrame) -> pd.DataFrame:
-        """
-        Simulate AI predictions trained on biased reported data.
-
-        AI learns from reported_crashes (biased), not actual_crashes (ground truth).
-        Result: Underpredicts danger in low-income areas.
-
-        Args:
-            crash_data: DataFrame with actual and reported crashes
-
-        Returns:
-            DataFrame with AI predictions added
-        """
-        crash_data = crash_data.copy()
-
-        # AI model learns from reported crashes (biased training data)
-        # Simple approach: AI predicts based on reported crashes with some error
-
-        # Calculate average reported crashes by income quintile
-        crash_data['income_quintile'] = pd.qcut(
-            crash_data['median_income'],
-            q=5,
-            labels=['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']
-        )
-
-        quintile_means = crash_data.groupby('income_quintile', observed=True)['reported_crashes'].mean()
-
-        # AI prediction: Learned pattern from reported data + noise
-        def predict_crashes(row):
-            # Base prediction from learned quintile mean
-            base_prediction = quintile_means[row['income_quintile']]
-
-            # AI adjusts based on local reported data (still biased)
-            local_adjustment = (row['reported_crashes'] - base_prediction) * 0.6
-            prediction = base_prediction + local_adjustment
-
-            # Add prediction noise
-            prediction_noise = np.random.normal(0, prediction * 0.1)
-            final_prediction = max(0, prediction + prediction_noise)
-
-            return final_prediction
-
-        crash_data['ai_predicted_crashes'] = crash_data.apply(predict_crashes, axis=1)
-
-        return crash_data
-
-    def calculate_confusion_matrices(self, crash_data: pd.DataFrame) -> Dict:
-        """
-        Calculate confusion matrices by income quintile.
-
-        Classification task: Predict whether tract is "high-crash" (above median).
-
-        Args:
-            crash_data: DataFrame with actual and predicted crashes
-
-        Returns:
-            Dict with confusion matrices and metrics by quintile
-        """
-        # Aggregate by tract (average across years)
-        tract_aggregated = crash_data.groupby('tract_id').agg({
-            'actual_crashes': 'mean',
-            'ai_predicted_crashes': 'mean',
-            'income_quintile': 'first',
-            'median_income': 'first'
-        }).reset_index()
-
-        # Define "high-crash" as above median
-        median_crashes = tract_aggregated['actual_crashes'].median()
-        tract_aggregated['actual_high_crash'] = (
-            tract_aggregated['actual_crashes'] > median_crashes
-        ).astype(int)
-        tract_aggregated['predicted_high_crash'] = (
-            tract_aggregated['ai_predicted_crashes'] > median_crashes
-        ).astype(int)
-
-        results = {
-            'overall': {},
-            'by_quintile': {}
-        }
-
-        # Overall metrics
-        y_true = tract_aggregated['actual_high_crash']
-        y_pred = tract_aggregated['predicted_high_crash']
-
-        cm = confusion_matrix(y_true, y_pred)
-        precision, recall, f1, _ = precision_recall_fscore_support(
-            y_true, y_pred, average='binary', zero_division=0
-        )
-
-        results['overall'] = {
-            'confusion_matrix': cm.tolist(),
-            'precision': float(precision),
-            'recall': float(recall),
-            'f1_score': float(f1),
-            'accuracy': float((cm[0, 0] + cm[1, 1]) / cm.sum())
-        }
-
-        # Per-quintile: use within-quintile median as threshold
-        # Global median makes classification trivial (all Q1 tracts below, all Q5 above).
-        # Per-quintile median tests whether the model ranks tracts correctly within each income level.
-        for quintile in ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']:
-            quintile_data = tract_aggregated[
-                tract_aggregated['income_quintile'] == quintile
-            ]
-
-            if len(quintile_data) < 4:
-                continue
-
-            q_median = quintile_data['actual_crashes'].median()
-            y_true_q = (quintile_data['actual_crashes'] > q_median).astype(int)
-            y_pred_q = (quintile_data['ai_predicted_crashes'] > q_median).astype(int)
-
-            if y_true_q.nunique() < 2:
-                continue
-
-            cm_q = confusion_matrix(y_true_q, y_pred_q)
-            prec_q, rec_q, f1_q, _ = precision_recall_fscore_support(
-                y_true_q, y_pred_q, average='binary', zero_division=0
-            )
-
-            results['by_quintile'][quintile] = {
-                'confusion_matrix': cm_q.tolist(),
-                'precision': float(prec_q),
-                'recall': float(rec_q),
-                'f1_score': float(f1_q),
-                'accuracy': float((cm_q[0, 0] + cm_q[1, 1]) / cm_q.sum()) if cm_q.sum() > 0 else 0,
-                'count': int(len(quintile_data))
-            }
-
-        return results
-
-    def generate_time_series(self, crash_data: pd.DataFrame) -> Dict:
-        """
-        Generate time series data showing crashes over time by quintile.
-
-        Args:
-            crash_data: DataFrame with crashes by year
-
-        Returns:
-            Dict with time series data
-        """
-        # Aggregate by year and quintile
-        time_series = crash_data.groupby(['year', 'income_quintile'], observed=True).agg({
-            'actual_crashes': 'sum',
-            'reported_crashes': 'sum',
-            'ai_predicted_crashes': 'sum'
-        }).reset_index()
-
-        # Pivot to wide format
-        result = {
-            'years': self.years,
-            'by_quintile': {}
-        }
-
-        for quintile in ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']:
-            quintile_data = time_series[time_series['income_quintile'] == quintile]
-
-            result['by_quintile'][quintile] = {
-                'actual_crashes': quintile_data['actual_crashes'].tolist(),
-                'reported_crashes': quintile_data['reported_crashes'].tolist(),
-                'ai_predicted_crashes': quintile_data['ai_predicted_crashes'].tolist()
-            }
-
-        # Overall totals
-        overall = time_series.groupby('year').agg({
-            'actual_crashes': 'sum',
-            'reported_crashes': 'sum',
-            'ai_predicted_crashes': 'sum'
-        })
-
-        result['overall'] = {
-            'actual_crashes': overall['actual_crashes'].tolist(),
-            'reported_crashes': overall['reported_crashes'].tolist(),
-            'ai_predicted_crashes': overall['ai_predicted_crashes'].tolist()
-        }
-
-        return result
-
-    def run_audit(self) -> Dict:
-        """
-        Run complete crash prediction bias audit.
-
-        Returns:
-            Dict with complete audit results
-        """
-        # Generate data
-        crash_data = self.generate_crash_data()
-        crash_data = self.simulate_reporting_bias(crash_data)
-        crash_data = self.simulate_ai_predictions(crash_data)
-
-        # Calculate metrics
-        confusion_matrices = self.calculate_confusion_matrices(crash_data)
-        time_series = self.generate_time_series(crash_data)
-
-        # Summary statistics
-        summary = {
-            'total_actual_crashes': int(crash_data['actual_crashes'].sum()),
-            'total_reported_crashes': int(crash_data['reported_crashes'].sum()),
-            'total_predicted_crashes': int(crash_data['ai_predicted_crashes'].sum()),
-            'overall_reporting_rate': float(
-                crash_data['reported_crashes'].sum() / crash_data['actual_crashes'].sum()
-            ),
-            'years_analyzed': self.years,
-            'tracts_analyzed': len(self.census_gdf)
-        }
-
-        # Bias metrics by quintile
-        quintile_bias = crash_data.groupby('income_quintile', observed=True).agg({
-            'actual_crashes': 'mean',
-            'reported_crashes': 'mean',
-            'ai_predicted_crashes': 'mean',
-            'reporting_rate': 'mean'
-        }).to_dict('index')
-
-        # Calculate prediction bias (predicted - actual)
-        for quintile, metrics in quintile_bias.items():
-            metrics['prediction_bias'] = (
-                metrics['ai_predicted_crashes'] - metrics['actual_crashes']
-            )
-            metrics['prediction_bias_pct'] = (
-                metrics['prediction_bias'] / metrics['actual_crashes'] * 100
-            )
-
-        return {
-            'summary': summary,
-            'bias_by_quintile': {k: {k2: float(v2) for k2, v2 in v.items()}
-                                 for k, v in quintile_bias.items()},
-            'confusion_matrices': confusion_matrices,
-            'time_series': time_series,
-            'crash_data': crash_data  # For further processing
-        }

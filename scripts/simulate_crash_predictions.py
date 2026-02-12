@@ -11,15 +11,15 @@ This script:
 """
 
 import sys
-import os
 import json
 from pathlib import Path
 
 # Add backend to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'backend'))
 
 import geopandas as gpd
-from config import CRASH_ANALYSIS_YEARS, RAW_DATA_DIR
+from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
+from config import CRASH_ANALYSIS_YEARS, RAW_DATA_DIR, SIMULATED_DATA_DIR
 from models.crash_predictor import CrashPredictionAuditor
 
 
@@ -53,12 +53,11 @@ def main():
     census_gdf = load_census_data()
 
     # Check for crash data
-    script_dir = Path(__file__).parent
-    crash_csv_path = script_dir.parent / 'backend' / 'data' / 'raw' / 'ncdot_crashes_durham.csv'
+    crash_csv_path = RAW_DATA_DIR / 'ncdot_nonmotorist_durham.csv'
 
     if not crash_csv_path.exists():
         print(f"\nError: Crash data not found at {crash_csv_path}")
-        print("Run fetch_ncdot_crash_data.py first to download crash data.")
+        print("Run fetch_ncdot_nonmotorist.py first to download crash data.")
         sys.exit(1)
 
     # Load and process real crash data
@@ -107,11 +106,7 @@ def main():
                   f"{error_pct:>9.1f}%")
 
     # Create output directory
-    output_dir = os.path.join(
-        os.path.dirname(__file__),
-        '../backend/data/simulated'
-    )
-    os.makedirs(output_dir, exist_ok=True)
+    SIMULATED_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     # Export crash report
     print("\n6. Exporting crash prediction audit report...")
@@ -119,41 +114,34 @@ def main():
     q1_error_pct = quintile_metrics.get('Q1 (Poorest)', {}).get('error_pct', 0)
     q5_error_pct = quintile_metrics.get('Q5 (Richest)', {}).get('error_pct', 0)
 
-    # Load calibration data for provenance
-    calibration_path = RAW_DATA_DIR / 'ncdot_calibration.json'
-    if calibration_path.exists():
-        with open(calibration_path) as f:
-            calibration = json.load(f)
-        crashes_per_year = calibration['per_year']
-    else:
-        crashes_per_year = int(total_crashes_all_years / len(CRASH_ANALYSIS_YEARS))
+    crashes_per_year = int(total_crashes_all_years / len(CRASH_ANALYSIS_YEARS))
 
     crash_report = {
         '_provenance': {
-            'data_type': 'mixed',
-            'real': ['US Census ACS 2022 demographics', 'NCDOT crash volumes (calibration)'],
-            'simulated': ['crash geographic distribution', 'AI prediction errors'],
-            'calibration': {'crashes_per_year': crashes_per_year, 'source': 'ncdot_calibration.json'},
+            'data_type': 'real',
+            'real': ['US Census ACS 2022 demographics', 'NCDOT non-motorist crashes (ArcGIS Feature Service)'],
+            'simulated': ['AI prediction errors'],
         },
         'summary': {
             'total_crashes_all_years': int(total_crashes_all_years),
             'crashes_2023_actual': int(crashes_2023),
             'crashes_2023_predicted': int(predicted_2023),
+            'crashes_per_year': crashes_per_year,
             'years_analyzed': CRASH_ANALYSIS_YEARS,
             'tracts_analyzed': len(census_gdf),
-            'data_source': 'Simulated Durham County crash data (2019-2023)'
+            'data_source': 'NCDOT non-motorist crash data, Durham County (2019-2023)'
         },
         'error_by_quintile': {k: {k2: float(v2) for k2, v2 in v.items()}
                               for k, v in quintile_metrics.items()},
         'findings': [
             f"AI prediction error is {q1_error_pct:.0f}% in Q1 vs {q5_error_pct:.0f}% in Q5 — {q1_error_pct / q5_error_pct:.1f}x worse in the poorest areas",
-            "Ridge regression trained on simulated 2019-2022 crash data with demographic features",
+            "Ridge regression trained on real 2019-2022 non-motorist crash data with demographic features",
             "Model shows systematic underperformance in poorest quintile when predicting 2023 crashes",
             "AI-guided safety investments systematically underallocate resources to underserved communities"
         ]
     }
 
-    with open(os.path.join(output_dir, 'crash_predictions.json'), 'w') as f:
+    with open(SIMULATED_DATA_DIR / 'crash_predictions.json', 'w') as f:
         json.dump(crash_report, f, indent=2)
 
     print(f"   ✓ Exported crash_predictions.json")
@@ -194,7 +182,7 @@ def main():
         'ai_predicted_crashes': [round(a * overall_ratio) for a in overall_actual]
     }
 
-    with open(os.path.join(output_dir, 'crash_time_series.json'), 'w') as f:
+    with open(SIMULATED_DATA_DIR / 'crash_time_series.json', 'w') as f:
         json.dump(time_series_data, f, indent=2)
     print(f"   ✓ Exported crash_time_series.json")
 
@@ -205,8 +193,6 @@ def main():
     median_crashes = predictions_df['crash_count'].median()
     predictions_df['actual_high_crash'] = (predictions_df['crash_count'] > median_crashes).astype(int)
     predictions_df['predicted_high_crash'] = (predictions_df['ai_predicted_crashes'] > median_crashes).astype(int)
-
-    from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
 
     confusion_data = {
         'overall': {},
@@ -256,7 +242,7 @@ def main():
         }
         print(f"   {quintile}: P={prec_q:.2f} R={rec_q:.2f} F1={f1_q:.2f} (threshold={q_median:.0f})")
 
-    with open(os.path.join(output_dir, 'confusion_matrices.json'), 'w') as f:
+    with open(SIMULATED_DATA_DIR / 'confusion_matrices.json', 'w') as f:
         json.dump(confusion_data, f, indent=2)
     print(f"   ✓ Exported confusion_matrices.json")
 
@@ -281,7 +267,7 @@ def main():
     # Export as GeoJSON
     crash_geo_dict = json.loads(crash_geo.to_json())
 
-    with open(os.path.join(output_dir, 'crash_geo_data.json'), 'w') as f:
+    with open(SIMULATED_DATA_DIR / 'crash_geo_data.json', 'w') as f:
         json.dump(crash_geo_dict, f)
 
     print(f"   ✓ Exported crash_geo_data.json ({len(crash_geo)} tracts)")

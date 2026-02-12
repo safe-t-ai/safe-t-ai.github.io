@@ -40,7 +40,7 @@ data: fetch-data generate-data ## Fetch and generate all data
 
 fetch-data: ## Fetch Durham census, geographic, crash, and infrastructure data
 	$(PYTHON) scripts/fetch_durham_data.py
-	$(PYTHON) scripts/fetch_ncdot_crash_data.py
+	$(PYTHON) scripts/fetch_ncdot_nonmotorist.py
 	$(PYTHON) scripts/fetch_osm_infrastructure.py
 
 generate-data: ## Generate static data files for frontend

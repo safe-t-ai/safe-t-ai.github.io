@@ -12,16 +12,20 @@ Demographics and tract boundaries for Durham County.
 - **Variables:** Total population, median household income, race/ethnicity
 - **Script:** `scripts/fetch_durham_data.py`
 
-### NCDOT NC Vision Zero (API)
+### NCDOT Non-Motorist Crash Map (ArcGIS Feature Service)
 
-Durham County crash totals for calibrating simulation volumes.
+Geocoded police-reported crashes involving pedestrians, bicyclists, and other non-motorists across North Carolina, January 2007 through December 2024.
 
-- **Endpoint:** Power BI API (constants in `backend/config.py`)
-- **Dashboard:** https://ncvisionzero.org/data-analytics/crash-query-tool/
+- **Feature service:** `https://services.arcgis.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT_NonMotoristCrashes/FeatureServer/0`
+- **Shapefile download:** `https://ncdot.maps.arcgis.com/home/item.html?id=d00e97d23146472cb5da78fc3dbc0274`
+- **Web map:** `https://www.arcgis.com/home/item.html?id=b4fcdc266d054a1ca075b60715f88aef`
 - **Auth:** None (public)
-- **Provides:** Aggregate crash count (~100,909 across 2018-2024)
-- **Limitation:** No lat/long coordinates, so crashes cannot be geocoded to census tracts. The simulation generates geographic distribution instead.
-- **Script:** `scripts/fetch_ncdot_crash_data.py` (caches to `ncdot_calibration.json`)
+- **Durham records:** ~2,665 crashes
+- **Max records per query:** 2,000 (paginate with `resultOffset`)
+- **Key fields:** `CrashID`, `CrashDate`, `CrashYear`, `Latitude`, `Longitude`, `CrashSevr`, `NM_Type`, `NM_Inj`, `NM_Age`, `NM_Sex`, `NM_Race`, `CrashType`, `County`, `SpeedLimit`, `LightCond`, `Weather`, `RdClass` (65 fields total)
+- **Provides:** Individual crash point locations with severity, demographics, road/environmental conditions
+- **Limitation:** Non-motorist crashes only (pedestrian, bicycle, etc.), not all crash types. Covers the most safety-critical subset for active transportation auditing.
+- **Script:** `scripts/fetch_ncdot_nonmotorist.py`
 
 ## Needed for Production
 
@@ -51,7 +55,7 @@ Complete NC crash database with detailed records.
 - **Download:** https://dmvcrashweb.dot.state.nc.us/teaas/
 - **Info:** https://connect.ncdot.gov/resources/safety/Pages/TEAAS-Crash-Data-System.aspx
 - **Would provide:** Individual crash records with road-level location data (all reportable NC crashes since 1990)
-- **Current substitute:** Simulated crash records calibrated to NC Vision Zero API totals
+- **Current substitute:** Non-motorist subset available via NCDOT ArcGIS Feature Service (see above). TEAAS would add all crash types.
 
 ### OpenStreetMap (Infrastructure Density)
 

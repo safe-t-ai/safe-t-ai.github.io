@@ -50,7 +50,7 @@ jobs:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
         run: |
           python scripts/fetch_durham_data.py &
-          python scripts/fetch_ncdot_crash_data.py &
+          python scripts/fetch_ncdot_nonmotorist.py &
           wait
           python scripts/fetch_osm_infrastructure.py
 
@@ -81,28 +81,16 @@ jobs:
               if pop == 0:
                   errors.append(f'Zero population in tract {props.get(\"GEOID\", \"?\")}')
 
-          # Crash CSV
-          with open('backend/data/raw/ncdot_crashes_durham.csv') as f:
-              reader = csv.DictReader(f)
-              rows = list(reader)
-          if len(rows) < 1000:
-              errors.append(f'Crash CSV has only {len(rows)} records, expected >1000')
-
-          years = set()
-          severities = set()
-          for row in rows:
-              years.add(int(row['year']))
-              severities.add(row['severity'])
-
-          expected_years = set(range(2019, 2024))
-          missing_years = expected_years - years
-          if missing_years:
-              errors.append(f'Missing crash years: {sorted(missing_years)}')
-
-          expected_severities = {'Fatal', 'Injury', 'Property Damage'}
-          missing_sev = expected_severities - severities
-          if missing_sev:
-              errors.append(f'Missing severity categories: {missing_sev}')
+          # Non-motorist crashes (real geocoded data)
+          nm_path = 'backend/data/raw/ncdot_nonmotorist_durham.csv'
+          with open(nm_path) as f:
+              nm_reader = csv.DictReader(f)
+              nm_rows = list(nm_reader)
+          if len(nm_rows) < 100:
+              errors.append(f'Non-motorist CSV has only {len(nm_rows)} records, expected >100')
+          nm_missing_coords = sum(1 for r in nm_rows if not r.get('Latitude') or not r.get('Longitude'))
+          if nm_missing_coords > 0:
+              errors.append(f'Non-motorist CSV has {nm_missing_coords} rows with missing coordinates')
 
           # OSM infrastructure
           with open('backend/data/raw/osm_infrastructure.json') as f:
@@ -122,7 +110,7 @@ jobs:
                   print(f'  - {e}')
               sys.exit(1)
           osm_total = sum(osm_totals.values())
-          print(f'Source data valid: {count} tracts, {len(rows)} crashes, years {min(years)}-{max(years)}, {osm_total} OSM features')
+          print(f'Source data valid: {count} tracts, {len(nm_rows)} non-motorist crashes, {osm_total} OSM features')
           "
 
       - name: Compute data hash
@@ -130,7 +118,7 @@ jobs:
         run: |
           HASH=$(cat \
             backend/data/raw/durham_census_tracts.geojson \
-            backend/data/raw/ncdot_crashes_durham.csv \
+            backend/data/raw/ncdot_nonmotorist_durham.csv \
             backend/data/raw/osm_infrastructure.json \
             | sha256sum | cut -d' ' -f1 | cut -c1-16)
           echo "hash=$HASH" >> $GITHUB_OUTPUT
@@ -377,10 +365,10 @@ jobs:
             SUMMARY=$(python3 -c "
           import json, csv, os
           tracts = json.load(open('raw/durham_census_tracts.geojson'))
-          with open('raw/ncdot_crashes_durham.csv') as f:
+          with open('raw/ncdot_nonmotorist_durham.csv') as f:
               crash_count = sum(1 for _ in csv.reader(f)) - 1
           frontend_files = [f for f in os.listdir('frontend') if f.endswith('.json')]
-          print(f'{len(tracts[\"features\"])} tracts, {crash_count} crashes, {len(frontend_files)} frontend files')
+          print(f'{len(tracts[\"features\"])} tracts, {crash_count} non-motorist crashes, {len(frontend_files)} frontend files')
           ")
             git commit -m "data: refresh $(date -u +'%Y-%m-%d') — $SUMMARY"
             git push origin data
@@ -421,28 +409,13 @@ jobs:
             echo "| OSM File | $OSM_SIZE |" >> $GITHUB_STEP_SUMMARY
           fi
 
-          if [ -f backend/data/raw/ncdot_crashes_durham.csv ]; then
-            python3 -c "
-          import csv
-          with open('backend/data/raw/ncdot_crashes_durham.csv') as f:
-              rows = list(csv.DictReader(f))
-          years = sorted(set(r['year'] for r in rows))
-          sevs = {}
-          for r in rows:
-              sevs[r['severity']] = sevs.get(r['severity'], 0) + 1
-          print(f'TOTAL=\"{len(rows)}\"')
-          print(f'YEARS=\"{years[0]}-{years[-1]}\"')
-          sev_str = ', '.join(f'{k}: {v}' for k, v in sorted(sevs.items()))
-          print(f'SEVERITY=\"{sev_str}\"')
-          " > /tmp/crash_stats.txt
-
-            source /tmp/crash_stats.txt
-            CRASH_SIZE=$(du -h backend/data/raw/ncdot_crashes_durham.csv | cut -f1)
-
-            echo "| Total Crashes | $TOTAL |" >> $GITHUB_STEP_SUMMARY
-            echo "| Year Range | $YEARS |" >> $GITHUB_STEP_SUMMARY
-            echo "| Crash File | $CRASH_SIZE |" >> $GITHUB_STEP_SUMMARY
+          if [ -f backend/data/raw/ncdot_nonmotorist_durham.csv ]; then
+            NM_COUNT=$(python3 -c "import csv; print(sum(1 for _ in csv.reader(open('backend/data/raw/ncdot_nonmotorist_durham.csv'))) - 1)")
+            NM_SIZE=$(du -h backend/data/raw/ncdot_nonmotorist_durham.csv | cut -f1)
+            echo "| Non-Motorist Crashes | $NM_COUNT |" >> $GITHUB_STEP_SUMMARY
+            echo "| Non-Motorist File | $NM_SIZE |" >> $GITHUB_STEP_SUMMARY
           fi
+
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ -d "frontend/public/data" ]; then

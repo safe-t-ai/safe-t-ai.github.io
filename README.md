@@ -83,7 +83,7 @@ safe-t-ai.github.io/
 
 - **Census:** US Census Bureau ACS 5-Year Estimates (2022)
 - **Boundaries:** TIGER/Line Shapefiles
-- **Crash Data:** Simulated (2019-2023), validated against NCDOT NC Vision Zero API
+- **Crash Data:** NCDOT non-motorist crashes (2019-2023) via ArcGIS Feature Service
 - **AI Predictions:** Simulated with bias patterns from research literature
 
 ## Development

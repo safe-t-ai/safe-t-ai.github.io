@@ -212,8 +212,8 @@ def main():
                 'files': ['census-tracts.json', 'choropleth-data.json'],
             },
             'crash_volumes': {
-                'type': 'calibrated',
-                'provider': 'NCDOT NC Vision Zero API',
+                'type': 'real',
+                'provider': 'NCDOT Non-Motorist Crash Database (ArcGIS)',
                 'files': ['crash-report.json', 'crash-time-series.json',
                           'confusion-matrices.json', 'crash-geo-data.json'],
             },
@@ -252,9 +252,9 @@ def main():
         'github_run_url': os.environ.get('GITHUB_RUN_URL', ''),
         'git_sha': os.environ.get('GIT_SHA', ''),
         'sources': {
-            'real': ['US Census ACS 2022', 'OpenStreetMap infrastructure inventory'],
-            'calibrated': ['NCDOT NC Vision Zero crash totals'],
-            'simulated': ['volume predictions', 'crash distributions',
+            'real': ['US Census ACS 2022', 'OpenStreetMap infrastructure inventory',
+                     'NCDOT non-motorist crashes (ArcGIS)'],
+            'simulated': ['volume predictions',
                           'infrastructure recommendations', 'demand analysis'],
         },
     }
