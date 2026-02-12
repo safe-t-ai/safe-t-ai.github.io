@@ -8,7 +8,7 @@ Demographics and tract boundaries for Durham County.
 
 - **Demographics endpoint:** `https://api.census.gov/data/2022/acs/acs5`
 - **Geometry endpoint:** Census TIGER/Line via ArcGIS REST
-- **Auth:** Free API key (`CENSUS_API_KEY` env var) from https://api.census.gov/data/key_signup.html
+- **Auth:** Free API key required (`CENSUS_API_KEY` env var, stored as GitHub secret) from https://api.census.gov/data/key_signup.html
 - **Variables:** Total population, median household income, race/ethnicity
 - **Script:** `scripts/fetch_durham_data.py`
 
