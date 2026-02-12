@@ -117,7 +117,7 @@ export class CrashPredictionAudit {
                     { label: 'Median Income', field: 'median_income', format: v => `$${v?.toLocaleString()}` },
                     { label: 'Income Quintile', field: 'income_quintile' },
                     { label: 'Actual Crashes (2023)', field: 'actual_crashes', format: v => v?.toLocaleString() },
-                    { label: 'AI Predicted', field: 'ai_predicted_crashes', format: v => v?.toFixed(0) }
+                    { label: 'AI Predicted', field: 'ai_predicted_crashes', format: v => v?.toFixed(1) }
                 ]
             }
         );
