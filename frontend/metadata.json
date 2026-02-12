@@ -1,19 +1,16 @@
 {
-  "generated_at": "2026-02-12T12:23:00.622817+00:00",
+  "generated_at": "2026-02-12T19:12:32.836364+00:00",
   "data_hash": "local",
   "github_run_url": "",
   "git_sha": "",
   "sources": {
     "real": [
       "US Census ACS 2022",
-      "OpenStreetMap infrastructure inventory"
-    ],
-    "calibrated": [
-      "NCDOT NC Vision Zero crash totals"
+      "OpenStreetMap infrastructure inventory",
+      "NCDOT non-motorist crashes (ArcGIS)"
     ],
     "simulated": [
       "volume predictions",
-      "crash distributions",
       "infrastructure recommendations",
       "demand analysis"
     ]

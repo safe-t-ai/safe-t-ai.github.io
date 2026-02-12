@@ -9,8 +9,8 @@
       ]
     },
     "crash_volumes": {
-      "type": "calibrated",
-      "provider": "NCDOT NC Vision Zero API",
+      "type": "real",
+      "provider": "NCDOT Non-Motorist Crash Database (ArcGIS)",
       "files": [
         "crash-report.json",
         "crash-time-series.json",
@@ -54,12 +54,12 @@
   },
   "plausibility_ranges": {
     "crashes_per_year": [
-      10000,
-      20000
+      50,
+      500
     ],
     "crashes_total_5yr": [
-      50000,
-      100000
+      250,
+      2500
     ],
     "census_tracts": [
       60,

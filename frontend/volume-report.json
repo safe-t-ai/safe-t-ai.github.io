@@ -1,17 +1,17 @@
 {
   "overall_accuracy": {
     "metrics": {
-      "mae": 8.733333333333333,
-      "mape": 25.130507897027616,
-      "rmse": 10.723805294763608,
-      "mean_error": -5.666666666666667,
-      "mean_pct_error": -17.552519436686218,
-      "bias": -17.552519436686218,
-      "r_squared": 0.6169019321671061
+      "mae": 9.866666666666667,
+      "mape": 26.79822440774887,
+      "rmse": 12.165525060596439,
+      "mean_error": -6.0,
+      "mean_pct_error": -17.970676229811367,
+      "bias": -17.970676229811367,
+      "r_squared": 0.5911266666303286
     },
     "total_counters": 15,
-    "total_true_volume": 541,
-    "total_predicted_volume": 456
+    "total_true_volume": 567,
+    "total_predicted_volume": 477
   },
   "by_income": {
     "by_quintile": [
@@ -20,61 +20,61 @@
         "label": "Q1",
         "count": 3,
         "median_income": 30858.0,
-        "mae": 11.333333333333334,
-        "mape": 39.58031400966183,
-        "bias": -39.58031400966183,
-        "mean_error_pct": -39.58031400966183
+        "mae": 14.0,
+        "mape": 45.108812755871575,
+        "bias": -45.108812755871575,
+        "mean_error_pct": -45.108812755871575
       },
       {
         "quintile": 2,
         "label": "Q2",
         "count": 3,
         "median_income": 45032.0,
-        "mae": 13.333333333333334,
-        "mape": 42.40559440559441,
-        "bias": -42.40559440559441,
-        "mean_error_pct": -42.40559440559441
+        "mae": 15.333333333333334,
+        "mape": 42.82786885245903,
+        "bias": -42.82786885245903,
+        "mean_error_pct": -42.82786885245903
       },
       {
         "quintile": 3,
         "label": "Q3",
         "count": 3,
         "median_income": 53828.0,
-        "mae": 11.333333333333334,
-        "mape": 24.721659919028337,
-        "bias": -24.721659919028337,
-        "mean_error_pct": -24.721659919028337
+        "mae": 9.666666666666666,
+        "mape": 22.080808080808083,
+        "bias": -22.080808080808083,
+        "mean_error_pct": -22.080808080808083
       },
       {
         "quintile": 4,
         "label": "Q4",
         "count": 3,
         "median_income": 83977.0,
-        "mae": 2.0,
-        "mape": 5.004409171075838,
-        "bias": 5.004409171075838,
-        "mean_error_pct": 5.004409171075838
+        "mae": 3.0,
+        "mape": 6.862026862026862,
+        "bias": 3.0525030525030523,
+        "mean_error_pct": 3.0525030525030523
       },
       {
         "quintile": 5,
         "label": "Q5",
         "count": 3,
         "median_income": 104872.0,
-        "mae": 5.666666666666667,
-        "mape": 13.940561979777668,
-        "bias": 13.940561979777668,
-        "mean_error_pct": 13.940561979777668
+        "mae": 7.333333333333333,
+        "mape": 17.111605487578792,
+        "bias": 17.111605487578792,
+        "mean_error_pct": 17.111605487578792
       }
     ],
     "equity_gap": {
       "best_group": "5",
-      "worst_group": "2",
-      "best_group_mean": 13.9405619798,
-      "worst_group_mean": -42.4055944056,
-      "gap": 56.3461563854,
-      "gap_pct": -132.87434635737364,
+      "worst_group": "1",
+      "best_group_mean": 17.111605487566667,
+      "worst_group_mean": -45.108812755833334,
+      "gap": 62.220418243400005,
+      "gap_pct": -137.9340630847214,
       "statistically_significant": true,
-      "p_value": 2.1458430033303926e-05
+      "p_value": 9.273454599657518e-05
     }
   },
   "by_race": {
@@ -83,45 +83,45 @@
         "category": "Low (<30%)",
         "count": 3,
         "mean_minority_pct": 19.066666666666666,
-        "mae": 5.666666666666667,
-        "mape": 13.193596526929861,
-        "bias": 13.193596526929861,
-        "mean_error_pct": 13.193596526929861
+        "mae": 6.666666666666667,
+        "mape": 14.996910147076997,
+        "bias": 14.996910147076997,
+        "mean_error_pct": 14.996910147076997
       },
       {
         "category": "Medium (30-60%)",
         "count": 5,
         "mean_minority_pct": 47.14,
-        "mae": 3.4,
-        "mape": 9.437666879617343,
-        "bias": -2.536017330908972,
-        "mean_error_pct": -2.536017330908972
+        "mae": 3.8,
+        "mape": 10.23451817000204,
+        "bias": -1.7481658126819415,
+        "mean_error_pct": -1.7481658126819415
       },
       {
         "category": "High (>60%)",
         "count": 7,
         "mean_minority_pct": 72.74285714285715,
-        "mae": 13.857142857142858,
-        "mape": 41.455499210934,
-        "bias": -41.455499210934,
-        "mean_error_pct": -41.455499210934
+        "mae": 15.571428571428571,
+        "mape": 43.68714926071311,
+        "bias": -43.68714926071311,
+        "mean_error_pct": -43.68714926071311
       }
     ],
     "equity_gap": {
       "best_group": "Low (<30%)",
       "worst_group": "High (>60%)",
-      "best_group_mean": 13.193596526933334,
-      "worst_group_mean": -41.455499210942854,
-      "gap": 54.64909573787619,
-      "gap_pct": -131.8259260606146,
+      "best_group_mean": 14.996910147066666,
+      "worst_group_mean": -43.6871492607,
+      "gap": 58.68405940776666,
+      "gap_pct": -134.32796692128767,
       "statistically_significant": true,
-      "p_value": 2.303125502445474e-08
+      "p_value": 2.8821030193751056e-07
     }
   },
   "scatter_data": [
     {
-      "true_volume": 27,
-      "predicted_volume": 28,
+      "true_volume": 35,
+      "predicted_volume": 33,
       "counter_id": "CTR001",
       "income_quintile": 4,
       "minority_category": "Medium (30-60%)",
@@ -129,8 +129,8 @@
       "pct_minority": 50.8
     },
     {
-      "true_volume": 44,
-      "predicted_volume": 26,
+      "true_volume": 61,
+      "predicted_volume": 36,
       "counter_id": "CTR002",
       "income_quintile": 2,
       "minority_category": "High (>60%)",
@@ -138,8 +138,8 @@
       "pct_minority": 72.6
     },
     {
-      "true_volume": 30,
-      "predicted_volume": 17,
+      "true_volume": 34,
+      "predicted_volume": 19,
       "counter_id": "CTR003",
       "income_quintile": 1,
       "minority_category": "High (>60%)",
@@ -147,7 +147,7 @@
       "pct_minority": 76.5
     },
     {
-      "true_volume": 52,
+      "true_volume": 50,
       "predicted_volume": 29,
       "counter_id": "CTR004",
       "income_quintile": 3,
@@ -156,8 +156,8 @@
       "pct_minority": 73.9
     },
     {
-      "true_volume": 26,
-      "predicted_volume": 15,
+      "true_volume": 24,
+      "predicted_volume": 13,
       "counter_id": "CTR005",
       "income_quintile": 2,
       "minority_category": "High (>60%)",
@@ -165,7 +165,7 @@
       "pct_minority": 72.7
     },
     {
-      "true_volume": 25,
+      "true_volume": 24,
       "predicted_volume": 14,
       "counter_id": "CTR006",
       "income_quintile": 2,
@@ -174,8 +174,8 @@
       "pct_minority": 86.1
     },
     {
-      "true_volume": 23,
-      "predicted_volume": 15,
+      "true_volume": 21,
+      "predicted_volume": 11,
       "counter_id": "CTR007",
       "income_quintile": 1,
       "minority_category": "High (>60%)",
@@ -183,8 +183,8 @@
       "pct_minority": 64.3
     },
     {
-      "true_volume": 56,
-      "predicted_volume": 57,
+      "true_volume": 52,
+      "predicted_volume": 58,
       "counter_id": "CTR008",
       "income_quintile": 4,
       "minority_category": "Medium (30-60%)",
@@ -192,8 +192,8 @@
       "pct_minority": 47.7
     },
     {
-      "true_volume": 38,
-      "predicted_volume": 29,
+      "true_volume": 33,
+      "predicted_volume": 25,
       "counter_id": "CTR009",
       "income_quintile": 3,
       "minority_category": "Medium (30-60%)",
@@ -201,8 +201,8 @@
       "pct_minority": 59.6
     },
     {
-      "true_volume": 54,
-      "predicted_volume": 64,
+      "true_volume": 62,
+      "predicted_volume": 75,
       "counter_id": "CTR010",
       "income_quintile": 5,
       "minority_category": "Low (<30%)",
@@ -210,8 +210,8 @@
       "pct_minority": 20.1
     },
     {
-      "true_volume": 32,
-      "predicted_volume": 19,
+      "true_volume": 39,
+      "predicted_volume": 22,
       "counter_id": "CTR011",
       "income_quintile": 1,
       "minority_category": "High (>60%)",
@@ -219,8 +219,8 @@
       "pct_minority": 63.1
     },
     {
-      "true_volume": 34,
-      "predicted_volume": 38,
+      "true_volume": 31,
+      "predicted_volume": 34,
       "counter_id": "CTR012",
       "income_quintile": 5,
       "minority_category": "Medium (30-60%)",
@@ -228,8 +228,8 @@
       "pct_minority": 45.1
     },
     {
-      "true_volume": 42,
-      "predicted_volume": 46,
+      "true_volume": 30,
+      "predicted_volume": 31,
       "counter_id": "CTR013",
       "income_quintile": 4,
       "minority_category": "Low (<30%)",
@@ -237,8 +237,8 @@
       "pct_minority": 25.4
     },
     {
-      "true_volume": 26,
-      "predicted_volume": 29,
+      "true_volume": 29,
+      "predicted_volume": 35,
       "counter_id": "CTR014",
       "income_quintile": 5,
       "minority_category": "Low (<30%)",
@@ -246,8 +246,8 @@
       "pct_minority": 11.7
     },
     {
-      "true_volume": 32,
-      "predicted_volume": 30,
+      "true_volume": 42,
+      "predicted_volume": 42,
       "counter_id": "CTR015",
       "income_quintile": 3,
       "minority_category": "Medium (30-60%)",
