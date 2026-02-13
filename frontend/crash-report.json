@@ -5,9 +5,7 @@
       "US Census ACS 2024 demographics",
       "NCDOT non-motorist crashes (ArcGIS Feature Service)"
     ],
-    "simulated": [
-      "AI prediction errors"
-    ]
+    "simulated": []
   },
   "summary": {
     "total_crashes_all_years": 878,
