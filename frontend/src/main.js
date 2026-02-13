@@ -13,6 +13,13 @@ const DESCRIPTIONS = {
     test4: 'When poor infrastructure suppresses usage, can AI tools detect the hidden demand?'
 };
 
+const SO_WHAT = {
+    test1: 'If counters undercount low-income areas, those areas look like they have less traffic — and get less funding.',
+    test2: 'Undercounted traffic means crash models underpredict risk where people are actually getting hurt.',
+    test3: 'When AI allocates safety budgets, neighborhoods that were undercounted get passed over twice.',
+    test4: 'People who lack safe infrastructure don\u2019t walk or bike — so the data says there\u2019s no demand, and nothing gets built.'
+};
+
 // Literal paths required for Vite code splitting
 const LOADERS = {
     test1: () => import('./VolumeEstimationAudit.js').then(m => m.VolumeEstimationAudit),
@@ -104,7 +111,8 @@ class App {
         const desc = DESCRIPTIONS[testId];
         if (desc) {
             const testNum = testId.replace('test', '');
-            descEl.innerHTML = `<div class="test-subtitle-inner"><span>${desc}</span><span class="test-position">${testNum} / 4</span></div>`;
+            const soWhat = SO_WHAT[testId];
+            descEl.innerHTML = `<div class="test-subtitle-inner"><span>${desc}</span><span class="test-position">${testNum} / 4</span></div>${soWhat ? `<p class="test-so-what">${soWhat}</p>` : ''}`;
         } else {
             descEl.textContent = '';
         }
