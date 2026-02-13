@@ -10,6 +10,7 @@ Depends on durham_census_tracts.geojson existing (run fetch_durham_data.py first
 
 import sys
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -23,10 +24,13 @@ from shapely.geometry import Point
 
 from config import (
     RAW_DATA_DIR, DURHAM_BOUNDS, OVERPASS_API, OVERPASS_TIMEOUT,
-    OSM_INFRASTRUCTURE_FEATURES,
+    OSM_INFRASTRUCTURE_FEATURES, DATA_FRESHNESS,
 )
+from utils.freshness import is_fresh, write_meta
 
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+OUTPUT_FILE = RAW_DATA_DIR / 'osm_infrastructure.json'
 
 
 def build_overpass_query() -> str:
@@ -93,6 +97,7 @@ def fetch_osm_infrastructure():
 
     # Query Overpass API
     query = build_overpass_query()
+    queried_at = datetime.now(timezone.utc).isoformat()
     print("Querying Overpass API for Durham infrastructure...")
     response = requests.post(OVERPASS_API, data={'data': query}, timeout=OVERPASS_TIMEOUT + 30)
     response.raise_for_status()
@@ -180,6 +185,7 @@ def fetch_osm_infrastructure():
         '_provenance': {
             'data_type': 'real',
             'source': 'OpenStreetMap via Overpass API',
+            'queried_at': queried_at,
             'features_queried': list(OSM_INFRASTRUCTURE_FEATURES.keys()),
             'bounds': DURHAM_BOUNDS,
             'total_elements': len(infra_gdf),
@@ -188,17 +194,27 @@ def fetch_osm_infrastructure():
         'tracts': result_df.to_dict(orient='records'),
     }
 
-    output_path = RAW_DATA_DIR / 'osm_infrastructure.json'
-    with open(output_path, 'w') as f:
+    with open(OUTPUT_FILE, 'w') as f:
         json.dump(output, f, indent=2)
-    print(f"\n  Saved to {output_path}")
+    print(f"\n  Saved to {OUTPUT_FILE}")
+
+    write_meta(OUTPUT_FILE, source_url=OVERPASS_API, record_count=len(infra_gdf),
+               extra={'queried_at': queried_at})
 
     return result_df
 
 
 if __name__ == '__main__':
+    force = '--force' in sys.argv
+
     print("OpenStreetMap Infrastructure Data Acquisition")
     print("=" * 50)
+
+    if not force and is_fresh(OUTPUT_FILE, DATA_FRESHNESS['osm']):
+        print(f"OSM data is fresh (< {DATA_FRESHNESS['osm']} days old), skipping fetch.")
+        print("Use --force to re-fetch.")
+        sys.exit(0)
+
     df = fetch_osm_infrastructure()
     print(f"\nProcessed {len(df)} census tracts")
     print("Data acquisition complete!")

@@ -15,7 +15,11 @@ import pandas as pd
 backend_dir = Path(__file__).parent.parent / 'backend'
 sys.path.insert(0, str(backend_dir))
 
-from config import RAW_DATA_DIR, SIMULATED_DATA_DIR, PLAUSIBILITY_RANGES
+from config import (
+    RAW_DATA_DIR, SIMULATED_DATA_DIR, PLAUSIBILITY_RANGES,
+    CENSUS_VINTAGE, CRASH_ANALYSIS_YEARS,
+)
+from utils.freshness import read_meta
 from models.volume_estimator import VolumeEstimationAuditor, load_test1_data
 from utils.geospatial import geojson_to_dict, simplify_geometry
 from utils.demographic_analysis import calculate_income_quintiles, calculate_minority_category
@@ -204,16 +208,28 @@ def main():
     print("Generating data manifest and metadata...")
     print("=" * 60)
 
+    # Read fetch metadata for temporal coverage
+    census_meta = read_meta(RAW_DATA_DIR / 'durham_census_tracts.geojson')
+    crash_meta = read_meta(RAW_DATA_DIR / 'ncdot_nonmotorist_durham.csv')
+    osm_meta = read_meta(RAW_DATA_DIR / 'osm_infrastructure.json')
+
+    analysis_range = f"{min(CRASH_ANALYSIS_YEARS)}-{max(CRASH_ANALYSIS_YEARS)}"
+    census_coverage = f"{CENSUS_VINTAGE - 4}-{CENSUS_VINTAGE}"
+
     manifest = {
         'sources': {
             'census_demographics': {
                 'type': 'real',
-                'provider': 'US Census Bureau ACS 2022',
+                'provider': f'US Census Bureau ACS {CENSUS_VINTAGE}',
+                'temporal_coverage': census_coverage,
+                'fetched_at': (census_meta or {}).get('fetched_at'),
                 'files': ['census-tracts.json', 'choropleth-data.json'],
             },
             'crash_volumes': {
                 'type': 'real',
                 'provider': 'NCDOT Non-Motorist Crash Database (ArcGIS)',
+                'temporal_coverage': analysis_range,
+                'fetched_at': (crash_meta or {}).get('fetched_at'),
                 'files': ['crash-report.json', 'crash-time-series.json',
                           'confusion-matrices.json', 'crash-geo-data.json'],
             },
@@ -227,6 +243,7 @@ def main():
             'infrastructure_recommendations': {
                 'type': 'mixed',
                 'real_source': 'OpenStreetMap infrastructure density per tract',
+                'fetched_at': (osm_meta or {}).get('fetched_at'),
                 'rationale': 'Project selection uses real OSM infrastructure gaps; danger scores and allocation logic are simulated',
                 'files': ['infrastructure-report.json', 'danger-scores.json',
                           'budget-allocation.json', 'recommendations.json'],
@@ -234,6 +251,7 @@ def main():
             'suppressed_demand': {
                 'type': 'mixed',
                 'real_source': 'OpenStreetMap infrastructure density per tract',
+                'fetched_at': (osm_meta or {}).get('fetched_at'),
                 'rationale': 'Infrastructure scores from OSM; demand modeling and AI detection are simulated',
                 'files': ['demand-report.json', 'demand-funnel.json',
                           'detection-scorecard.json', 'demand-geo-data.json'],
@@ -252,7 +270,8 @@ def main():
         'github_run_url': os.environ.get('GITHUB_RUN_URL', ''),
         'git_sha': os.environ.get('GIT_SHA', ''),
         'sources': {
-            'real': ['US Census ACS 2022', 'OpenStreetMap infrastructure inventory',
+            'real': [f'US Census ACS {CENSUS_VINTAGE}',
+                     'OpenStreetMap infrastructure inventory',
                      'NCDOT non-motorist crashes (ArcGIS)'],
             'simulated': ['volume predictions',
                           'infrastructure recommendations', 'demand analysis'],

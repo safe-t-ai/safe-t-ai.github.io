@@ -10,7 +10,7 @@ Auditing framework for evaluating equity and fairness in AI-driven transportatio
 
 **[Live Demo](https://safe-t-ai.github.io/)**
 
-**Team:** [Jonas Neves](https://www.linkedin.com/in/jonasnvs/), [Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/), [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/), [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/), [Matthew Menon](https://www.linkedin.com/in/matthewmenon/)
+**Team:** [Jonas Neves](https://www.linkedin.com/in/jonasnvs/), [Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/), [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/), [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/)
 
 ## Overview
 

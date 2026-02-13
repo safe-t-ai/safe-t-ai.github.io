@@ -11,21 +11,22 @@ sys.path.append(str(Path(__file__).parent.parent / 'backend'))
 import requests
 import geopandas as gpd
 import pandas as pd
-from config import RAW_DATA_DIR, CENSUS_API_KEY
+from config import RAW_DATA_DIR, CENSUS_API_KEY, CENSUS_VINTAGE, DATA_FRESHNESS
+from utils.freshness import is_fresh, write_meta
 
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+OUTPUT_FILE = RAW_DATA_DIR / 'durham_census_tracts.geojson'
+
+
 def fetch_durham_census_tracts():
-    """Fetch Durham County census tracts with demographic data"""
+    """Fetch Durham County census tracts with demographic data."""
 
     # Durham County FIPS code: 37063
     state_fips = '37'
     county_fips = '063'
 
-    # ACS 5-Year Estimates (2022)
-    # Variables: B01003_001E (Total Pop), B19013_001E (Median Income),
-    #            B02001_002E (White Alone), B02001_003E (Black/AA)
-    base_url = "https://api.census.gov/data/2022/acs/acs5"
+    base_url = f"https://api.census.gov/data/{CENSUS_VINTAGE}/acs/acs5"
 
     variables = [
         'B01003_001E',  # Total population
@@ -82,7 +83,10 @@ def fetch_durham_census_tracts():
 
     # Fetch tract geometries from Census TIGER/Line
     print("Fetching tract geometries...")
-    tiger_url = f"https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2022/MapServer/6/query"
+    tiger_url = (
+        f"https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb"
+        f"/tigerWMS_ACS{CENSUS_VINTAGE}/MapServer/6/query"
+    )
 
     tiger_params = {
         'where': f"STATE='{state_fips}' AND COUNTY='{county_fips}'",
@@ -116,17 +120,26 @@ def fetch_durham_census_tracts():
         gdf = gdf[~zero_pop].reset_index(drop=True)
 
     # Save to file
-    output_file = RAW_DATA_DIR / 'durham_census_tracts.geojson'
-    gdf.to_file(output_file, driver='GeoJSON')
-    print(f"Saved census data to {output_file}")
+    gdf.to_file(OUTPUT_FILE, driver='GeoJSON')
+    print(f"Saved census data to {OUTPUT_FILE}")
+
+    write_meta(OUTPUT_FILE, source_url=base_url, record_count=len(gdf),
+               extra={'vintage': CENSUS_VINTAGE,
+                      'temporal_coverage': f'{CENSUS_VINTAGE - 4}-{CENSUS_VINTAGE}'})
 
     return gdf
 
 if __name__ == '__main__':
+    force = '--force' in sys.argv
+
     print("Durham Transportation Safety Data Acquisition")
     print("=" * 50)
 
-    # Fetch census data
+    if not force and is_fresh(OUTPUT_FILE, DATA_FRESHNESS['census']):
+        print(f"Census data is fresh (< {DATA_FRESHNESS['census']} days old), skipping fetch.")
+        print("Use --force to re-fetch.")
+        sys.exit(0)
+
     gdf = fetch_durham_census_tracts()
 
     print(f"\nFetched {len(gdf)} census tracts")

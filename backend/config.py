@@ -14,6 +14,7 @@ DURHAM_BOUNDS = {
 }
 
 CENSUS_API_KEY = os.getenv('CENSUS_API_KEY', '')
+CENSUS_VINTAGE = 2024  # ACS 5-year estimates vintage year
 
 BIAS_PARAMETERS = {
     'low_income_undercount': 0.25,
@@ -23,9 +24,9 @@ BIAS_PARAMETERS = {
 }
 
 # Temporal configuration
-CRASH_ANALYSIS_YEARS = [2019, 2020, 2021, 2022, 2023]
-CRASH_TRAINING_YEARS = [2019, 2020, 2021, 2022]
-CRASH_TEST_YEARS = [2023]
+CRASH_ANALYSIS_YEARS = [2019, 2020, 2021, 2022, 2023, 2024]
+CRASH_TRAINING_YEARS = [2019, 2020, 2021, 2022, 2023]
+CRASH_TEST_YEARS = [2024]
 
 # Infrastructure project types
 INFRASTRUCTURE_PROJECT_TYPES = {
@@ -106,12 +107,19 @@ OSM_INFRASTRUCTURE_FEATURES = {
 
 QUINTILE_LABELS = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']
 
+# Data freshness thresholds (days before re-fetch)
+DATA_FRESHNESS = {
+    'census': 365,       # Census releases annually
+    'ncdot_crashes': 30, # NCDOT updates ~quarterly
+    'osm': 7,            # OSM changes frequently
+}
+
 # Plausibility ranges for CI validation (catch order-of-magnitude errors)
 PLAUSIBILITY_RANGES = {
     'crashes_per_year': (50, 500),                # NCDOT non-motorist: ~148/yr
-    'crashes_total_5yr': (250, 2_500),            # 5 years of non-motorist crash data
+    'crashes_total': (300, 3_000),                # All years of non-motorist crash data
     'census_tracts': (60, 75),                    # US Census ACS Durham County
-    'durham_total_population': (250_000, 400_000),  # Census 2022 estimate ~311k
+    'durham_total_population': (250_000, 400_000),  # Census ACS estimate ~311k
     'median_income_range': (15_000, 250_000),     # Per-tract median household income
     'budget_allocation_total': (4_500_000, 5_500_000),  # INFRASTRUCTURE_DEFAULT_BUDGET ± margin
     'confusion_matrix_min_f1_spread': 0.05,      # Min spread between best/worst quintile F1

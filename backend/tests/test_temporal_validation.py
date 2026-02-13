@@ -5,6 +5,7 @@ Tests for temporal validation utilities.
 import pytest
 from datetime import datetime, timedelta
 import pandas as pd
+from config import CRASH_ANALYSIS_YEARS
 from utils.temporal_validation import (
     validate_data_freshness,
     validate_temporal_coverage,
@@ -33,12 +34,11 @@ def test_validate_data_freshness_stale():
 
 def test_validate_temporal_coverage_complete(sample_temporal_data):
     """Test temporal coverage with all expected years."""
-    expected_years = [2019, 2020, 2021, 2022, 2023]
-    result = validate_temporal_coverage(sample_temporal_data, 'date', expected_years)
+    result = validate_temporal_coverage(sample_temporal_data, 'date', CRASH_ANALYSIS_YEARS)
 
     assert result['valid'] is True
     assert result['missing_years'] == []
-    assert set(result['years_present']) == set(expected_years)
+    assert set(result['years_present']) == set(CRASH_ANALYSIS_YEARS)
 
 
 def test_validate_temporal_coverage_missing():
@@ -46,11 +46,11 @@ def test_validate_temporal_coverage_missing():
     df = pd.DataFrame({
         'date': pd.date_range('2019-01-01', '2021-12-31', freq='M')
     })
-    expected_years = [2019, 2020, 2021, 2022, 2023]
-    result = validate_temporal_coverage(df, 'date', expected_years)
+    result = validate_temporal_coverage(df, 'date', CRASH_ANALYSIS_YEARS)
 
     assert result['valid'] is False
-    assert set(result['missing_years']) == {2022, 2023}
+    missing = set(CRASH_ANALYSIS_YEARS) - {2019, 2020, 2021}
+    assert set(result['missing_years']) == missing
     assert set(result['years_present']) == {2019, 2020, 2021}
 
 

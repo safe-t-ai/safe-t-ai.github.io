@@ -15,7 +15,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent / 'backend'))
 import pandas as pd
 import requests
 
-from config import NCDOT_NONMOTORIST_SERVICE, RAW_DATA_DIR
+from config import NCDOT_NONMOTORIST_SERVICE, RAW_DATA_DIR, DATA_FRESHNESS
+from utils.freshness import is_fresh, write_meta
 
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -55,7 +56,7 @@ def fetch_durham_nonmotorist_crashes():
 
     while True:
         params = {**base_params, 'resultOffset': offset}
-        print(f"  Fetching records {offset}–{offset + MAX_RECORDS}...")
+        print(f"  Fetching records {offset}\u2013{offset + MAX_RECORDS}...")
 
         response = requests.get(
             f"{NCDOT_NONMOTORIST_SERVICE}/query",
@@ -80,7 +81,15 @@ def fetch_durham_nonmotorist_crashes():
 
 
 def main():
+    force = '--force' in sys.argv
+
     print("Fetching NCDOT non-motorist crash data for Durham County...")
+
+    if not force and is_fresh(OUTPUT_PATH, DATA_FRESHNESS['ncdot_crashes']):
+        print(f"Crash data is fresh (< {DATA_FRESHNESS['ncdot_crashes']} days old), skipping fetch.")
+        print("Use --force to re-fetch.")
+        return
+
     records = fetch_durham_nonmotorist_crashes()
 
     if not records:
@@ -101,8 +110,16 @@ def main():
 
     df.to_csv(OUTPUT_PATH, index=False)
 
+    year_min = int(df['CrashYear'].min())
+    year_max = int(df['CrashYear'].max())
+
+    write_meta(OUTPUT_PATH,
+               source_url=NCDOT_NONMOTORIST_SERVICE,
+               record_count=len(df),
+               extra={'year_range': [year_min, year_max]})
+
     print(f"\nSaved {len(df):,} geocoded crash records to {OUTPUT_PATH}")
-    print(f"  Years: {df['CrashYear'].min():.0f}–{df['CrashYear'].max():.0f}")
+    print(f"  Years: {year_min}\u2013{year_max}")
     print(f"  NM types: {df['NM_Type'].value_counts().to_dict()}")
     print(f"  Severity: {df['CrashSevr'].value_counts().to_dict()}")
 

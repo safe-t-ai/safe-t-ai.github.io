@@ -121,7 +121,7 @@ class CrashPredictionAuditor:
 
     def train_ai_on_real_data(self, crash_df: pd.DataFrame) -> pd.DataFrame:
         """
-        Train AI prediction model on real crash data (2019-2022) and predict 2023.
+        Train AI prediction model on real crash data and predict the test year(s).
 
         Demonstrates that AI models show worse prediction accuracy in low-income areas.
 

@@ -1,4 +1,4 @@
-.PHONY: help setup install install-backend install-frontend clean clean-all dev build deploy test data fetch-data generate-data venv
+.PHONY: help setup install install-backend install-frontend clean clean-all dev build deploy test data fetch-data fetch-data-api generate-data venv
 
 .DEFAULT_GOAL := help
 
@@ -36,14 +36,20 @@ dev: ## Start frontend dev server (data served from frontend/public/data/)
 
 ##@ Data
 
-data: fetch-data generate-data ## Fetch and generate all data
+data: ## Pull all pre-built data from the data branch
+	git fetch origin data
+	mkdir -p backend/data/raw backend/data/simulated frontend/public/data
+	git archive origin/data -- raw/ | tar -xf - --strip-components=1 -C backend/data/raw/
+	git archive origin/data -- simulated/ | tar -xf - --strip-components=1 -C backend/data/simulated/
+	git archive origin/data -- frontend/ | tar -xf - --strip-components=1 -C frontend/public/data/
+	@echo "✓ Data restored from data branch"
 
-fetch-data: ## Fetch Durham census, geographic, crash, and infrastructure data
+fetch-data-api: ## Fetch raw data from external APIs (slow, needs API keys)
 	$(PYTHON) scripts/fetch_durham_data.py
 	$(PYTHON) scripts/fetch_ncdot_nonmotorist.py
 	$(PYTHON) scripts/fetch_osm_infrastructure.py
 
-generate-data: ## Generate static data files for frontend
+generate-data: ## Run simulations and generate frontend JSON from local raw data
 	$(PYTHON) scripts/simulate_ai_predictions.py
 	$(PYTHON) scripts/simulate_crash_predictions.py
 	$(PYTHON) scripts/simulate_infrastructure_recommendations.py

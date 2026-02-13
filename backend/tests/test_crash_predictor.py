@@ -3,6 +3,7 @@ Tests for crash prediction auditor model.
 """
 
 import pandas as pd
+from config import CRASH_ANALYSIS_YEARS
 from models.crash_predictor import CrashPredictionAuditor
 
 
@@ -11,8 +12,8 @@ def test_crash_predictor_initialization(sample_census_gdf):
     auditor = CrashPredictionAuditor(sample_census_gdf)
 
     assert auditor.census_gdf is not None
-    assert len(auditor.years) == 5
-    assert 2023 in auditor.years
+    assert len(auditor.years) == len(CRASH_ANALYSIS_YEARS)
+    assert max(CRASH_ANALYSIS_YEARS) in auditor.years
 
 
 def test_load_real_crash_data(sample_census_gdf, tmp_path):
@@ -43,9 +44,9 @@ def test_train_ai_on_real_data(sample_census_gdf, tmp_path):
     """Test AI model training on real crash data and prediction evaluation."""
     auditor = CrashPredictionAuditor(sample_census_gdf)
 
-    # Create crash data spanning training (2019-2022) and test (2023) years
+    # Create crash data spanning training and test years
     rows = []
-    for year in [2019, 2020, 2021, 2022, 2023]:
+    for year in CRASH_ANALYSIS_YEARS:
         for lat, lon in [(0.5, 0.5), (1.5, 0.5), (2.5, 0.5), (3.5, 0.5), (4.5, 0.5)]:
             rows.append(f"{year}-06-15,{year},{lat},{lon}")
 

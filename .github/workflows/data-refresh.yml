@@ -49,10 +49,14 @@ jobs:
         env:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
         run: |
-          python scripts/fetch_durham_data.py &
-          python scripts/fetch_ncdot_nonmotorist.py &
+          FORCE_FLAG=""
+          if [ "${{ github.event.inputs.force_regenerate }}" == "true" ]; then
+            FORCE_FLAG="--force"
+          fi
+          python scripts/fetch_durham_data.py $FORCE_FLAG &
+          python scripts/fetch_ncdot_nonmotorist.py $FORCE_FLAG &
           wait
-          python scripts/fetch_osm_infrastructure.py
+          python scripts/fetch_osm_infrastructure.py $FORCE_FLAG
 
       - name: Validate source data
         run: |
@@ -304,7 +308,7 @@ jobs:
           if not (lo <= per_year <= hi):
               errors.append(f'Crashes per year {per_year:.0f} outside range {lo}-{hi}')
 
-          lo, hi = PLAUSIBILITY_RANGES['crashes_total_5yr']
+          lo, hi = PLAUSIBILITY_RANGES['crashes_total']
           if not (lo <= total <= hi):
               errors.append(f'Total crashes {total} outside range {lo}-{hi}')
 

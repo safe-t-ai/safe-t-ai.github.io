@@ -3,7 +3,7 @@ Generate crash prediction audit data for Test 2 using real NCDOT data.
 
 This script:
 1. Loads Durham census data
-2. Loads real NCDOT crash data (2019-2023)
+2. Loads real NCDOT crash data
 3. Geocodes crashes to census tracts
 4. Trains AI model on historical data (2019-2022)
 5. Predicts crash risk for 2023 and evaluates accuracy disparities
@@ -19,7 +19,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'backend'))
 
 import geopandas as gpd
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
-from config import CRASH_ANALYSIS_YEARS, RAW_DATA_DIR, SIMULATED_DATA_DIR
+from config import (
+    CRASH_ANALYSIS_YEARS, CRASH_TRAINING_YEARS, CRASH_TEST_YEARS,
+    CENSUS_VINTAGE, RAW_DATA_DIR, SIMULATED_DATA_DIR,
+)
 from models.crash_predictor import CrashPredictionAuditor
 
 
@@ -66,7 +69,9 @@ def main():
     crash_df = auditor.load_real_crash_data(crash_csv_path)
 
     # Train AI on real data
-    print("\n3. Training AI model on 2019-2022 data, predicting 2023...")
+    train_range = f"{min(CRASH_TRAINING_YEARS)}-{max(CRASH_TRAINING_YEARS)}"
+    test_range = f"{min(CRASH_TEST_YEARS)}-{max(CRASH_TEST_YEARS)}"
+    print(f"\n3. Training AI model on {train_range} data, predicting {test_range}...")
     predictions_df = auditor.train_ai_on_real_data(crash_df)
 
     # Calculate summary statistics
@@ -75,9 +80,10 @@ def main():
     crashes_2023 = predictions_df['crash_count'].sum()
     predicted_2023 = predictions_df['ai_predicted_crashes'].sum()
 
-    print(f"   Total crashes (2019-2023): {total_crashes_all_years:,}")
-    print(f"   Actual crashes (2023): {crashes_2023:,}")
-    print(f"   AI predicted (2023): {predicted_2023:,.0f}")
+    analysis_range = f"{min(CRASH_ANALYSIS_YEARS)}-{max(CRASH_ANALYSIS_YEARS)}"
+    print(f"   Total crashes ({analysis_range}): {total_crashes_all_years:,}")
+    print(f"   Actual crashes ({test_range}): {crashes_2023:,}")
+    print(f"   AI predicted ({test_range}): {predicted_2023:,.0f}")
     print(f"   Tracts analyzed: {len(census_gdf)}")
 
     print("\n5. Prediction Error by Income Quintile:")
@@ -119,7 +125,7 @@ def main():
     crash_report = {
         '_provenance': {
             'data_type': 'real',
-            'real': ['US Census ACS 2022 demographics', 'NCDOT non-motorist crashes (ArcGIS Feature Service)'],
+            'real': [f'US Census ACS {CENSUS_VINTAGE} demographics', 'NCDOT non-motorist crashes (ArcGIS Feature Service)'],
             'simulated': ['AI prediction errors'],
         },
         'summary': {
@@ -129,14 +135,14 @@ def main():
             'crashes_per_year': crashes_per_year,
             'years_analyzed': CRASH_ANALYSIS_YEARS,
             'tracts_analyzed': len(census_gdf),
-            'data_source': 'NCDOT non-motorist crash data, Durham County (2019-2023)'
+            'data_source': f'NCDOT non-motorist crash data, Durham County ({analysis_range})'
         },
         'error_by_quintile': {k: {k2: float(v2) for k2, v2 in v.items()}
                               for k, v in quintile_metrics.items()},
         'findings': [
             f"AI prediction error is {q1_error_pct:.0f}% in Q1 vs {q5_error_pct:.0f}% in Q5 — {q1_error_pct / q5_error_pct:.1f}x worse in the poorest areas",
-            "Ridge regression trained on real 2019-2022 non-motorist crash data with demographic features",
-            "Model shows systematic underperformance in poorest quintile when predicting 2023 crashes",
+            f"Ridge regression trained on real {train_range} non-motorist crash data with demographic features",
+            f"Model shows systematic underperformance in poorest quintile when predicting {test_range} crashes",
             "AI-guided safety investments systematically underallocate resources to underserved communities"
         ]
     }
@@ -146,7 +152,7 @@ def main():
 
     print(f"   ✓ Exported crash_predictions.json")
 
-    # Generate time series data (2019-2023)
+    # Generate time series data
     print("\n7. Exporting time series data...")
     time_series_data = {
         'years': CRASH_ANALYSIS_YEARS,

@@ -70,7 +70,8 @@ def sample_infrastructure_df():
 @pytest.fixture
 def sample_temporal_data():
     """Sample temporal data for validation testing."""
+    dates = pd.date_range('2019-01-01', '2024-12-31', freq='M')
     return pd.DataFrame({
-        'date': pd.date_range('2019-01-01', '2023-12-31', freq='M'),
-        'value': range(60),
+        'date': dates,
+        'value': range(len(dates)),
     })
