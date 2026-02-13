@@ -26,6 +26,7 @@ export class OverviewDashboard {
         const tractCountEl = document.getElementById('tract-count');
         if (tractCountEl) tractCountEl.textContent = String(choroplethData.features.length);
 
+        this.renderMethodology();
         this.renderMap();
         this.renderTestCards();
         this.renderFindings();
@@ -84,6 +85,31 @@ export class OverviewDashboard {
             this.map.cleanup();
             this.map = null;
         }
+    }
+
+    renderMethodology() {
+        const container = document.querySelector('.overview-right');
+        const key = document.createElement('div');
+        key.className = 'methodology-key';
+        key.innerHTML = `
+            <h3>Data Sources &amp; Vocabulary</h3>
+            <div class="methodology-legend">
+                <div class="methodology-item">
+                    <span class="methodology-dot real"></span>
+                    <span><strong>Real</strong> <span class="methodology-desc">— Census, NCDOT, and OpenStreetMap inputs</span></span>
+                </div>
+                <div class="methodology-item">
+                    <span class="methodology-dot calibrated"></span>
+                    <span><strong>Calibrated</strong> <span class="methodology-desc">— models fitted to published accuracy rates</span></span>
+                </div>
+                <div class="methodology-item">
+                    <span class="methodology-dot simulated"></span>
+                    <span><strong>Simulated</strong> <span class="methodology-desc">— synthetic outputs replacing proprietary vendor data</span></span>
+                </div>
+            </div>
+            <p class="methodology-vocab"><strong>Q1</strong> = lowest-income 20% of tracts; <strong>Q5</strong> = highest-income 20%. Each quintile contains the same number of census tracts.</p>
+        `;
+        container.insertBefore(key, container.firstChild);
     }
 
     renderTestCards() {

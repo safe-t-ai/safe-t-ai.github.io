@@ -651,6 +651,60 @@
             color: var(--color-on-dark-secondary);
         }
 
+        .methodology-key {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4) var(--space-6);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--space-4);
+        }
+
+        .methodology-key h3 {
+            font-size: var(--font-caption);
+            font-weight: 600;
+            color: var(--color-label-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: var(--space-3);
+        }
+
+        .methodology-legend {
+            display: flex;
+            gap: var(--space-6);
+            margin-bottom: var(--space-3);
+        }
+
+        .methodology-item {
+            display: flex;
+            align-items: baseline;
+            gap: var(--space-2);
+            font-size: var(--font-footnote);
+            color: var(--color-label);
+        }
+
+        .methodology-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
+            top: 1px;
+        }
+
+        .methodology-dot.real { background: #059669; }
+        .methodology-dot.calibrated { background: #2563eb; }
+        .methodology-dot.simulated { background: #d97706; }
+
+        .methodology-item .methodology-desc {
+            color: var(--color-label-secondary);
+        }
+
+        .methodology-vocab {
+            font-size: var(--font-footnote);
+            color: var(--color-label-secondary);
+            line-height: 1.45;
+        }
+
         .overview-right {
             display: flex;
             flex-direction: column;
@@ -917,6 +971,9 @@
                 min-height: 0;
             }
 
+            .methodology-legend { flex-direction: column; gap: var(--space-2); }
+            .methodology-key { padding: var(--space-4); }
+
             .stat-hero { padding: var(--space-4); }
             .stat-hero .stat-value { font-size: 2.25rem; }
 
@@ -1026,8 +1083,8 @@
             <div id="overview-content" class="test-content active" role="tabpanel" aria-label="Overview">
                 <div class="overview-banner">
                     <h2>Durham Transportation Equity Audit</h2>
-                    <p class="banner-description">AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities. This audit tests whether those tools treat Durham's communities equitably. Each test simulates how documented biases in real-world AI tools compound through the pipeline — from data collection to budget allocation — using research-calibrated models trained on real Durham data.</p>
-                    <p class="banner-stats"><span id="tract-count"></span> Tracts &middot; 4 Equity Tests &middot; Real + Simulated Data</p>
+                    <p class="banner-description">AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities — but do they treat all communities equitably? SAFE-T is an audit framework that tests this question using Durham, NC as a case study. Because vendor tools like Strava Metro and StreetLight are proprietary, we simulate their documented biases using research-calibrated models layered on real Census, NCDOT, and OpenStreetMap data.</p>
+                    <p class="banner-stats"><span id="tract-count"></span> Tracts &middot; Volume Estimation → Crash Prediction → Infrastructure → Demand</p>
                 </div>
                 <div class="content-split">
                     <div class="content-map">
