@@ -126,7 +126,7 @@ def main():
         '_provenance': {
             'data_type': 'real',
             'real': [f'US Census ACS {CENSUS_VINTAGE} demographics', 'NCDOT non-motorist crashes (ArcGIS Feature Service)'],
-            'simulated': ['AI prediction errors'],
+            'simulated': [],
         },
         'summary': {
             'total_crashes_all_years': int(total_crashes_all_years),
