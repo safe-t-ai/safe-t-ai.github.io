@@ -11,7 +11,7 @@ sys.path.append(str(Path(__file__).parent.parent / 'backend'))
 import requests
 import geopandas as gpd
 import pandas as pd
-from config import RAW_DATA_DIR, CENSUS_API_KEY, CENSUS_VINTAGE, TIGER_VINTAGE, DATA_FRESHNESS
+from config import RAW_DATA_DIR, CENSUS_API_KEY, CENSUS_VINTAGE, TIGER_VINTAGE, TIGER_TRACTS_LAYER, DATA_FRESHNESS
 from utils.freshness import is_fresh, write_meta
 
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -85,7 +85,7 @@ def fetch_durham_census_tracts():
     print("Fetching tract geometries...")
     tiger_url = (
         f"https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb"
-        f"/tigerWMS_ACS{TIGER_VINTAGE}/MapServer/6/query"
+        f"/tigerWMS_ACS{TIGER_VINTAGE}/MapServer/{TIGER_TRACTS_LAYER}/query"
     )
 
     tiger_params = {
