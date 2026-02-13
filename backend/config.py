@@ -15,6 +15,7 @@ DURHAM_BOUNDS = {
 
 CENSUS_API_KEY = os.getenv('CENSUS_API_KEY', '')
 CENSUS_VINTAGE = 2024  # ACS 5-year estimates vintage year
+TIGER_VINTAGE = 2023   # TIGER/Line geometry service (lags ACS; boundaries only change at decennial census)
 
 BIAS_PARAMETERS = {
     'low_income_undercount': 0.25,

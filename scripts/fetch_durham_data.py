@@ -11,7 +11,7 @@ sys.path.append(str(Path(__file__).parent.parent / 'backend'))
 import requests
 import geopandas as gpd
 import pandas as pd
-from config import RAW_DATA_DIR, CENSUS_API_KEY, CENSUS_VINTAGE, DATA_FRESHNESS
+from config import RAW_DATA_DIR, CENSUS_API_KEY, CENSUS_VINTAGE, TIGER_VINTAGE, DATA_FRESHNESS
 from utils.freshness import is_fresh, write_meta
 
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -85,7 +85,7 @@ def fetch_durham_census_tracts():
     print("Fetching tract geometries...")
     tiger_url = (
         f"https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb"
-        f"/tigerWMS_ACS{CENSUS_VINTAGE}/MapServer/6/query"
+        f"/tigerWMS_ACS{TIGER_VINTAGE}/MapServer/6/query"
     )
 
     tiger_params = {
@@ -100,6 +100,11 @@ def fetch_durham_census_tracts():
     geom_response.raise_for_status()
 
     geojson_data = geom_response.json()
+    if 'features' not in geojson_data:
+        raise RuntimeError(
+            f"TIGER service tigerWMS_ACS{TIGER_VINTAGE} returned no features. "
+            f"Response: {str(geojson_data)[:500]}"
+        )
     gdf = gpd.GeoDataFrame.from_features(geojson_data['features'])
     gdf['tract_id'] = gdf['STATE'] + gdf['COUNTY'] + gdf['TRACT']
 
