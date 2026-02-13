@@ -58,9 +58,9 @@ export class CrashPredictionAudit {
                 sentiment: 'value-danger'
             },
             {
-                title: 'Total Crashes (5yr)',
+                title: `Total Crashes (${summary.years_analyzed.length}yr)`,
                 value: summary.total_crashes_all_years.toLocaleString(),
-                subtext: `Durham County 2019-2023 (NCDOT)`,
+                subtext: `Durham County ${summary.years_analyzed[0]}\u2013${summary.years_analyzed.at(-1)} (NCDOT)`,
                 sentiment: 'value-info'
             }
         ]);
@@ -97,7 +97,8 @@ export class CrashPredictionAudit {
     updateCrashLayer() {
         const isActual = this.currentView === 'actual';
         const field = isActual ? 'actual_crashes' : 'ai_predicted_crashes';
-        const label = isActual ? 'Actual Crashes (2023)' : 'AI Predicted Crashes (2023)';
+        const testYear = this.data.report.summary.years_analyzed.at(-1);
+        const label = isActual ? `Actual Crashes (${testYear})` : `AI Predicted Crashes (${testYear})`;
 
         // Shared scale so toggling views reveals over/underprediction by color shift
         const breaks = this._computeSharedBreaks();
@@ -116,7 +117,7 @@ export class CrashPredictionAudit {
                 popupFields: [
                     { label: 'Median Income', field: 'median_income', format: v => `$${v?.toLocaleString()}` },
                     { label: 'Income Quintile', field: 'income_quintile' },
-                    { label: 'Actual Crashes (2023)', field: 'actual_crashes', format: v => v?.toLocaleString() },
+                    { label: `Actual Crashes (${testYear})`, field: 'actual_crashes', format: v => v?.toLocaleString() },
                     { label: 'AI Predicted', field: 'ai_predicted_crashes', format: v => v?.toFixed(1) }
                 ]
             }

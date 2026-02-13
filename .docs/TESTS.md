@@ -110,8 +110,8 @@ Evaluates whether AI crash prediction models accurately predict danger across al
 ### Methodology
 
 **Data:**
-- Real NCDOT crash data (2019-2023, ~50K crashes)
-- Temporal split: Train on 2019-2022, test on 2023
+- Real NCDOT crash data (years configured in `config.CRASH_ANALYSIS_YEARS`)
+- Temporal split: Train on `CRASH_TRAINING_YEARS`, test on `CRASH_TEST_YEARS`
 - Features: Income, minority %, population density, historical crashes
 
 **Analysis:**
