@@ -340,7 +340,6 @@ interface PipelineMetadata {
     git_sha: string;
     sources: {
         real: string[];
-        calibrated: string[];
         simulated: string[];
     };
 }

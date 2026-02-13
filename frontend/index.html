@@ -89,6 +89,8 @@
             line-height: 1.47;
         }
 
+        .hidden { display: none; }
+
         /* ── Header ── */
         .header {
             background: var(--color-dark);
@@ -312,6 +314,36 @@
             gap: var(--space-8);
         }
 
+        .skeleton-overview-banner {
+            height: 120px;
+            margin-bottom: var(--space-6);
+        }
+
+        .skeleton-overview-split {
+            display: grid;
+            grid-template-columns: 55fr 45fr;
+            gap: var(--space-6);
+        }
+
+        .skeleton-overview-map {
+            height: 500px;
+        }
+
+        .skeleton-overview-right {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .skeleton-overview-card-hero { height: 160px; }
+        .skeleton-overview-card-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+        }
+        .skeleton-overview-card-sm { height: 100px; }
+        .skeleton-overview-findings { height: 120px; margin-top: var(--space-2); }
+
         .container {
             max-width: var(--max-width);
             margin: 0 auto;
@@ -466,31 +498,6 @@
 
         .leaflet-popup-tip {
             box-shadow: none;
-        }
-
-        /* ── Loading ── */
-        .loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: var(--space-4);
-            min-height: 400px;
-            font-size: var(--font-headline);
-            color: var(--color-label-secondary);
-        }
-
-        .loading-spinner {
-            width: 28px;
-            height: 28px;
-            border: 3px solid var(--color-fill-tertiary);
-            border-top-color: var(--color-accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
         /* ── Key Findings ── */
@@ -692,7 +699,7 @@
         }
 
         .methodology-dot.real { background: #059669; }
-        .methodology-dot.calibrated { background: #2563eb; }
+        .methodology-dot.modeled { background: #2563eb; }
         .methodology-dot.simulated { background: #d97706; }
 
         .methodology-item .methodology-desc {
@@ -971,6 +978,9 @@
                 min-height: 0;
             }
 
+            .skeleton-overview-split { grid-template-columns: 1fr; }
+            .skeleton-overview-card-row { grid-template-columns: 1fr; }
+
             .methodology-legend { flex-direction: column; gap: var(--space-2); }
             .methodology-key { padding: var(--space-4); }
 
@@ -1077,16 +1087,30 @@
 
     <div class="container">
         <div class="test-subtitle" id="test-description"></div>
-        <div id="loading" class="loading"><div class="loading-spinner"></div>Loading data...</div>
-        <div id="app" style="display: none;">
+        <div id="app">
             <!-- Overview Content -->
             <div id="overview-content" class="test-content active" role="tabpanel" aria-label="Overview">
-                <div class="overview-banner">
+                <div id="overview-skeleton" class="skeleton-loading-overlay">
+                    <div class="skeleton skeleton-overview-banner"></div>
+                    <div class="skeleton-overview-split">
+                        <div class="skeleton skeleton-overview-map"></div>
+                        <div class="skeleton-overview-right">
+                            <div class="skeleton skeleton-overview-card-hero"></div>
+                            <div class="skeleton-overview-card-row">
+                                <div class="skeleton skeleton-overview-card-sm"></div>
+                                <div class="skeleton skeleton-overview-card-sm"></div>
+                                <div class="skeleton skeleton-overview-card-sm"></div>
+                            </div>
+                            <div class="skeleton skeleton-overview-findings"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="overview-banner hidden">
                     <h2>Durham Transportation Equity Audit</h2>
                     <p class="banner-description">AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities — but do they treat all communities equitably? SAFE-T is an audit framework that tests this question using Durham, NC as a case study. Because vendor tools like Strava Metro and StreetLight are proprietary, we simulate their documented biases using research-calibrated models layered on real Census, NCDOT, and OpenStreetMap data.</p>
                     <p class="banner-stats"><span id="tract-count"></span> Tracts &middot; Volume Estimation → Crash Prediction → Infrastructure → Demand</p>
                 </div>
-                <div class="content-split">
+                <div class="content-split hidden">
                     <div class="content-map">
                         <div class="map-container">
                             <h2>Durham Income Distribution by Census Tract</h2>

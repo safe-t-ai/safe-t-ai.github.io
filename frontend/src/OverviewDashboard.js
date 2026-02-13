@@ -99,8 +99,8 @@ export class OverviewDashboard {
                     <span><strong>Real</strong> <span class="methodology-desc">— Census, NCDOT, and OpenStreetMap inputs</span></span>
                 </div>
                 <div class="methodology-item">
-                    <span class="methodology-dot calibrated"></span>
-                    <span><strong>Calibrated</strong> <span class="methodology-desc">— models fitted to published accuracy rates</span></span>
+                    <span class="methodology-dot modeled"></span>
+                    <span><strong>Modeled</strong> <span class="methodology-desc">— parametric models grounded in real infrastructure data</span></span>
                 </div>
                 <div class="methodology-item">
                     <span class="methodology-dot simulated"></span>
