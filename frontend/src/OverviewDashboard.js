@@ -107,7 +107,7 @@ export class OverviewDashboard {
             </div>
             <p class="methodology-vocab"><strong>Q1</strong> = lowest-income 20% of tracts; <strong>Q5</strong> = highest-income 20%. Each quintile contains the same number of census tracts.</p>
         `;
-        container.insertBefore(key, container.firstChild);
+        container.appendChild(key);
     }
 
     renderTestCards() {
