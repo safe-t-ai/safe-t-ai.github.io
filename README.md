@@ -6,11 +6,9 @@
 [![Python](https://img.shields.io/badge/python-3.9+-blue?logo=python&style=classic)](https://www.python.org/)
 [![Node](https://img.shields.io/badge/node-18+-green?logo=node.js&style=classic)](https://nodejs.org/)
 
-Auditing framework for evaluating equity and fairness in AI-driven transportation safety systems. Built at the [2026 SCAI Hackathon](https://sites.duke.edu/scai/hackathon/), Duke University.
+Auditing framework for evaluating equity and fairness in AI-driven transportation safety systems. Duke University.
 
 **[Live Demo](https://safe-t-ai.github.io/)**
-
-**Team:** [Jonas Neves](https://www.linkedin.com/in/jonasnvs/), [Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/), [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/), [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/)
 
 ## Overview
 
@@ -123,6 +121,10 @@ gh workflow run data-refresh.yml
 # Trigger a deploy (build frontend with latest data, deploy to Pages)
 gh workflow run deploy.yml
 ```
+
+## Contributors
+
+[Jonas Neves](https://www.linkedin.com/in/jonasnvs/) · [Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/) · [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/) · [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/)
 
 ## License
 
