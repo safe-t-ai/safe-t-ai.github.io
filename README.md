@@ -79,9 +79,10 @@ safe-t-ai.github.io/
 
 ## Data Sources
 
-- **Census:** US Census Bureau ACS 5-Year Estimates (2022)
+- **Census:** US Census Bureau ACS 5-Year Estimates
 - **Boundaries:** TIGER/Line Shapefiles
-- **Crash Data:** NCDOT non-motorist crashes (2019-2023) via ArcGIS Feature Service
+- **Crash Data:** NCDOT non-motorist crashes via ArcGIS Feature Service
+- **Infrastructure:** OpenStreetMap via Overpass API
 - **AI Predictions:** Simulated with bias patterns from research literature
 
 ## Development
