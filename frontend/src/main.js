@@ -28,12 +28,13 @@ class App {
     }
 
     async initialize() {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
-
         const { OverviewDashboard } = await import('./OverviewDashboard.js');
         this.modules.overview = new OverviewDashboard();
         await this.modules.overview.initialize();
+
+        document.getElementById('overview-skeleton')?.remove();
+        document.querySelector('#overview-content .overview-banner')?.classList.remove('hidden');
+        document.querySelector('#overview-content .content-split')?.classList.remove('hidden');
 
         this.setupNavigation();
     }
