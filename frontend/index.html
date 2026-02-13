@@ -576,7 +576,7 @@
             color: #78350f;
         }
 
-        .data-source-badge.calibrated {
+        .data-source-badge.modeled {
             background: #dbeafe;
             border-color: #93c5fd;
             color: #1e3a5f;
@@ -1149,7 +1149,7 @@
                                 <h2>Model Performance by Quintile</h2>
                                 <span class="data-source-badge real">
                                     Real Data
-                                    <span class="tooltip">Ridge regression trained on real NCDOT non-motorist crash data (2019-2022), evaluated on 2023. Census demographics as features.</span>
+                                    <span class="tooltip">Ridge regression trained on real NCDOT non-motorist crash data (2019-2023), evaluated on 2024. Census demographics as features.</span>
                                 </span>
                             </div>
                             <p class="chart-description">Binary classification (above/below within-quintile median) evaluated per income group. Lower scores in poorer quintiles indicate the model struggles to rank tracts within those areas.</p>
@@ -1195,8 +1195,8 @@
                         <div class="map-container">
                             <div class="chart-header">
                                 <h2>Infrastructure Recommendations Map</h2>
-                                <span class="data-source-badge calibrated">
-                                    Calibrated
+                                <span class="data-source-badge modeled">
+                                    Modeled
                                     <span class="tooltip">Project types selected by actual infrastructure gaps (OpenStreetMap feature density per tract). Allocation priority and danger scores are simulated.</span>
                                 </span>
                             </div>
@@ -1214,8 +1214,8 @@
                         <div class="chart-container">
                             <div class="chart-header">
                                 <h2>Budget Allocation by Income</h2>
-                                <span class="data-source-badge calibrated">
-                                        Calibrated
+                                <span class="data-source-badge modeled">
+                                        Modeled
                                     <span class="tooltip">$5M budget allocated across income quintiles. Project types reflect real infrastructure gaps from OpenStreetMap density data.</span>
                                 </span>
                             </div>
@@ -1226,8 +1226,8 @@
                         <div class="chart-container">
                             <div class="chart-header">
                                 <h2>Equity Comparison: AI vs Need-Based</h2>
-                                <span class="data-source-badge calibrated">
-                                        Calibrated
+                                <span class="data-source-badge modeled">
+                                        Modeled
                                     <span class="tooltip">Equity metrics comparing AI-driven vs need-based allocation. Infrastructure gaps derived from OpenStreetMap feature density per census tract.</span>
                                 </span>
                             </div>
@@ -1250,8 +1250,8 @@
                         <div class="map-container">
                             <div class="chart-header">
                                 <h2>Demand Distribution Map</h2>
-                                <span class="data-source-badge calibrated">
-                                    Calibrated
+                                <span class="data-source-badge modeled">
+                                    Modeled
                                     <span class="tooltip">Infrastructure quality scores derived from OpenStreetMap feature density per census tract. Demand suppression modeled from these real infrastructure conditions.</span>
                                 </span>
                             </div>
@@ -1270,8 +1270,8 @@
                         <div class="chart-container">
                             <div class="chart-header">
                                 <h2>Demand Suppression: Q1 vs Q5</h2>
-                                <span class="data-source-badge calibrated">
-                                        Calibrated
+                                <span class="data-source-badge modeled">
+                                        Modeled
                                     <span class="tooltip">Funnel comparing potential-to-actual demand conversion by income quintile. Infrastructure quality from OpenStreetMap pedestrian/cyclist feature density.</span>
                                 </span>
                             </div>
@@ -1282,8 +1282,8 @@
                         <div class="chart-container">
                             <div class="chart-header">
                                 <h2>AI Detection Capability</h2>
-                                <span class="data-source-badge calibrated">
-                                        Calibrated
+                                <span class="data-source-badge modeled">
+                                        Modeled
                                     <span class="tooltip">AI detection accuracy evaluated against infrastructure scores from OpenStreetMap. Three approaches: naive, sophisticated, and human expert baseline.</span>
                                 </span>
                             </div>
