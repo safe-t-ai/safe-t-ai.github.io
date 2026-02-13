@@ -7,10 +7,10 @@ import { resizeVisibleCharts } from './services/chartConfig.js';
 
 const DESCRIPTIONS = {
     overview: '',
-    test1: 'Does AI count pedestrians and cyclists equally across all neighborhoods?',
-    test2: 'Does AI predict crashes as accurately in low-income areas as wealthy ones?',
-    test3: 'When AI recommends where to spend safety budgets, who benefits?',
-    test4: 'Can AI see demand that poor infrastructure has made invisible?'
+    test1: 'Simulating tools like Strava Metro and StreetLight: do they count people equally across neighborhoods?',
+    test2: 'Training a crash model on real NCDOT data: does it predict danger equally across income levels?',
+    test3: 'Simulating AI-weighted budget allocation: who gets safety infrastructure, and who doesn\u2019t?',
+    test4: 'When poor infrastructure suppresses usage, can AI tools detect the hidden demand?'
 };
 
 // Literal paths required for Vite code splitting
