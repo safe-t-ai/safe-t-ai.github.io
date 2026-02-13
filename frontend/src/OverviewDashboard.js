@@ -4,7 +4,6 @@
 
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
-import { renderInterpretation } from './services/renderUtils.js';
 
 export class OverviewDashboard {
     constructor() {
@@ -29,7 +28,6 @@ export class OverviewDashboard {
         this.renderMethodology();
         this.renderMap();
         this.renderTestCards();
-        this.renderFindings();
     }
 
     renderMap() {
@@ -171,11 +169,4 @@ export class OverviewDashboard {
         });
     }
 
-    renderFindings() {
-        renderInterpretation('overview-findings', [
-            'The same low-income tracts that volume tools undercount also receive the least safety funding — undercounting leads directly to underinvestment',
-            'Crash models perform worst where volume data is least accurate, compounding one test\'s bias into the next test\'s safety outcomes',
-            'Most cycling and walking demand in low-income areas goes unrecorded, so AI tools trained on observed data reinforce the pattern across all four tests'
-        ], 'Cross-Cutting Findings');
-    }
 }
