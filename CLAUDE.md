@@ -73,7 +73,7 @@
 ## Data Validation
 
 - Expected value ranges live in `PLAUSIBILITY_RANGES` in `backend/config.py` — CI checks use these, not inline magic numbers
-- Primary report JSONs include a `_provenance` key documenting data type (real/calibrated/simulated), sources, and parameters
+- Primary report JSONs include a `_provenance` key documenting data type (real/modeled/simulated), sources, and parameters
 - `data-manifest.json` is the machine-readable registry of all data sources — update it when adding new output files
 - Frontend loads values from data pipeline output — never hardcode computed results
 
