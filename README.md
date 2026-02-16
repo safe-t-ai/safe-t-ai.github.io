@@ -2,7 +2,8 @@
 
 [![Deploy](https://img.shields.io/github/actions/workflow/status/safe-t-ai/safe-t-ai.github.io/deploy.yml?branch=main&label=deploy&logo=github&style=classic)](https://github.com/safe-t-ai/safe-t-ai.github.io/actions/workflows/deploy.yml)
 [![Data Refresh](https://img.shields.io/github/actions/workflow/status/safe-t-ai/safe-t-ai.github.io/data-refresh.yml?branch=main&label=data&logo=github&style=classic)](https://github.com/safe-t-ai/safe-t-ai.github.io/actions/workflows/data-refresh.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=classic)](LICENSE)
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-blue.svg?style=classic)](LICENSE)
+[![Code: MIT](https://img.shields.io/badge/Code-MIT-blue.svg?style=classic)](LICENSE-CODE)
 [![Python](https://img.shields.io/badge/python-3.9+-blue?logo=python&style=classic)](https://www.python.org/)
 [![Node](https://img.shields.io/badge/node-18+-green?logo=node.js&style=classic)](https://nodejs.org/)
 
@@ -127,6 +128,10 @@ gh workflow run deploy.yml
 
 [Jonas Neves](https://www.linkedin.com/in/jonasnvs/) · [Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/) · [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/) · [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/)
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+[CC BY 4.0](LICENSE) for text and findings. [MIT](LICENSE-CODE) for code.
