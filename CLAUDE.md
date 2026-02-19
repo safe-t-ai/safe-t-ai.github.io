@@ -1,3 +1,14 @@
+## Commands
+
+- `make dev` — start frontend dev server
+- `make build` — build frontend for production
+- `make deploy` — build + deploy to GitHub Pages
+- `make test` — pytest with coverage
+- `make lint` — all linters
+- `make fetch-data-api` — fetch raw data from external APIs (needs API keys)
+- `make generate-data` — run simulations, generate frontend JSON
+- `make setup` — full setup: install + hooks + data
+
 ## Code
 
 - Delete unused code (imports, variables, functions, props, files)
