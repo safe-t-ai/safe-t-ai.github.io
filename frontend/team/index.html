@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAFE-T Team</title>
+    <meta name="theme-color" content="#0f172a">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <style>
+        :root {
+            --color-accent: #0891b2;
+            --color-accent-active: #0e7490;
+            --color-surface: #ffffff;
+            --color-surface-grouped: #f2f2f7;
+            --color-surface-tinted: #f0fdfa;
+            --color-dark: #0f172a;
+            --color-label: #1a202c;
+            --color-label-secondary: #718096;
+            --color-label-tertiary: #4a5568;
+            --color-on-dark: rgba(255,255,255,0.85);
+            --color-on-dark-secondary: rgba(255,255,255,0.7);
+            --color-separator: #e5e5ea;
+            --color-fill-tertiary: #e8e8ed;
+            --color-danger: #d32f2f;
+            --color-warning: #9a6700;
+            --color-success: #1b7a34;
+            --color-info: #0e7490;
+            --font-caption: 0.75rem;
+            --font-footnote: 0.8125rem;
+            --font-subhead: 0.9375rem;
+            --font-headline: 1.0625rem;
+            --font-title3: 1.25rem;
+            --font-title1: 1.5rem;
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 12px;
+            --radius-xl: 14px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            --ease-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
+            --max-width: 1100px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--color-surface-grouped);
+            color: var(--color-label);
+            line-height: 1.47;
+            min-height: 100dvh;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: var(--color-dark);
+            color: white;
+            padding: 1.25rem var(--space-8);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+
+        .header-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-4);
+        }
+
+        .header-left { display: flex; align-items: center; gap: var(--space-3); }
+
+        .header-logo { width: 32px; height: 32px; border-radius: var(--radius-md); flex-shrink: 0; }
+
+        .header-title { font-size: var(--font-headline); font-weight: 600; }
+
+        .header-badge {
+            font-size: var(--font-caption);
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--color-accent);
+            background: rgba(8,145,178,0.15);
+            padding: 0.2rem 0.55rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .user-menu { display: flex; align-items: center; gap: var(--space-3); }
+
+        .user-avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); }
+
+        .user-name { font-size: var(--font-footnote); color: var(--color-on-dark-secondary); }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--color-on-dark-secondary);
+            font-family: inherit;
+            font-size: var(--font-caption);
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background 0.15s var(--ease-spring), color 0.15s var(--ease-spring);
+            min-height: 44px;
+        }
+
+        .logout-btn:hover { background: rgba(255,255,255,0.14); color: white; }
+        .logout-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+        .logout-btn:focus:not(:focus-visible) { outline: none; }
+
+        /* ── Nav tabs ── */
+        .nav-bar {
+            background: var(--color-surface);
+            border-bottom: 2px solid var(--color-separator);
+            padding: 0 var(--space-8);
+        }
+
+        .nav-bar-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: flex;
+            gap: 0;
+        }
+
+        .nav-tab {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            padding: var(--space-3) var(--space-5);
+            font-family: inherit;
+            font-size: var(--font-subhead);
+            font-weight: 500;
+            color: var(--color-label-secondary);
+            cursor: pointer;
+            transition: color 0.15s var(--ease-spring), border-bottom-color 0.15s var(--ease-spring);
+            white-space: nowrap;
+            min-height: 44px;
+        }
+
+        .nav-tab:hover { color: var(--color-label); }
+        .nav-tab.active { color: var(--color-accent-active); border-bottom-color: var(--color-accent); }
+        .nav-tab:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+        .nav-tab:focus:not(:focus-visible) { outline: none; }
+
+        /* ── Main ── */
+        .main {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: var(--space-6) var(--space-8);
+        }
+
+        .tab-panel { display: none; animation: fadeInUp 0.2s var(--ease-spring) both; }
+        .tab-panel.active { display: block; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Deadline banner ── */
+        .deadline-banner {
+            background: linear-gradient(135deg, var(--color-accent) 0%, #0e4a5c 40%, var(--color-dark) 100%);
+            color: white;
+            padding: 1.25rem var(--space-6);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--space-6);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .deadline-left h2 { font-size: var(--font-title3); font-weight: 700; margin-bottom: 0.2rem; }
+        .deadline-left p { font-size: var(--font-footnote); color: var(--color-on-dark-secondary); }
+
+        .deadline-countdown { display: flex; gap: var(--space-2); }
+
+        .countdown-unit {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 0.4rem 0.7rem;
+            border-radius: var(--radius-md);
+            min-width: 48px;
+        }
+
+        .countdown-value { font-size: var(--font-title1); font-weight: 700; line-height: 1; display: block; }
+        .countdown-label { font-size: var(--font-caption); color: var(--color-on-dark-secondary); letter-spacing: 0.04em; display: block; margin-top: 0.2rem; }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--space-6);
+        }
+
+        .card-title {
+            font-size: var(--font-caption);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--color-label-secondary);
+            margin-bottom: var(--space-4);
+        }
+
+        /* ── Requirements checklist ── */
+        .req-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+
+        .req-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            background: var(--color-surface-grouped);
+            font-size: var(--font-subhead);
+        }
+
+        .req-item.done        { background: #f0fdf4; }
+        .req-item.action      { background: #fef2f2; }
+        .req-item.needs-info  { background: #fefce8; }
+        .req-item.unknown     { background: var(--color-surface-grouped); }
+
+        .req-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+        .req-body { display: flex; flex-direction: column; gap: 0.15rem; }
+
+        .req-text { font-weight: 500; color: var(--color-label); }
+
+        .req-note { font-size: var(--font-caption); color: var(--color-label-tertiary); line-height: 1.4; }
+
+        .req-note.urgent { color: var(--color-danger); font-weight: 500; }
+
+        /* ── Tracker accordion ── */
+        .tracker-section { border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-4); box-shadow: var(--shadow-sm); }
+
+        .tracker-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-4);
+            padding: var(--space-4) var(--space-5);
+            background: var(--color-surface);
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+            transition: background 0.12s var(--ease-spring);
+        }
+
+        .tracker-section-header:hover { background: #fafafa; }
+        .tracker-section-header:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+        .tracker-section-header:focus:not(:focus-visible) { outline: none; }
+
+        .tracker-section-left { display: flex; align-items: center; gap: var(--space-3); }
+
+        .tracker-section-num {
+            font-size: var(--font-caption);
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--color-label-secondary);
+            min-width: 80px;
+        }
+
+        .tracker-section-title { font-size: var(--font-headline); font-weight: 600; color: var(--color-label); }
+
+        .tracker-section-right { display: flex; align-items: center; gap: var(--space-3); }
+
+        .tracker-chevron {
+            color: var(--color-label-tertiary);
+            font-size: var(--font-footnote);
+            transition: transform 0.2s var(--ease-spring);
+        }
+
+        .tracker-section.open .tracker-chevron { transform: rotate(180deg); }
+
+        .tracker-section-body { display: none; border-top: 1px solid var(--color-separator); }
+        .tracker-section.open .tracker-section-body { display: block; }
+
+        /* ── Question rows ── */
+        .question-row {
+            display: grid;
+            grid-template-columns: 56px 1fr auto;
+            align-items: start;
+            gap: var(--space-4);
+            padding: var(--space-4) var(--space-5);
+            border-bottom: 1px solid var(--color-separator);
+            background: var(--color-surface);
+        }
+
+        .question-row:last-child { border-bottom: none; }
+
+        .q-num {
+            font-size: var(--font-caption);
+            font-weight: 700;
+            color: var(--color-label-secondary);
+            letter-spacing: 0.04em;
+            padding-top: 2px;
+        }
+
+        .q-body { display: flex; flex-direction: column; gap: var(--space-2); }
+
+        .q-name { font-size: var(--font-subhead); font-weight: 600; color: var(--color-label); }
+
+        .q-note { font-size: var(--font-caption); color: var(--color-label-tertiary); }
+
+        .q-draft-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: var(--font-caption);
+            font-weight: 500;
+            color: var(--color-accent);
+            cursor: pointer;
+            padding: 0;
+            margin-top: var(--space-1);
+            min-height: 32px;
+        }
+
+        .q-draft-toggle:hover { color: var(--color-accent-active); }
+        .q-draft-toggle:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 2px; }
+        .q-draft-toggle:focus:not(:focus-visible) { outline: none; }
+
+        .q-draft-box {
+            display: none;
+            margin-top: var(--space-3);
+            background: var(--color-surface-grouped);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+            position: relative;
+        }
+
+        .q-draft-box.open { display: block; }
+
+        .q-draft-text {
+            font-size: var(--font-footnote);
+            color: var(--color-label);
+            line-height: 1.55;
+            white-space: pre-wrap;
+            padding-right: 72px;
+        }
+
+        .q-copy-btn {
+            position: absolute;
+            top: var(--space-3);
+            right: var(--space-3);
+            background: var(--color-surface);
+            border: 1px solid var(--color-separator);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: var(--font-caption);
+            font-weight: 500;
+            color: var(--color-label-secondary);
+            padding: 0.25rem 0.6rem;
+            cursor: pointer;
+            transition: background 0.12s var(--ease-spring), color 0.12s var(--ease-spring);
+            min-height: 32px;
+        }
+
+        .q-copy-btn:hover { background: var(--color-fill-tertiary); color: var(--color-label); }
+        .q-copy-btn.copied { color: var(--color-success); border-color: #a7f3d0; background: #f0fdf4; }
+        .q-copy-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+        .q-copy-btn:focus:not(:focus-visible) { outline: none; }
+
+        .q-actions { display: flex; align-items: flex-start; padding-top: 2px; }
+
+        /* ── Status badges ── */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: var(--font-caption);
+            font-weight: 500;
+            padding: 0.2rem 0.6rem;
+            border-radius: var(--radius-sm);
+            white-space: nowrap;
+        }
+
+        .status-badge.done         { background: #d1fae5; color: #065f46; }
+        .status-badge.draft        { background: #dbeafe; color: #1e40af; }
+        .status-badge.needs-info   { background: #fef3c7; color: #78350f; }
+        .status-badge.not-started  { background: var(--color-surface-grouped); color: var(--color-label-secondary); }
+        .status-badge.action       { background: #fee2e2; color: #991b1b; }
+
+        /* ── Progress bar ── */
+        .progress-bar-wrap { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-6); }
+        .progress-bar-track { flex: 1; height: 6px; background: var(--color-fill-tertiary); border-radius: 99px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--color-accent); border-radius: 99px; transition: width 0.4s var(--ease-spring); }
+        .progress-bar-label { font-size: var(--font-caption); color: var(--color-label-secondary); white-space: nowrap; }
+
+        /* ── Dates + links ── */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+
+        .dates-list { list-style: none; }
+        .dates-list li { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); padding: var(--space-3) 0; border-bottom: 1px solid var(--color-separator); font-size: var(--font-subhead); }
+        .dates-list li:last-child { border-bottom: none; }
+        .date-label { color: var(--color-label-tertiary); }
+        .date-value { font-weight: 600; color: var(--color-label); white-space: nowrap; }
+        .date-value.soon { color: var(--color-warning); }
+
+        .links-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+        .links-list a { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--color-surface-grouped); border-radius: var(--radius-md); color: var(--color-label); text-decoration: none; font-size: var(--font-subhead); transition: background 0.15s var(--ease-spring); min-height: 44px; }
+        .links-list a:hover { background: var(--color-fill-tertiary); }
+        .links-list a:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+        .links-list a:focus:not(:focus-visible) { outline: none; }
+        .link-icon { width: 28px; height: 28px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+        .link-name { font-weight: 500; flex: 1; }
+        .link-sub { font-size: var(--font-caption); color: var(--color-label-secondary); }
+        .link-arrow { color: var(--color-label-tertiary); font-size: var(--font-caption); }
+
+        /* ── Skeleton / login wall ── */
+        .skeleton { position: relative; overflow: hidden; background: var(--color-fill-tertiary); border-radius: var(--radius-lg); }
+        .skeleton::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+        .login-wall { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: var(--space-6); }
+        .login-backdrop { position: fixed; inset: 0; pointer-events: none; overflow: hidden; filter: blur(6px); opacity: 0.5; }
+        .login-backdrop-header { background: var(--color-dark); height: 56px; }
+        .login-backdrop-nav { background: var(--color-surface); height: 44px; border-bottom: 2px solid var(--color-separator); }
+        .login-backdrop-body { padding: var(--space-8); display: flex; flex-direction: column; gap: var(--space-5); }
+        .skel-banner { height: 88px; }
+        .skel-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+        .skel-card { height: 80px; }
+        .skel-full { height: 200px; }
+        .skel-2col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+        .skel-half { height: 180px; }
+
+        .login-card { position: relative; z-index: 1; background: white; border-radius: var(--radius-xl); box-shadow: 0 20px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08); padding: var(--space-8); width: 100%; max-width: 380px; text-align: center; }
+        .login-icon { width: 56px; height: 56px; background: linear-gradient(135deg, var(--color-accent), #0e4a5c); border-radius: var(--radius-lg); margin: 0 auto var(--space-4); display: flex; align-items: center; justify-content: center; }
+        .login-title { font-size: var(--font-title3); font-weight: 700; color: var(--color-label); margin-bottom: var(--space-2); }
+        .login-sub { font-size: var(--font-subhead); color: var(--color-label-secondary); margin-bottom: var(--space-6); line-height: 1.4; }
+        .github-btn { width: 100%; background: var(--color-dark); color: white; border: none; border-radius: var(--radius-md); padding: 0.85rem var(--space-6); font-family: inherit; font-size: var(--font-subhead); font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: var(--space-3); transition: background 0.15s var(--ease-spring); min-height: 48px; }
+        .github-btn:hover { background: #1e293b; }
+        .github-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+        .github-btn:focus:not(:focus-visible) { outline: none; }
+        .login-note { font-size: var(--font-caption); color: var(--color-label-tertiary); margin-top: var(--space-4); }
+        .login-error { font-size: var(--font-footnote); color: var(--color-danger); background: #fef2f2; border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); margin-top: var(--space-4); display: none; }
+        .login-error.visible { display: block; }
+
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+        @media (max-width: 768px) {
+            .main { padding: var(--space-4); }
+            .header { padding: 1rem var(--space-4); }
+            .nav-bar { padding: 0 var(--space-4); }
+            .two-col { grid-template-columns: 1fr; }
+            .deadline-banner { flex-direction: column; align-items: flex-start; }
+            .question-row { grid-template-columns: 44px 1fr auto; }
+            .tracker-section-num { display: none; }
+            .user-name { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Authenticated view ── -->
+<div id="app" hidden>
+    <header class="header">
+        <div class="header-inner">
+            <div class="header-left">
+                <img src="/logo.png" alt="SAFE-T" class="header-logo">
+                <span class="header-title">SAFE-T</span>
+                <span class="header-badge">Team</span>
+            </div>
+            <div class="user-menu">
+                <img id="user-avatar" class="user-avatar" alt="" src="" width="28" height="28">
+                <span id="user-name" class="user-name"></span>
+                <button class="logout-btn" id="logout-btn" type="button">Sign out</button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav-bar" aria-label="Team sections">
+        <div class="nav-bar-inner">
+            <button class="nav-tab active" data-panel="tracker" type="button">Application</button>
+            <button class="nav-tab" data-panel="checklist" type="button">Requirements</button>
+            <button class="nav-tab" data-panel="dates" type="button">Dates &amp; Links</button>
+        </div>
+    </nav>
+
+    <main class="main">
+
+        <!-- ── Deadline banner (always visible) ── -->
+        <div class="deadline-banner" aria-label="Application deadline countdown">
+            <div class="deadline-left">
+                <h2>Google.org Impact Challenge</h2>
+                <p>Application deadline — April 3, 2026 at 11:59 PM PT</p>
+            </div>
+            <div class="deadline-countdown" id="countdown" aria-live="polite"></div>
+        </div>
+
+        <!-- ── Tab: Application Tracker ── -->
+        <div class="tab-panel active" id="panel-tracker">
+            <div class="progress-bar-wrap" id="progress-wrap"></div>
+            <div id="tracker-root"></div>
+        </div>
+
+        <!-- ── Tab: Requirements ── -->
+        <div class="tab-panel" id="panel-checklist">
+            <div class="card">
+                <p class="card-title">Eligibility &amp; Requirements</p>
+                <ul class="req-list" id="req-list"></ul>
+            </div>
+            <div class="card">
+                <p class="card-title">Facts to Verify Before Submitting</p>
+                <ul class="req-list" id="facts-list"></ul>
+            </div>
+        </div>
+
+        <!-- ── Tab: Dates & Links ── -->
+        <div class="tab-panel" id="panel-dates">
+            <div class="two-col">
+                <div class="card">
+                    <p class="card-title">Key Dates</p>
+                    <ul class="dates-list">
+                        <li><span class="date-label">Applications open</span><span class="date-value">Feb 19, 2026</span></li>
+                        <li><span class="date-label">Submission deadline</span><span class="date-value soon">Apr 3, 2026 · 11:59 PM PT</span></li>
+                        <li><span class="date-label">Accelerator kickoff</span><span class="date-value">Sep 2026 (in-person)</span></li>
+                        <li><span class="date-label">Demo Day</span><span class="date-value">Dec 2026 (in-person)</span></li>
+                        <li><span class="date-label">Prototype expected</span><span class="date-value">Within 6 months post-award</span></li>
+                        <li><span class="date-label">Funding period</span><span class="date-value">36 months post-award</span></li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <p class="card-title">Quick Links</p>
+                    <ul class="links-list">
+                        <li><a href="https://g.co/impactchallenge/aigov" target="_blank" rel="noopener"><span class="link-icon">🏆</span><span class="link-name">Apply on Submittable<span class="link-sub" style="display:block">g.co/impactchallenge/aigov</span></span><span class="link-arrow">↗</span></a></li>
+                        <li><a href="https://safe-t-ai.github.io" target="_blank" rel="noopener"><span class="link-icon">📊</span><span class="link-name">Live Dashboard<span class="link-sub" style="display:block">safe-t-ai.github.io</span></span><span class="link-arrow">↗</span></a></li>
+                        <li><a href="https://github.com/safe-t-ai/safe-t-ai.github.io" target="_blank" rel="noopener"><span class="link-icon">🐙</span><span class="link-name">Source Code (public)<span class="link-sub" style="display:block">safe-t-ai/safe-t-ai.github.io</span></span><span class="link-arrow">↗</span></a></li>
+                        <li><a href="https://services.google.com/fh/files/blogs/gic_aigov_faqs.pdf" target="_blank" rel="noopener"><span class="link-icon">📄</span><span class="link-name">FAQ PDF<span class="link-sub" style="display:block">gic_aigov_faqs.pdf</span></span><span class="link-arrow">↗</span></a></li>
+                        <li><a href="mailto:gic-aigov@google.com"><span class="link-icon">✉️</span><span class="link-name">Google Contact<span class="link-sub" style="display:block">gic-aigov@google.com</span></span></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ── Login wall ── -->
+<div id="login-wall" aria-label="Authentication required">
+    <div class="login-backdrop" aria-hidden="true">
+        <div class="login-backdrop-header"></div>
+        <div class="login-backdrop-nav"></div>
+        <div class="login-backdrop-body">
+            <div class="skeleton skel-banner"></div>
+            <div class="skel-row">
+                <div class="skeleton skel-card"></div>
+                <div class="skeleton skel-card"></div>
+                <div class="skeleton skel-card"></div>
+            </div>
+            <div class="skeleton skel-full"></div>
+            <div class="skel-2col">
+                <div class="skeleton skel-half"></div>
+                <div class="skeleton skel-half"></div>
+            </div>
+        </div>
+    </div>
+    <div class="login-wall" role="main">
+        <div class="login-card">
+            <div class="login-icon" aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            </div>
+            <h1 class="login-title">SAFE-T Team</h1>
+            <p class="login-sub">Sign in with a GitHub account that has access to the safe-t-ai organization.</p>
+            <button class="github-btn" id="login-btn" type="button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/></svg>
+                Sign in with GitHub
+            </button>
+            <p class="login-note">Access restricted to safe-t-ai collaborators.</p>
+            <div class="login-error" id="login-error" role="alert"></div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { getAuth, logout, verifyAccess, startLogin, handleCallback } from '/src/auth.js';
+
+const GATE_REPO = 'safe-t-ai/safe-t-ai';
+
+async function fetchAppData(token) {
+    const res = await fetch(
+        `https://api.github.com/repos/${GATE_REPO}/contents/application.json`,
+        { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
+    );
+    if (!res.ok) throw new Error('DATA_FETCH_FAILED');
+    const { content } = await res.json();
+    return JSON.parse(atob(content.replace(/\n/g, '')));
+}
+
+// ─────────────────────────────────────────────────────────────
+// RENDERING
+// ─────────────────────────────────────────────────────────────
+
+const STATUS_LABELS = {
+    'done':        { label: 'Done',        cls: 'done' },
+    'draft':       { label: 'Draft',       cls: 'draft' },
+    'needs-info':  { label: 'Needs Info',  cls: 'needs-info' },
+    'not-started': { label: 'Not Started', cls: 'not-started' },
+    'action':      { label: 'Action',      cls: 'action' },
+};
+
+function badge(status) {
+    const s = STATUS_LABELS[status] || STATUS_LABELS['not-started'];
+    return `<span class="status-badge ${s.cls}">${s.label}</span>`;
+}
+
+function sectionStatus(section) {
+    const statuses = section.questions.map(q => q.status);
+    if (statuses.every(s => s === 'done')) return 'done';
+    if (statuses.some(s => s === 'action' || s === 'needs-info')) return 'needs-info';
+    if (statuses.some(s => s === 'draft')) return 'draft';
+    return 'not-started';
+}
+
+function renderTracker(sections) {
+    const root = document.getElementById('tracker-root');
+    const allQuestions = sections.flatMap(s => s.questions);
+    const doneCount = allQuestions.filter(q => q.status === 'done' || q.status === 'draft').length;
+    const pct = Math.round((doneCount / allQuestions.length) * 100);
+
+    document.getElementById('progress-wrap').innerHTML = `
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+        <span class="progress-bar-label">${doneCount} / ${allQuestions.length} questions addressed</span>
+    `;
+
+    root.innerHTML = sections.map((sec, si) => {
+        const st = sectionStatus(sec);
+        const questions = sec.questions.map((q, qi) => `
+            <div class="question-row">
+                <span class="q-num">${q.num}</span>
+                <div class="q-body">
+                    <span class="q-name">${q.name}</span>
+                    ${q.note ? `<span class="q-note">${q.note}</span>` : ''}
+                    ${q.draft ? `
+                        <button class="q-draft-toggle" data-target="draft-${si}-${qi}" type="button">
+                            <span class="toggle-label">Show draft</span> ▾
+                        </button>
+                        <div class="q-draft-box" id="draft-${si}-${qi}">
+                            <pre class="q-draft-text">${q.draft.replace(/</g,'&lt;')}</pre>
+                            <button class="q-copy-btn" data-copy="${si}-${qi}" type="button">Copy</button>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="q-actions">${badge(q.status)}</div>
+            </div>
+        `).join('');
+
+        return `
+            <div class="tracker-section" id="tsec-${si}">
+                <button class="tracker-section-header" type="button" aria-expanded="false" data-section="${si}">
+                    <div class="tracker-section-left">
+                        <span class="tracker-section-num">${sec.num}</span>
+                        <span class="tracker-section-title">${sec.title}</span>
+                    </div>
+                    <div class="tracker-section-right">
+                        ${badge(st)}
+                        <span class="tracker-chevron">▾</span>
+                    </div>
+                </button>
+                <div class="tracker-section-body">${questions}</div>
+            </div>
+        `;
+    }).join('');
+
+    // Open Section II by default (has the most active drafts)
+    const sec2 = document.getElementById('tsec-1');
+    if (sec2) toggleSection(sec2, true);
+
+    root.addEventListener('click', e => {
+        const header = e.target.closest('.tracker-section-header');
+        if (header) {
+            const sec = header.closest('.tracker-section');
+            toggleSection(sec);
+            return;
+        }
+        const toggle = e.target.closest('.q-draft-toggle');
+        if (toggle) {
+            const box = document.getElementById(toggle.dataset.target);
+            const open = box.classList.toggle('open');
+            toggle.querySelector('.toggle-label').textContent = open ? 'Hide draft' : 'Show draft';
+            return;
+        }
+        const copyBtn = e.target.closest('.q-copy-btn');
+        if (copyBtn) {
+            const [si, qi] = copyBtn.dataset.copy.split('-').map(Number);
+            const text = sections[si].questions[qi].draft;
+            navigator.clipboard.writeText(text).then(() => {
+                copyBtn.textContent = 'Copied!';
+                copyBtn.classList.add('copied');
+                setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 2000);
+            });
+        }
+    });
+}
+
+function toggleSection(sec, forceOpen) {
+    const open = forceOpen !== undefined ? forceOpen : !sec.classList.contains('open');
+    sec.classList.toggle('open', open);
+    sec.querySelector('.tracker-section-header').setAttribute('aria-expanded', open);
+}
+
+function renderRequirements(requirements, facts) {
+    document.getElementById('req-list').innerHTML = requirements.map(r => `
+        <li class="req-item ${r.status}">
+            <span class="req-icon" aria-hidden="true">${r.icon}</span>
+            <div class="req-body">
+                <span class="req-text">${r.text}</span>
+                ${r.note ? `<span class="req-note ${r.status === 'action' ? 'urgent' : ''}">${r.note}</span>` : ''}
+            </div>
+        </li>
+    `).join('');
+
+    document.getElementById('facts-list').innerHTML = facts.map(f => `
+        <li class="req-item ${f.status}">
+            <span class="req-icon" aria-hidden="true">${f.icon}</span>
+            <div class="req-body">
+                <span class="req-text">${f.text}</span>
+                ${f.note ? `<span class="req-note ${f.status === 'action' ? 'urgent' : ''}">${f.note}</span>` : ''}
+            </div>
+        </li>
+    `).join('');
+}
+
+function renderCountdown() {
+    const deadline = new Date('2026-04-03T23:59:00-07:00');
+    const el = document.getElementById('countdown');
+    function update() {
+        const diff = deadline - Date.now();
+        if (diff <= 0) { el.textContent = 'Deadline passed'; return; }
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        el.innerHTML = [['d', d], ['h', h], ['m', m]].map(([u, v]) =>
+            `<div class="countdown-unit"><span class="countdown-value">${String(v).padStart(2,'0')}</span><span class="countdown-label">${u}</span></div>`
+        ).join('');
+    }
+    update();
+    setInterval(update, 60000);
+}
+
+function setupNav() {
+    const tabs = document.querySelectorAll('.nav-tab');
+    const panels = document.querySelectorAll('.tab-panel');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(`panel-${tab.dataset.panel}`).classList.add('active');
+        });
+    });
+}
+
+async function showApp(user, token) {
+    const { sections, requirements, facts } = await fetchAppData(token);
+    document.getElementById('login-wall').remove();
+    const app = document.getElementById('app');
+    app.hidden = false;
+    document.getElementById('user-avatar').src = user.avatar_url;
+    document.getElementById('user-avatar').alt = user.login;
+    document.getElementById('user-name').textContent = user.login;
+    document.getElementById('logout-btn').addEventListener('click', logout);
+    renderTracker(sections);
+    renderRequirements(requirements, facts);
+    renderCountdown();
+    setupNav();
+}
+
+function showError(msg) {
+    const el = document.getElementById('login-error');
+    el.textContent = msg;
+    el.classList.add('visible');
+}
+
+async function init() {
+    document.getElementById('login-btn').addEventListener('click', startLogin);
+    if (location.search.includes('code=')) {
+        try {
+            const result = await handleCallback();
+            if (result) {
+                await verifyAccess(result.token);
+                await showApp(result.user, result.token);
+                return;
+            }
+        } catch (err) {
+            showError(err.message === 'ACCESS_DENIED' ? 'Your GitHub account does not have access to this workspace.' : 'Sign-in failed. Please try again.');
+            return;
+        }
+    }
+    const auth = getAuth();
+    if (auth) {
+        try { await verifyAccess(auth.token); await showApp(auth.user, auth.token); }
+        catch { logout(); }
+    }
+}
+
+init();
+</script>
+</body>
+</html>
