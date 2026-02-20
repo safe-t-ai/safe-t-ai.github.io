@@ -683,6 +683,7 @@ const GATE_REPO = 'safe-t-ai/safe-t-ai';
 let appState = null; // { data, sha, token, user }
 let activeDropdown = null;
 let draftsDirty = false;
+let lastSavedAt = null;
 
 // ── Data fetch / persist ──────────────────────────────────────
 async function fetchAppData(token) {
@@ -707,12 +708,25 @@ function markDirty() {
     draftsDirty = true;
     const btn = document.getElementById('save-btn');
     if (btn) btn.hidden = false;
+    setSaveStatus(null);
 }
 
 function clearDirty() {
     draftsDirty = false;
     const btn = document.getElementById('save-btn');
     if (btn) btn.hidden = true;
+}
+
+function updateSaveTime() {
+    if (draftsDirty) return;
+    const el = document.getElementById('save-status');
+    if (!el || el.dataset.state === 'saving' || el.dataset.state === 'error') return;
+    if (!lastSavedAt) { el.dataset.state = ''; el.textContent = ''; return; }
+    const diff = Date.now() - lastSavedAt;
+    const mins = Math.floor(diff / 60000);
+    const hrs  = Math.floor(diff / 3600000);
+    el.dataset.state = 'saved';
+    el.textContent = mins < 1 ? 'Saved just now' : hrs < 1 ? `Saved ${mins}m ago` : `Saved ${hrs}h ago`;
 }
 
 async function persistData(msg = `[tracker] update via ${appState?.user.login}`) {
@@ -739,9 +753,9 @@ async function persistData(msg = `[tracker] update via ${appState?.user.login}`)
         );
         if (!res.ok) throw new Error('SAVE_FAILED');
         appState.sha = (await res.json()).content.sha;
+        lastSavedAt = Date.now();
         clearDirty();
-        setSaveStatus('saved');
-        setTimeout(() => setSaveStatus(null), 2500);
+        updateSaveTime();
     } catch {
         setSaveStatus('error');
     } finally {
@@ -844,9 +858,6 @@ function renderTracker(sections) {
             </div>
         `;
     }).join('');
-
-    const sec2 = document.getElementById('tsec-1');
-    if (sec2) toggleSection(sec2, true);
 
     // ── Event delegation ──────────────────────────────────────
     root.addEventListener('click', e => {
@@ -1037,6 +1048,7 @@ async function showApp(user, token) {
     renderRequirements(data.requirements, data.facts);
     renderCountdown();
     setupNav();
+    setInterval(updateSaveTime, 30000);
 }
 
 function showError(msg) {
