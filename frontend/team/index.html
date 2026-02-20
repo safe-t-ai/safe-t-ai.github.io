@@ -290,11 +290,15 @@
 
         .tracker-chevron {
             color: var(--color-label-tertiary);
-            font-size: var(--font-footnote);
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
             transition: transform 0.2s var(--ease-spring);
         }
 
         .tracker-section.open .tracker-chevron { transform: rotate(180deg); }
+
+        .chevron-icon { display: inline-block; flex-shrink: 0; }
 
         .tracker-section-body { display: none; border-top: 1px solid var(--color-separator); }
         .tracker-section.open .tracker-section-body { display: block; }
@@ -478,7 +482,7 @@
         /* ── Editable status badge ── */
         .status-select { position: relative; display: inline-flex; }
         .status-select > .status-badge { cursor: pointer; user-select: none; }
-        .status-select > .status-badge::after { content: ' ▾'; opacity: 0.5; font-size: 0.7em; }
+        .status-select > .status-badge::after { content: ''; display: inline-block; width: 0; height: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; border-top: 3.5px solid currentColor; margin-left: 4px; opacity: 0.6; vertical-align: middle; position: relative; top: 1px; }
         .status-dropdown {
             position: absolute;
             right: 0;
@@ -553,7 +557,7 @@
         .overview-summary::-webkit-details-marker { display: none; }
         .overview-summary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; border-radius: var(--radius-md); }
         .overview-summary:focus:not(:focus-visible) { outline: none; }
-        .overview-chevron { color: var(--color-label-tertiary); font-size: var(--font-footnote); transition: transform 0.2s var(--ease-spring); flex-shrink: 0; }
+        .overview-chevron { color: var(--color-label-tertiary); display: inline-flex; align-items: center; flex-shrink: 0; transition: transform 0.2s var(--ease-spring); }
         details[open] .overview-chevron { transform: rotate(180deg); }
         .overview-body { padding: 0 var(--space-5) var(--space-5); border-top: 1px solid var(--color-separator); display: flex; flex-direction: column; gap: var(--space-4); }
         .overview-pitch { font-size: var(--font-subhead); color: var(--color-label); line-height: 1.5; padding-top: var(--space-4); }
@@ -570,7 +574,7 @@
         /* ── Owner pill ── */
         .owner-wrap { position: relative; display: inline-flex; margin-top: var(--space-1); }
         .owner-pill { display: inline-flex; align-items: center; font-size: var(--font-caption); font-weight: 500; color: var(--color-label-secondary); background: var(--color-fill-tertiary); border: 1px solid var(--color-separator); border-radius: 99px; padding: 0.15rem 0.6rem; cursor: pointer; user-select: none; min-height: 24px; white-space: nowrap; }
-        .owner-pill::after { content: ' ▾'; opacity: 0.5; font-size: 0.7em; }
+        .owner-pill::after { content: ''; display: inline-block; width: 0; height: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; border-top: 3.5px solid currentColor; margin-left: 4px; opacity: 0.6; vertical-align: middle; position: relative; top: 1px; }
         .owner-pill.assigned { color: var(--color-accent-active); background: rgba(8,145,178,0.08); border-color: rgba(8,145,178,0.2); }
         .owner-dropdown { position: absolute; left: 0; top: calc(100% + 4px); background: var(--color-surface); border: 1px solid var(--color-separator); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 50; min-width: 160px; overflow: hidden; animation: fadeInUp 0.12s var(--ease-spring) both; }
         .owner-opt { display: block; width: 100%; text-align: left; padding: 0.45rem var(--space-4); background: none; border: none; font-family: inherit; font-size: var(--font-footnote); color: var(--color-label); cursor: pointer; min-height: 36px; }
@@ -649,7 +653,7 @@
             <details class="overview-card" id="overview-card">
                 <summary class="overview-summary">
                     Grant Overview
-                    <span class="overview-chevron" aria-hidden="true">▾</span>
+                    <span class="overview-chevron" aria-hidden="true"><svg class="chevron-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" focusable="false"><path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 </summary>
                 <div class="overview-body">
                     <p class="overview-pitch">SAFE-T uses AI to identify high-risk road segments in Durham and generate actionable safety reports — helping transportation agencies prioritize SS4A-funded interventions.</p>
@@ -960,7 +964,8 @@ function renderTracker(sections) {
                     <div class="q-meta-line">${reqBadge}${limitBadge}</div>
                     ${q.note ? `<span class="q-note">${q.note}</span>` : ''}
                     <button class="q-draft-toggle" data-target="draft-${si}-${qi}" type="button">
-                        <span class="toggle-label">${q.draft ? 'Show draft' : 'Add draft'}</span> ▾
+                        <span class="toggle-label">${q.draft ? 'Hide draft' : 'Add draft'}</span>
+                        <svg class="chevron-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" focusable="false"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
                     <div class="q-draft-box ${q.draft ? 'open' : ''}" id="draft-${si}-${qi}">
                         <textarea class="q-draft-textarea" data-si="${si}" data-qi="${qi}" data-limit="${q.limit || ''}" rows="5">${q.draft ? escHtml(q.draft) : ''}</textarea>
@@ -983,7 +988,7 @@ function renderTracker(sections) {
                     </div>
                     <div class="tracker-section-right">
                         ${badge(sectionStatus(sec))}
-                        <span class="tracker-chevron">▾</span>
+                        <span class="tracker-chevron"><svg class="chevron-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" focusable="false"><path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                     </div>
                 </button>
                 <div class="tracker-section-body">${questions}</div>
