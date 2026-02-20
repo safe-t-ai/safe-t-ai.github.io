@@ -234,7 +234,12 @@
         .req-item.needs-info  { background: #fefce8; }
         .req-item.unknown     { background: var(--color-surface-grouped); }
 
-        .req-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+        .req-icon { flex-shrink: 0; margin-top: 1px; display: flex; }
+        .req-icon svg { width: 17px; height: 17px; }
+        .req-icon.action     { color: var(--color-danger); }
+        .req-icon.done       { color: var(--color-success); }
+        .req-icon.needs-info { color: var(--color-warning); }
+        .req-icon.unknown    { color: var(--color-label-tertiary); }
 
         .req-body { display: flex; flex-direction: column; gap: 0.15rem; }
 
@@ -916,10 +921,31 @@ function toggleSection(sec, forceOpen) {
     sec.querySelector('.tracker-section-header').setAttribute('aria-expanded', open);
 }
 
+const REQ_ICONS = {
+    'action': `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <circle cx="8" cy="8" r="7"/>
+        <line x1="8" y1="4.5" x2="8" y2="9"/>
+        <circle cx="8" cy="11.5" r="0.85" fill="currentColor" stroke="none"/>
+    </svg>`,
+    'done': `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="8" cy="8" r="7"/>
+        <polyline points="4.5,8.5 7,11 11.5,5.5"/>
+    </svg>`,
+    'needs-info': `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <circle cx="8" cy="8" r="7"/>
+        <line x1="8" y1="7.5" x2="8" y2="11.5"/>
+        <circle cx="8" cy="5" r="0.85" fill="currentColor" stroke="none"/>
+    </svg>`,
+};
+
+function reqIcon(status) {
+    return `<span class="req-icon ${status}" aria-hidden="true">${REQ_ICONS[status] ?? REQ_ICONS['needs-info']}</span>`;
+}
+
 function renderRequirements(requirements, facts) {
     document.getElementById('req-list').innerHTML = requirements.map(r => `
         <li class="req-item ${r.status}">
-            <span class="req-icon" aria-hidden="true">${r.icon}</span>
+            ${reqIcon(r.status)}
             <div class="req-body">
                 <span class="req-text">${r.text}</span>
                 ${r.note ? `<span class="req-note ${r.status === 'action' ? 'urgent' : ''}">${r.note}</span>` : ''}
@@ -929,7 +955,7 @@ function renderRequirements(requirements, facts) {
 
     document.getElementById('facts-list').innerHTML = facts.map(f => `
         <li class="req-item ${f.status}">
-            <span class="req-icon" aria-hidden="true">${f.icon}</span>
+            ${reqIcon(f.status)}
             <div class="req-body">
                 <span class="req-text">${f.text}</span>
                 ${f.note ? `<span class="req-note ${f.status === 'action' ? 'urgent' : ''}">${f.note}</span>` : ''}
