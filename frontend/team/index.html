@@ -350,12 +350,26 @@
 
         .q-draft-box.open { display: block; }
 
-        .q-draft-text {
+        /* ── Editable draft ── */
+        .q-draft-textarea {
+            display: block;
+            width: 100%;
+            font-family: inherit;
             font-size: var(--font-footnote);
-            color: var(--color-label);
             line-height: 1.55;
-            white-space: pre-wrap;
-            padding-right: 72px;
+            color: var(--color-label);
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            padding: 0.2rem 72px 0.2rem 0.2rem;
+            resize: vertical;
+            min-height: 4.5em;
+            transition: border-color 0.15s var(--ease-spring), background 0.15s var(--ease-spring);
+        }
+        .q-draft-textarea:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            background: var(--color-surface);
         }
 
         .q-copy-btn {
@@ -454,6 +468,52 @@
         .login-error { font-size: var(--font-footnote); color: var(--color-danger); background: #fef2f2; border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); margin-top: var(--space-4); display: none; }
         .login-error.visible { display: block; }
 
+        /* ── Editable status badge ── */
+        .status-select { position: relative; display: inline-flex; }
+        .status-select > .status-badge { cursor: pointer; user-select: none; }
+        .status-select > .status-badge::after { content: ' ▾'; opacity: 0.5; font-size: 0.7em; }
+        .status-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 4px);
+            background: var(--color-surface);
+            border: 1px solid var(--color-separator);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            z-index: 50;
+            min-width: 140px;
+            overflow: hidden;
+            animation: fadeInUp 0.12s var(--ease-spring) both;
+        }
+        .status-opt {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.5rem var(--space-4);
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: var(--font-footnote);
+            color: var(--color-label);
+            cursor: pointer;
+            min-height: 36px;
+        }
+        .status-opt:hover { background: var(--color-surface-grouped); }
+        .status-opt.current { font-weight: 600; }
+
+        /* ── Save status indicator ── */
+        .save-status {
+            font-size: var(--font-caption);
+            font-weight: 500;
+            min-width: 52px;
+            text-align: right;
+            color: transparent;
+            transition: color 0.2s;
+        }
+        .save-status[data-state="saving"] { color: var(--color-on-dark-secondary); }
+        .save-status[data-state="saved"]  { color: #6ee7b7; }
+        .save-status[data-state="error"]  { color: #fca5a5; }
+
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 
         @media (max-width: 768px) {
@@ -480,6 +540,7 @@
                 <span class="header-badge">Team</span>
             </div>
             <div class="user-menu">
+                <span id="save-status" class="save-status" aria-live="polite"></span>
                 <img id="user-avatar" class="user-avatar" alt="" src="" width="28" height="28">
                 <span id="user-name" class="user-name"></span>
                 <button class="logout-btn" id="logout-btn" type="button">Sign out</button>
@@ -595,21 +656,69 @@ import { getAuth, logout, verifyAccess, startLogin, handleCallback } from '/src/
 
 const GATE_REPO = 'safe-t-ai/safe-t-ai';
 
+// ── State ─────────────────────────────────────────────────────
+let appState = null; // { data, sha, token, user }
+let saveTimer = null;
+let activeDropdown = null;
+
+// ── Data fetch / persist ──────────────────────────────────────
 async function fetchAppData(token) {
     const res = await fetch(
         `https://api.github.com/repos/${GATE_REPO}/contents/application.json`,
         { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
     );
     if (!res.ok) throw new Error('DATA_FETCH_FAILED');
-    const { content } = await res.json();
-    const bytes = Uint8Array.from(atob(content.replace(/\n/g, '')), c => c.charCodeAt(0));
-    return JSON.parse(new TextDecoder().decode(bytes));
+    const file = await res.json();
+    const bytes = Uint8Array.from(atob(file.content.replace(/\n/g, '')), c => c.charCodeAt(0));
+    return { data: JSON.parse(new TextDecoder().decode(bytes)), sha: file.sha };
 }
 
-// ─────────────────────────────────────────────────────────────
-// RENDERING
-// ─────────────────────────────────────────────────────────────
+function setSaveStatus(state) {
+    const el = document.getElementById('save-status');
+    if (!el) return;
+    el.dataset.state = state ?? '';
+    el.textContent = { saving: 'Saving…', saved: 'Saved', error: 'Save failed' }[state] ?? '';
+}
 
+async function persistData() {
+    if (!appState) return;
+    setSaveStatus('saving');
+    try {
+        const json = JSON.stringify(appState.data, null, 2);
+        const raw = new TextEncoder().encode(json);
+        let binary = '';
+        raw.forEach(b => binary += String.fromCharCode(b));
+        const res = await fetch(
+            `https://api.github.com/repos/${GATE_REPO}/contents/application.json`,
+            {
+                method: 'PUT',
+                headers: {
+                    Authorization: `Bearer ${appState.token}`,
+                    Accept: 'application/vnd.github+json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: `[tracker] update via ${appState.user.login}`,
+                    content: btoa(binary),
+                    sha: appState.sha,
+                }),
+            }
+        );
+        if (!res.ok) throw new Error('SAVE_FAILED');
+        appState.sha = (await res.json()).content.sha;
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus(null), 2500);
+    } catch {
+        setSaveStatus('error');
+    }
+}
+
+function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(persistData, 1200);
+}
+
+// ── Rendering ─────────────────────────────────────────────────
 const STATUS_LABELS = {
     'done':        { label: 'Done',        cls: 'done' },
     'draft':       { label: 'Draft',       cls: 'draft' },
@@ -617,10 +726,22 @@ const STATUS_LABELS = {
     'not-started': { label: 'Not Started', cls: 'not-started' },
     'action':      { label: 'Action',      cls: 'action' },
 };
+const STATUS_OPTS = ['done', 'draft', 'needs-info', 'not-started', 'action'];
 
 function badge(status) {
-    const s = STATUS_LABELS[status] || STATUS_LABELS['not-started'];
+    const s = STATUS_LABELS[status] ?? STATUS_LABELS['not-started'];
     return `<span class="status-badge ${s.cls}">${s.label}</span>`;
+}
+
+function editableBadge(si, qi, status) {
+    const s = STATUS_LABELS[status] ?? STATUS_LABELS['not-started'];
+    const opts = STATUS_OPTS.map(opt =>
+        `<button class="status-opt${opt === status ? ' current' : ''}" data-status="${opt}" type="button">${STATUS_LABELS[opt].label}</button>`
+    ).join('');
+    return `<div class="status-select" data-si="${si}" data-qi="${qi}">
+        <span class="status-badge ${s.cls}" role="button" tabindex="0" aria-haspopup="listbox">${s.label}</span>
+        <div class="status-dropdown" hidden role="listbox">${opts}</div>
+    </div>`;
 }
 
 function sectionStatus(section) {
@@ -631,48 +752,60 @@ function sectionStatus(section) {
     return 'not-started';
 }
 
-function renderTracker(sections) {
-    const root = document.getElementById('tracker-root');
-    const allQuestions = sections.flatMap(s => s.questions);
-    const doneCount = allQuestions.filter(q => q.status === 'done' || q.status === 'draft').length;
-    const pct = Math.round((doneCount / allQuestions.length) * 100);
-
+function updateProgress() {
+    const all = appState.data.sections.flatMap(s => s.questions);
+    const done = all.filter(q => q.status === 'done' || q.status === 'draft').length;
+    const pct = Math.round((done / all.length) * 100);
     document.getElementById('progress-wrap').innerHTML = `
         <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
-        <span class="progress-bar-label">${doneCount} / ${allQuestions.length} questions addressed</span>
+        <span class="progress-bar-label">${done} / ${all.length} questions addressed</span>
     `;
+}
+
+function updateSectionBadge(si) {
+    const el = document.querySelector(`#tsec-${si} .tracker-section-right .status-badge`);
+    if (!el) return;
+    const s = STATUS_LABELS[sectionStatus(appState.data.sections[si])] ?? STATUS_LABELS['not-started'];
+    el.className = `status-badge ${s.cls}`;
+    el.textContent = s.label;
+}
+
+function closeActiveDropdown() {
+    if (activeDropdown) { activeDropdown.hidden = true; activeDropdown = null; }
+}
+
+function renderTracker(sections) {
+    const root = document.getElementById('tracker-root');
+    updateProgress();
 
     root.innerHTML = sections.map((sec, si) => {
-        const st = sectionStatus(sec);
         const questions = sec.questions.map((q, qi) => `
             <div class="question-row">
                 <span class="q-num">${q.num}</span>
                 <div class="q-body">
                     <span class="q-name">${q.name}</span>
                     ${q.note ? `<span class="q-note">${q.note}</span>` : ''}
-                    ${q.draft ? `
-                        <button class="q-draft-toggle" data-target="draft-${si}-${qi}" type="button">
-                            <span class="toggle-label">Show draft</span> ▾
-                        </button>
-                        <div class="q-draft-box" id="draft-${si}-${qi}">
-                            <pre class="q-draft-text">${q.draft.replace(/</g,'&lt;')}</pre>
-                            <button class="q-copy-btn" data-copy="${si}-${qi}" type="button">Copy</button>
-                        </div>
-                    ` : ''}
+                    <button class="q-draft-toggle" data-target="draft-${si}-${qi}" type="button">
+                        <span class="toggle-label">${q.draft ? 'Show draft' : 'Add draft'}</span> ▾
+                    </button>
+                    <div class="q-draft-box" id="draft-${si}-${qi}">
+                        <textarea class="q-draft-textarea" data-si="${si}" data-qi="${qi}" rows="5">${q.draft ? escHtml(q.draft) : ''}</textarea>
+                        <button class="q-copy-btn" data-si="${si}" data-qi="${qi}" type="button">Copy</button>
+                    </div>
                 </div>
-                <div class="q-actions">${badge(q.status)}</div>
+                <div class="q-actions">${editableBadge(si, qi, q.status)}</div>
             </div>
         `).join('');
 
         return `
             <div class="tracker-section" id="tsec-${si}">
-                <button class="tracker-section-header" type="button" aria-expanded="false" data-section="${si}">
+                <button class="tracker-section-header" type="button" aria-expanded="false">
                     <div class="tracker-section-left">
                         <span class="tracker-section-num">${sec.num}</span>
                         <span class="tracker-section-title">${sec.title}</span>
                     </div>
                     <div class="tracker-section-right">
-                        ${badge(st)}
+                        ${badge(sectionStatus(sec))}
                         <span class="tracker-chevron">▾</span>
                     </div>
                 </button>
@@ -681,35 +814,100 @@ function renderTracker(sections) {
         `;
     }).join('');
 
-    // Open Section II by default (has the most active drafts)
     const sec2 = document.getElementById('tsec-1');
     if (sec2) toggleSection(sec2, true);
 
+    // ── Event delegation ──────────────────────────────────────
     root.addEventListener('click', e => {
+        // Section toggle
         const header = e.target.closest('.tracker-section-header');
-        if (header) {
-            const sec = header.closest('.tracker-section');
-            toggleSection(sec);
-            return;
-        }
+        if (header) { toggleSection(header.closest('.tracker-section')); return; }
+
+        // Draft show/hide
         const toggle = e.target.closest('.q-draft-toggle');
         if (toggle) {
             const box = document.getElementById(toggle.dataset.target);
             const open = box.classList.toggle('open');
-            toggle.querySelector('.toggle-label').textContent = open ? 'Hide draft' : 'Show draft';
+            const hasContent = !!box.querySelector('textarea').value;
+            toggle.querySelector('.toggle-label').textContent =
+                open ? 'Hide draft' : (hasContent ? 'Show draft' : 'Add draft');
             return;
         }
+
+        // Copy
         const copyBtn = e.target.closest('.q-copy-btn');
         if (copyBtn) {
-            const [si, qi] = copyBtn.dataset.copy.split('-').map(Number);
-            const text = sections[si].questions[qi].draft;
-            navigator.clipboard.writeText(text).then(() => {
+            const ta = root.querySelector(`.q-draft-textarea[data-si="${copyBtn.dataset.si}"][data-qi="${copyBtn.dataset.qi}"]`);
+            if (!ta?.value) return;
+            navigator.clipboard.writeText(ta.value).then(() => {
                 copyBtn.textContent = 'Copied!';
                 copyBtn.classList.add('copied');
                 setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 2000);
             });
+            return;
+        }
+
+        // Status badge → open dropdown
+        const badgeEl = e.target.closest('.status-select > .status-badge');
+        if (badgeEl) {
+            const select = badgeEl.closest('.status-select');
+            const dropdown = select.querySelector('.status-dropdown');
+            const wasOpen = !dropdown.hidden;
+            closeActiveDropdown();
+            if (!wasOpen) { dropdown.hidden = false; activeDropdown = dropdown; }
+            return;
+        }
+
+        // Status option selected
+        const opt = e.target.closest('.status-opt');
+        if (opt) {
+            const select = opt.closest('.status-select');
+            const si = +select.dataset.si;
+            const qi = +select.dataset.qi;
+            const newStatus = opt.dataset.status;
+            appState.data.sections[si].questions[qi].status = newStatus;
+            closeActiveDropdown();
+            const s = STATUS_LABELS[newStatus] ?? STATUS_LABELS['not-started'];
+            const b = select.querySelector('.status-badge');
+            b.className = `status-badge ${s.cls}`;
+            b.textContent = s.label;
+            select.querySelectorAll('.status-opt').forEach(o =>
+                o.classList.toggle('current', o.dataset.status === newStatus)
+            );
+            updateSectionBadge(si);
+            updateProgress();
+            scheduleSave();
+            return;
+        }
+
+        closeActiveDropdown();
+    });
+
+    // Draft text edits
+    root.addEventListener('input', e => {
+        const ta = e.target.closest('.q-draft-textarea');
+        if (!ta) return;
+        appState.data.sections[+ta.dataset.si].questions[+ta.dataset.qi].draft = ta.value || null;
+        scheduleSave();
+    });
+
+    // Keyboard support for dropdown
+    root.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeActiveDropdown(); return; }
+        if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('.status-select > .status-badge')) {
+            e.preventDefault();
+            e.target.click();
         }
     });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.status-select')) closeActiveDropdown();
+    }, { capture: true });
+}
+
+function escHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function toggleSection(sec, forceOpen) {
@@ -771,7 +969,8 @@ function setupNav() {
 }
 
 async function showApp(user, token) {
-    const { sections, requirements, facts } = await fetchAppData(token);
+    const { data, sha } = await fetchAppData(token);
+    appState = { data, sha, token, user };
     document.getElementById('login-wall').remove();
     const app = document.getElementById('app');
     app.hidden = false;
@@ -779,8 +978,8 @@ async function showApp(user, token) {
     document.getElementById('user-avatar').alt = user.login;
     document.getElementById('user-name').textContent = user.login;
     document.getElementById('logout-btn').addEventListener('click', logout);
-    renderTracker(sections);
-    renderRequirements(requirements, facts);
+    renderTracker(data.sections);
+    renderRequirements(data.requirements, data.facts);
     renderCountdown();
     setupNav();
 }
@@ -802,7 +1001,9 @@ async function init() {
                 return;
             }
         } catch (err) {
-            showError(err.message === 'ACCESS_DENIED' ? 'Your GitHub account does not have access to this workspace.' : 'Sign-in failed. Please try again.');
+            showError(err.message === 'ACCESS_DENIED'
+                ? 'Your GitHub account does not have access to this workspace.'
+                : 'Sign-in failed. Please try again.');
             return;
         }
     }
