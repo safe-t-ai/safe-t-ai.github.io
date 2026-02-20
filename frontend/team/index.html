@@ -536,6 +536,40 @@
         .save-status[data-state="saved"]  { color: #6ee7b7; }
         .save-status[data-state="error"]  { color: #fca5a5; }
 
+        /* ── Overview card ── */
+        .overview-card { background: var(--color-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: var(--space-4); }
+        .overview-summary { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); cursor: pointer; font-size: var(--font-subhead); font-weight: 600; color: var(--color-label); gap: var(--space-3); list-style: none; }
+        .overview-summary::-webkit-details-marker { display: none; }
+        .overview-summary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; border-radius: var(--radius-md); }
+        .overview-summary:focus:not(:focus-visible) { outline: none; }
+        .overview-chevron { color: var(--color-label-tertiary); font-size: var(--font-footnote); transition: transform 0.2s var(--ease-spring); flex-shrink: 0; }
+        details[open] .overview-chevron { transform: rotate(180deg); }
+        .overview-body { padding: 0 var(--space-5) var(--space-5); border-top: 1px solid var(--color-separator); display: flex; flex-direction: column; gap: var(--space-4); }
+        .overview-pitch { font-size: var(--font-subhead); color: var(--color-label); line-height: 1.5; padding-top: var(--space-4); }
+        .criteria-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); }
+        .criteria-item { background: var(--color-surface-grouped); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+        .criteria-label { font-size: var(--font-caption); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-label-secondary); margin-bottom: var(--space-1); }
+        .criteria-desc { font-size: var(--font-caption); color: var(--color-label-tertiary); line-height: 1.45; }
+        .overview-meta { font-size: var(--font-caption); color: var(--color-label-tertiary); text-align: right; }
+
+        /* ── Format note ── */
+        .format-note { font-size: var(--font-caption); color: var(--color-label-tertiary); margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); background: var(--color-surface); border-radius: var(--radius-md); border-left: 3px solid var(--color-separator); line-height: 1.5; }
+        .format-note code { font-family: 'SF Mono', 'Monaco', 'Menlo', monospace; font-size: 0.9em; background: var(--color-surface-grouped); padding: 0.1em 0.35em; border-radius: 3px; }
+
+        /* ── Owner pill ── */
+        .owner-wrap { position: relative; display: inline-flex; margin-top: var(--space-1); }
+        .owner-pill { display: inline-flex; align-items: center; font-size: var(--font-caption); font-weight: 500; color: var(--color-label-secondary); background: var(--color-fill-tertiary); border: 1px solid var(--color-separator); border-radius: 99px; padding: 0.15rem 0.6rem; cursor: pointer; user-select: none; min-height: 24px; white-space: nowrap; }
+        .owner-pill::after { content: ' ▾'; opacity: 0.5; font-size: 0.7em; }
+        .owner-pill.assigned { color: var(--color-accent-active); background: rgba(8,145,178,0.08); border-color: rgba(8,145,178,0.2); }
+        .owner-dropdown { position: absolute; left: 0; top: calc(100% + 4px); background: var(--color-surface); border: 1px solid var(--color-separator); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 50; min-width: 160px; overflow: hidden; animation: fadeInUp 0.12s var(--ease-spring) both; }
+        .owner-opt { display: block; width: 100%; text-align: left; padding: 0.45rem var(--space-4); background: none; border: none; font-family: inherit; font-size: var(--font-footnote); color: var(--color-label); cursor: pointer; min-height: 36px; }
+        .owner-opt:hover { background: var(--color-surface-grouped); }
+        .owner-opt.current { font-weight: 600; }
+
+        /* ── Word count ── */
+        .draft-meta { margin-top: var(--space-2); }
+        .word-count { font-size: var(--font-caption); color: var(--color-label-tertiary); }
+
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 
         @media (max-width: 768px) {
@@ -547,6 +581,7 @@
             .question-row { grid-template-columns: 44px 1fr auto; }
             .tracker-section-num { display: none; }
             .user-name { display: none; }
+            .criteria-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -592,6 +627,35 @@
 
         <!-- ── Tab: Application Tracker ── -->
         <div class="tab-panel active" id="panel-tracker">
+            <details class="overview-card" id="overview-card">
+                <summary class="overview-summary">
+                    Grant Overview
+                    <span class="overview-chevron" aria-hidden="true">▾</span>
+                </summary>
+                <div class="overview-body">
+                    <p class="overview-pitch">SAFE-T uses AI to identify high-risk road segments in Durham and generate actionable safety reports — helping transportation agencies prioritize SS4A-funded interventions.</p>
+                    <div class="criteria-grid">
+                        <div class="criteria-item">
+                            <p class="criteria-label">Impact</p>
+                            <p class="criteria-desc">Measurable improvement in government service delivery for underserved communities</p>
+                        </div>
+                        <div class="criteria-item">
+                            <p class="criteria-label">Innovation</p>
+                            <p class="criteria-desc">Novel AI application meaningfully beyond current practice</p>
+                        </div>
+                        <div class="criteria-item">
+                            <p class="criteria-label">Feasibility</p>
+                            <p class="criteria-desc">Technical credibility with a realistic implementation and partnership plan</p>
+                        </div>
+                        <div class="criteria-item">
+                            <p class="criteria-label">Scalability</p>
+                            <p class="criteria-desc">Replicable across jurisdictions and sustainable beyond the grant period</p>
+                        </div>
+                    </div>
+                    <p class="overview-meta">$1M–$3M per org · 36-month funding · Accelerator Sep 2026 · Demo Day Dec 2026</p>
+                </div>
+            </details>
+            <p class="format-note">Draft convention: questions beginning with <code>...</code> are sentence completions — the question text opens your answer. Continue the sentence directly without restating the prompt.</p>
             <div class="progress-bar-wrap" id="progress-wrap"></div>
             <div id="tracker-root"></div>
         </div>
@@ -772,6 +836,25 @@ const STATUS_LABELS = {
     'action':      { label: 'Action',      cls: 'action' },
 };
 const STATUS_OPTS = ['done', 'draft', 'needs-info', 'not-started', 'action'];
+function wordCount(text) {
+    if (!text?.trim()) return '0 words';
+    const n = text.trim().split(/\s+/).length;
+    return `${n} word${n === 1 ? '' : 's'}`;
+}
+
+function ownerPill(owner, idx, type) {
+    const members = appState?.data?.team_members ?? [];
+    const opts = [
+        `<button class="owner-opt${!owner ? ' current' : ''}" data-owner="" type="button">Unassigned</button>`,
+        ...members.map(m =>
+            `<button class="owner-opt${owner === m ? ' current' : ''}" data-owner="${m}" type="button">${m}</button>`
+        )
+    ].join('');
+    return `<div class="owner-wrap" data-idx="${idx}" data-type="${type}">
+        <span class="owner-pill${owner ? ' assigned' : ''}" role="button" tabindex="0" aria-haspopup="listbox">${owner ?? 'Unassigned'}</span>
+        <div class="owner-dropdown" hidden role="listbox">${opts}</div>
+    </div>`;
+}
 
 function badge(status) {
     const s = STATUS_LABELS[status] ?? STATUS_LABELS['not-started'];
@@ -836,6 +919,9 @@ function renderTracker(sections) {
                     <div class="q-draft-box" id="draft-${si}-${qi}">
                         <textarea class="q-draft-textarea" data-si="${si}" data-qi="${qi}" rows="5">${q.draft ? escHtml(q.draft) : ''}</textarea>
                         <button class="q-copy-btn" data-si="${si}" data-qi="${qi}" type="button">Copy</button>
+                        <div class="draft-meta">
+                            <span class="word-count" id="wc-${si}-${qi}">${wordCount(q.draft)}</span>
+                        </div>
                     </div>
                 </div>
                 <div class="q-actions">${editableBadge(si, qi, q.status)}</div>
@@ -929,8 +1015,12 @@ function renderTracker(sections) {
     root.addEventListener('input', e => {
         const ta = e.target.closest('.q-draft-textarea');
         if (!ta) return;
-        appState.data.sections[+ta.dataset.si].questions[+ta.dataset.qi].draft = ta.value || null;
+        const si = +ta.dataset.si;
+        const qi = +ta.dataset.qi;
+        appState.data.sections[si].questions[qi].draft = ta.value || null;
         markDirty();
+        const wcEl = document.getElementById(`wc-${si}-${qi}`);
+        if (wcEl) wcEl.textContent = wordCount(ta.value);
     });
 
     // Keyboard support for dropdown
@@ -980,25 +1070,75 @@ function reqIcon(status) {
 }
 
 function renderRequirements(requirements, facts) {
-    document.getElementById('req-list').innerHTML = requirements.map(r => `
+    document.getElementById('req-list').innerHTML = requirements.map((r, i) => `
         <li class="req-item ${r.status}">
             ${reqIcon(r.status)}
             <div class="req-body">
                 <span class="req-text">${r.text}</span>
                 ${r.note ? `<span class="req-note ${r.status === 'action' ? 'urgent' : ''}">${r.note}</span>` : ''}
+                ${ownerPill(r.owner, i, 'req')}
             </div>
         </li>
     `).join('');
 
-    document.getElementById('facts-list').innerHTML = facts.map(f => `
+    document.getElementById('facts-list').innerHTML = facts.map((f, i) => `
         <li class="req-item ${f.status}">
             ${reqIcon(f.status)}
             <div class="req-body">
                 <span class="req-text">${f.text}</span>
                 ${f.note ? `<span class="req-note ${f.status === 'action' ? 'urgent' : ''}">${f.note}</span>` : ''}
+                ${ownerPill(f.owner, i, 'fact')}
             </div>
         </li>
     `).join('');
+}
+
+function setupOwnerDelegation(checklist) {
+    let activeOwnerDropdown = null;
+    function closeOwnerDropdown() {
+        if (activeOwnerDropdown) { activeOwnerDropdown.hidden = true; activeOwnerDropdown = null; }
+    }
+
+    checklist.addEventListener('click', e => {
+        const pill = e.target.closest('.owner-wrap > .owner-pill');
+        if (pill) {
+            const wrap = pill.closest('.owner-wrap');
+            const dropdown = wrap.querySelector('.owner-dropdown');
+            const wasOpen = !dropdown.hidden;
+            closeOwnerDropdown();
+            if (!wasOpen) { dropdown.hidden = false; activeOwnerDropdown = dropdown; }
+            return;
+        }
+
+        const opt = e.target.closest('.owner-opt');
+        if (opt) {
+            const wrap = opt.closest('.owner-wrap');
+            const idx = +wrap.dataset.idx;
+            const type = wrap.dataset.type;
+            const newOwner = opt.dataset.owner || null;
+            if (type === 'req') appState.data.requirements[idx].owner = newOwner;
+            else appState.data.facts[idx].owner = newOwner;
+            const pill = wrap.querySelector('.owner-pill');
+            pill.textContent = newOwner ?? 'Unassigned';
+            pill.classList.toggle('assigned', !!newOwner);
+            wrap.querySelectorAll('.owner-opt').forEach(o =>
+                o.classList.toggle('current', (o.dataset.owner || null) === newOwner)
+            );
+            closeOwnerDropdown();
+            persistData(`[tracker] ${type} #${idx + 1}: owner → ${newOwner ?? 'unassigned'} via ${appState.user.login}`);
+            return;
+        }
+
+        closeOwnerDropdown();
+    });
+
+    checklist.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeOwnerDropdown();
+    });
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.owner-wrap')) closeOwnerDropdown();
+    }, { capture: true });
 }
 
 function renderCountdown() {
@@ -1048,6 +1188,7 @@ async function showApp(user, token) {
     renderRequirements(data.requirements, data.facts);
     renderCountdown();
     setupNav();
+    setupOwnerDelegation(document.getElementById('panel-checklist'));
     setInterval(updateSaveTime, 30000);
 }
 
