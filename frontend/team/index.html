@@ -602,7 +602,8 @@ async function fetchAppData(token) {
     );
     if (!res.ok) throw new Error('DATA_FETCH_FAILED');
     const { content } = await res.json();
-    return JSON.parse(atob(content.replace(/\n/g, '')));
+    const bytes = Uint8Array.from(atob(content.replace(/\n/g, '')), c => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
 }
 
 // ─────────────────────────────────────────────────────────────
