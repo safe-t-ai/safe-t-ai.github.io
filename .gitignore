@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Build outputs
+frontend/dist/
+frontend/.vite/
+
+# Generated data files
+backend/data/raw/*
+!backend/data/raw/.gitkeep
+!backend/data/raw/README.md
+backend/data/simulated/*
+!backend/data/simulated/.gitkeep
+!backend/data/simulated/README.md
+frontend/public/data/*
+!frontend/public/data/.gitkeep
+!frontend/public/data/README.md
+
+# Temporary files
+*.log
+*.tmp
+
+# Package lock files (optional - uncomment if needed)
+# package-lock.json
+# yarn.lock
+.claude/settings.local.json

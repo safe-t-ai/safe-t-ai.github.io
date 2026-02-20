@@ -1,0 +1,65 @@
+{
+  "_provenance": {
+    "data_type": "real",
+    "real": [
+      "US Census ACS 2022 demographics",
+      "NCDOT non-motorist crashes (ArcGIS Feature Service)"
+    ],
+    "simulated": [
+      "AI prediction errors"
+    ]
+  },
+  "summary": {
+    "total_crashes_all_years": 714,
+    "crashes_2023_actual": 153,
+    "crashes_2023_predicted": 140,
+    "crashes_per_year": 142,
+    "years_analyzed": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+    ],
+    "tracts_analyzed": 67,
+    "data_source": "NCDOT non-motorist crash data, Durham County (2019-2023)"
+  },
+  "error_by_quintile": {
+    "Q1 (Poorest)": {
+      "actual_crashes": 2.4285714285714284,
+      "ai_predicted_crashes": 3.4703214160651683,
+      "mae": 1.8214170950666186,
+      "error_pct": 70.34468659543639
+    },
+    "Q2": {
+      "actual_crashes": 2.1538461538461537,
+      "ai_predicted_crashes": 2.084076858387223,
+      "mae": 1.4145173946251905,
+      "error_pct": 57.243414101078706
+    },
+    "Q3": {
+      "actual_crashes": 2.4285714285714284,
+      "ai_predicted_crashes": 1.7564363273353685,
+      "mae": 1.1874216737350025,
+      "error_pct": 46.29919024291877
+    },
+    "Q4": {
+      "actual_crashes": 1.5384615384615385,
+      "ai_predicted_crashes": 1.600245285585871,
+      "mae": 0.7155148926180552,
+      "error_pct": 37.851616593196255
+    },
+    "Q5 (Richest)": {
+      "actual_crashes": 2.8461538461538463,
+      "ai_predicted_crashes": 1.4753233631340206,
+      "mae": 1.7204731199587064,
+      "error_pct": 46.17137371869957
+    }
+  },
+  "findings": [
+    "AI prediction error is 70% in Q1 vs 46% in Q5 \u2014 1.5x worse in the poorest areas",
+    "Ridge regression trained on real 2019-2022 non-motorist crash data with demographic features",
+    "Model shows systematic underperformance in poorest quintile when predicting 2023 crashes",
+    "AI-guided safety investments systematically underallocate resources to underserved communities"
+  ]
+}

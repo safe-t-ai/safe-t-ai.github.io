@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAFE-T: Safety Algorithm Fairness Evaluation for Transportation</title>
+    <meta name="theme-color" content="#0f172a">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="apple-touch-icon" href="/logo.png">
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" as="script">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* ── Design Tokens ── */
+        :root {
+            /* Colors — Accent */
+            --color-accent: #0891b2;
+            --color-accent-active: #0e7490;
+
+            /* Colors — Surfaces */
+            --color-surface: #ffffff;
+            --color-surface-grouped: #f2f2f7;
+            --color-surface-tinted: #f0fdfa;
+            --color-dark: #0f172a;
+
+            /* Colors — Labels */
+            --color-label: #1a202c;
+            --color-label-secondary: #718096;
+            --color-label-tertiary: #4a5568;
+            --color-tint-label: #134e4a;
+
+            /* Colors — On dark backgrounds */
+            --color-on-dark: rgba(255, 255, 255, 0.85);
+            --color-on-dark-secondary: rgba(255, 255, 255, 0.7);
+
+            /* Colors — Separators & fills */
+            --color-separator: #e5e5ea;
+            --color-fill-tertiary: #e8e8ed;
+            --color-gray: #636366;
+
+            /* Colors — Semantic status */
+            --color-danger: #d32f2f;
+            --color-warning: #9a6700;
+            --color-success: #1b7a34;
+            --color-info: #0e7490;
+
+            /* Typography — 8 stops: 12 → 13 → 15 → 17 → 20 → 24 → 28 → 32 */
+            --font-caption: 0.75rem;
+            --font-footnote: 0.8125rem;
+            --font-subhead: 0.9375rem;
+            --font-headline: 1.0625rem;
+            --font-title3: 1.25rem;
+            --font-title1: 1.5rem;
+            --font-stat: 1.75rem;
+            --font-metric: 2rem;
+
+            /* Spacing — 8pt grid */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+
+            /* Border radius */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 12px;
+            --radius-xl: 14px;
+
+            /* Shadows — dual-layer, Apple-soft */
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+
+            /* Easing — spring-like */
+            --ease-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+            /* Layout */
+            --max-width: 1400px;
+        }
+
+        /* ── Base ── */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--color-surface-grouped);
+            color: var(--color-label);
+            line-height: 1.47;
+        }
+
+        .hidden { display: none; }
+
+        /* ── Header ── */
+        .header {
+            background: var(--color-dark);
+            color: white;
+            padding: 1.75rem var(--space-8) var(--space-6);
+        }
+
+        .header-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+
+        .header-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            flex-shrink: 0;
+        }
+
+        .header-text h1 {
+            font-size: var(--font-title1);
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .header-sep {
+            font-weight: 400;
+            opacity: 0.4;
+            margin: 0 0.1em;
+        }
+
+        .header-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: var(--space-2);
+            margin-top: var(--space-1);
+            font-size: var(--font-footnote);
+            color: var(--color-on-dark-secondary);
+        }
+
+        .header-meta span { white-space: nowrap; }
+
+        /* ── Tabs ── */
+        .tabs-bar {
+            background: var(--color-surface);
+            padding: 0 var(--space-8);
+            position: sticky;
+            top: 0;
+            z-index: 1100;
+            border-bottom: 2px solid var(--color-separator);
+        }
+
+        .tabs-bar-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: var(--space-8);
+            position: relative;
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--space-1);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .tabs::-webkit-scrollbar { display: none; }
+
+        .tabs-bar-inner::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 32px;
+            background: linear-gradient(to right, transparent, var(--color-surface));
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tabs-bar-inner.has-overflow::after {
+            opacity: 1;
+        }
+
+        .tab {
+            background: transparent;
+            color: var(--color-label-secondary);
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: var(--space-3) 1.25rem;
+            margin-bottom: -2px;
+            font-size: var(--font-subhead);
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: color 0.2s var(--ease-spring), border-bottom-color 0.2s var(--ease-spring);
+            white-space: nowrap;
+            min-height: 44px;
+        }
+
+        .tab:hover {
+            color: var(--color-label);
+        }
+
+        .tab.active {
+            color: var(--color-accent-active);
+            border-bottom-color: var(--color-accent);
+        }
+
+        .test-subtitle {
+            font-size: var(--font-headline);
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            line-height: 1.3;
+            color: white;
+            background: linear-gradient(135deg, var(--color-accent) 0%, #0e4a5c 40%, var(--color-dark) 100%);
+            padding: 1.15rem var(--space-6);
+            border-radius: var(--radius-md);
+            margin-bottom: 1.75rem;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .test-subtitle::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--color-accent), transparent 60%);
+        }
+
+        .test-subtitle:empty {
+            display: none;
+        }
+
+        .test-subtitle-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-4);
+        }
+
+        .test-position {
+            font-size: var(--font-caption);
+            font-weight: 500;
+            opacity: 0.6;
+            white-space: nowrap;
+            letter-spacing: 0.04em;
+        }
+
+        .test-so-what {
+            font-size: var(--font-footnote);
+            color: var(--color-on-dark-secondary);
+            margin-top: var(--space-2);
+            line-height: 1.4;
+            font-weight: 400;
+        }
+
+        /* ── Layout ── */
+        .test-content { display: none; }
+        .test-content.active {
+            display: block;
+            animation: fadeInUp 0.25s var(--ease-spring) both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Skeleton Loading ── */
+        .skeleton {
+            position: relative;
+            overflow: hidden;
+            background: var(--color-fill-tertiary);
+            border-radius: var(--radius-lg);
+        }
+
+        .skeleton::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            from { transform: translateX(-100%); }
+            to   { transform: translateX(100%); }
+        }
+
+        .skeleton-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+
+        .skeleton-metric {
+            height: 120px;
+        }
+
+        .skeleton-map {
+            height: 500px;
+            margin-bottom: var(--space-8);
+        }
+
+        .skeleton-chart {
+            height: 400px;
+        }
+
+        .skeleton-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 600px), 1fr));
+            gap: var(--space-8);
+        }
+
+        .skeleton-overview-banner {
+            height: 120px;
+            margin-bottom: var(--space-6);
+        }
+
+        .skeleton-overview-split {
+            display: grid;
+            grid-template-columns: 55fr 45fr;
+            gap: var(--space-6);
+        }
+
+        .skeleton-overview-map {
+            height: 500px;
+        }
+
+        .skeleton-overview-right {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .skeleton-overview-card-hero { height: 160px; }
+        .skeleton-overview-card-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+        }
+        .skeleton-overview-card-sm { height: 100px; }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: var(--space-8);
+        }
+
+        .content-split {
+            display: grid;
+            grid-template-columns: 55fr 45fr;
+            gap: var(--space-6);
+        }
+
+        .content-split > * {
+            min-width: 0;
+        }
+
+        .content-map {
+            grid-row: 1 / -1;
+            position: sticky;
+            top: 80px;
+            align-self: start;
+        }
+
+        .content-map .map-container {
+            margin-bottom: 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .content-map .map {
+            height: calc(100dvh - 240px);
+            min-height: 500px;
+            max-height: 600px;
+        }
+
+        .content-split .chart-grid {
+            grid-template-columns: 1fr;
+            gap: var(--space-6);
+        }
+
+        .content-split .chart {
+            height: 320px;
+        }
+
+        /* ── Metric Cards ── */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+
+        .metrics-grid:empty {
+            display: none;
+        }
+
+        .metric-card {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .metric-card h3 {
+            font-size: var(--font-footnote);
+            font-weight: 500;
+            color: var(--color-label-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: var(--space-2);
+        }
+
+        .metric-card .value {
+            font-size: var(--font-metric);
+            font-weight: 700;
+            color: var(--color-label);
+        }
+
+        .metric-card .value-danger { color: var(--color-danger); }
+        .metric-card .value-warning { color: var(--color-warning); }
+        .metric-card .value-success { color: var(--color-success); }
+        .metric-card .value-info { color: var(--color-info); }
+
+        .metric-card .subtext {
+            font-size: var(--font-footnote);
+            color: var(--color-label-secondary);
+            margin-top: var(--space-1);
+            line-height: 1.5;
+        }
+
+        /* ── Charts & Map shared card ── */
+        .chart-container,
+        .map-container {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chart-container h2,
+        .map-container h2 {
+            font-size: var(--font-title3);
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+            color: var(--color-label);
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 600px), 1fr));
+            gap: var(--space-8);
+            margin-bottom: var(--space-8);
+        }
+
+        .chart { width: 100%; height: 400px; }
+
+        .chart-header {
+            display: flex;
+            align-items: baseline;
+            gap: var(--space-3);
+            margin-bottom: var(--space-2);
+        }
+
+        .chart-header h2 { margin-bottom: 0; }
+
+        .chart-description {
+            font-size: var(--font-subhead);
+            color: var(--color-label-tertiary);
+            margin-bottom: var(--space-4);
+            line-height: 1.35;
+        }
+
+        /* ── Map ── */
+        .map-container {
+            margin-bottom: var(--space-8);
+        }
+
+        .map {
+            width: 100%;
+            height: 500px;
+            border-radius: 8px;
+        }
+
+        /* ── Leaflet popup overrides ── */
+        .leaflet-popup-content-wrapper {
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            font-size: var(--font-footnote);
+            line-height: 1.47;
+            color: var(--color-label);
+        }
+
+        .leaflet-popup-tip {
+            box-shadow: none;
+        }
+
+        /* ── Key Findings ── */
+        .interpretation {
+            background: var(--color-surface);
+            border-left: 3px solid var(--color-accent);
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-8);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .interpretation h3 {
+            font-size: var(--font-headline);
+            font-weight: 600;
+            margin-bottom: var(--space-3);
+            color: var(--color-label);
+        }
+
+        .interpretation ul { list-style: none; padding: 0; margin: 0; }
+
+        .interpretation li {
+            padding: 0.3rem 0;
+            color: var(--color-label-tertiary);
+            line-height: 1.47;
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-2);
+            font-size: var(--font-subhead);
+        }
+
+        .interpretation li::before {
+            content: "\2022";
+            font-size: var(--font-title3);
+            color: var(--color-accent);
+            flex-shrink: 0;
+            line-height: 1.2;
+        }
+
+        /* ── Legend ── */
+        .legend {
+            background: var(--color-surface);
+            padding: var(--space-4);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+            font-size: var(--font-footnote);
+        }
+
+        .legend h4 { font-size: var(--font-footnote); font-weight: 600; margin-bottom: var(--space-2); }
+        .legend-item { display: flex; align-items: center; margin: var(--space-1) 0; }
+        .legend-color { width: 18px; height: 18px; border-radius: 2px; margin-right: var(--space-2); }
+        .legend-footer { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--color-separator); }
+
+        /* ── Map Markers ── */
+        .counter-marker {
+            background-color: var(--color-accent);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 4px rgba(0,0,0,0.4);
+        }
+
+        /* ── Data Source Badges ── */
+        .data-source-badge {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            background: var(--color-surface-tinted);
+            border: 1px solid #99f6e4;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-caption);
+            font-weight: 500;
+            color: var(--color-tint-label);
+            cursor: help;
+        }
+
+        .data-source-badge.simulated {
+            background: #fef3c7;
+            border-color: #fde68a;
+            color: #78350f;
+        }
+
+        .data-source-badge.modeled {
+            background: #dbeafe;
+            border-color: #93c5fd;
+            color: #1e3a5f;
+        }
+
+        .data-source-badge.real {
+            background: #d1fae5;
+            border-color: #a7f3d0;
+            color: #065f46;
+        }
+
+        .data-source-badge .icon { font-size: var(--font-footnote); }
+
+        .data-source-badge .tooltip {
+            visibility: hidden;
+            pointer-events: none;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: var(--space-2);
+            width: 280px;
+            padding: var(--space-3);
+            background: var(--color-dark);
+            color: white;
+            font-size: var(--font-footnote);
+            font-weight: 400;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-md);
+            z-index: 1000;
+            line-height: 1.35;
+        }
+
+        .data-source-badge .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--color-dark);
+        }
+
+        .data-source-badge:hover .tooltip { visibility: visible; }
+
+        /* ── Overview Dashboard ── */
+        .overview-banner {
+            background: linear-gradient(135deg, var(--color-accent) 0%, #0e4a5c 40%, var(--color-dark) 100%);
+            color: white;
+            padding: 1.75rem var(--space-8);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--space-6);
+        }
+
+        .overview-banner h2 {
+            font-size: var(--font-title3);
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            color: white;
+            line-height: 1.2;
+        }
+
+        .overview-banner .banner-description {
+            font-size: var(--font-subhead);
+            line-height: 1.35;
+            color: var(--color-on-dark);
+            margin-bottom: var(--space-3);
+        }
+
+        .overview-banner .banner-stats {
+            font-size: var(--font-footnote);
+            color: var(--color-on-dark-secondary);
+        }
+
+        .overview-stats + .methodology-key {
+            border-top: 1px solid var(--color-separator);
+            padding-top: var(--space-6);
+        }
+
+        .methodology-key {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4) var(--space-6);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--space-4);
+        }
+
+        .methodology-key h3 {
+            font-size: var(--font-caption);
+            font-weight: 600;
+            color: var(--color-label-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: var(--space-3);
+        }
+
+        .methodology-legend {
+            display: flex;
+            gap: var(--space-6);
+            margin-bottom: var(--space-3);
+        }
+
+        .methodology-item {
+            display: flex;
+            align-items: baseline;
+            gap: var(--space-2);
+            font-size: var(--font-footnote);
+            color: var(--color-label);
+        }
+
+        .methodology-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
+            top: 1px;
+        }
+
+        .methodology-dot.real { background: #059669; }
+        .methodology-dot.modeled { background: #2563eb; }
+        .methodology-dot.simulated { background: #d97706; }
+
+        .methodology-item .methodology-desc {
+            color: var(--color-label-secondary);
+        }
+
+        .methodology-vocab {
+            font-size: var(--font-footnote);
+            color: var(--color-label-secondary);
+            line-height: 1.45;
+        }
+
+        .overview-right {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+        }
+
+        .overview-stats {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .stat-hero {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6) var(--space-6) var(--space-8);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+            border: none;
+            width: 100%;
+            transition: box-shadow 0.2s var(--ease-spring);
+        }
+
+        .stat-hero:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-label {
+            font-size: var(--font-caption);
+            font-weight: 600;
+            color: var(--color-label-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .stat-hero .stat-value {
+            font-size: 2.75rem;
+            font-weight: 700;
+            color: var(--color-label);
+            line-height: 1;
+            letter-spacing: -0.03em;
+            margin: var(--space-3) 0 var(--space-2);
+        }
+
+        .stat-hero .stat-desc {
+            font-size: var(--font-subhead);
+            color: var(--color-label-secondary);
+            line-height: 1.4;
+        }
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .stat-secondary {
+            padding: var(--space-4);
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+            background: none;
+            border: none;
+            transition: background 0.15s var(--ease-spring);
+        }
+
+        .stat-secondary + .stat-secondary {
+            border-left: 1px solid var(--color-separator);
+        }
+
+        .stat-secondary:hover {
+            background: var(--color-surface-grouped);
+        }
+
+        .stat-secondary .stat-label {
+            margin-bottom: var(--space-1);
+        }
+
+        .stat-secondary .stat-value {
+            font-size: var(--font-title1);
+            font-weight: 700;
+            color: var(--color-label);
+            line-height: 1.2;
+        }
+
+        .stat-secondary .stat-desc {
+            font-size: var(--font-caption);
+            color: var(--color-label-tertiary);
+            line-height: 1.3;
+            margin-top: var(--space-1);
+        }
+
+        /* ── Segmented Control ── */
+        .view-toggle {
+            display: inline-flex;
+            position: relative;
+            background: var(--color-fill-tertiary);
+            border-radius: 8px;
+            padding: 3px;
+            margin-bottom: var(--space-4);
+        }
+
+        .view-toggle-option {
+            position: relative;
+            z-index: 1;
+            padding: var(--space-2) var(--space-4);
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: var(--font-footnote);
+            font-weight: 500;
+            color: var(--color-gray);
+            cursor: pointer;
+            border-radius: 5px;
+            transition: color 0.15s var(--ease-spring);
+            white-space: nowrap;
+            min-height: 32px;
+        }
+
+        .view-toggle-option.active {
+            color: var(--color-label);
+        }
+
+        .view-toggle-indicator {
+            position: absolute;
+            top: 3px;
+            left: 0;
+            height: calc(100% - 6px);
+            background: var(--color-surface);
+            border-radius: 5px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            transition: transform 0.25s var(--ease-spring), width 0.25s var(--ease-spring);
+            pointer-events: none;
+        }
+
+        /* ── Accessibility ── */
+        .tab:focus-visible,
+        .stat-hero:focus-visible,
+        .stat-secondary:focus-visible,
+        .view-toggle-option:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        .tab:focus:not(:focus-visible),
+        .stat-hero:focus:not(:focus-visible),
+        .stat-secondary:focus:not(:focus-visible),
+        .view-toggle-option:focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        /* ── Footer ── */
+        .site-footer {
+            background: var(--color-dark);
+            color: var(--color-on-dark-secondary);
+            padding: var(--space-6) var(--space-8);
+            font-size: var(--font-footnote);
+            margin-top: 3rem;
+        }
+
+        .footer-inner {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-4);
+        }
+
+        .footer-origin {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .footer-origin a {
+            color: var(--color-on-dark);
+            text-decoration: none;
+        }
+
+        .footer-origin a:hover {
+            color: white;
+        }
+
+        .footer-team {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem 0;
+            align-items: center;
+        }
+
+        .footer-team a {
+            color: var(--color-on-dark-secondary);
+            text-decoration: none;
+            transition: color 0.15s var(--ease-spring);
+        }
+
+        .footer-team a:hover {
+            color: white;
+        }
+
+        .footer-team .separator {
+            margin: 0 0.4rem;
+            opacity: 0.3;
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .footer-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--color-on-dark-secondary);
+            text-decoration: none;
+            transition: color 0.15s var(--ease-spring);
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-links svg {
+            fill: currentColor;
+        }
+
+        /* ── Utility ── */
+        .chart-container > div[id^="chart-"] { width: 100% !important; }
+        .chart-container, .map-container, .metric-card, .interpretation { overflow-wrap: break-word; }
+        .tab, button, label { -webkit-tap-highlight-color: rgba(0,0,0,0.1); }
+        button, .tab, input, label { touch-action: manipulation; }
+
+        /* ── Motion ── */
+        @media (prefers-reduced-motion: no-preference) {
+            html { scroll-behavior: smooth; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ── Responsive: Tablet ── */
+        @media (max-width: 768px) {
+            .content-split {
+                grid-template-columns: 1fr;
+            }
+            .content-map {
+                position: static;
+                grid-row: auto;
+            }
+            .content-map .map {
+                height: 350px;
+                min-height: 0;
+            }
+
+            .skeleton-overview-split { grid-template-columns: 1fr; }
+            .skeleton-overview-card-row { grid-template-columns: 1fr; }
+
+            .methodology-legend { flex-direction: column; gap: var(--space-2); }
+            .methodology-key { padding: var(--space-4); }
+
+            .stat-hero { padding: var(--space-4); }
+            .stat-hero .stat-value { font-size: 2.25rem; }
+
+            .header { padding: 1.25rem var(--space-4) var(--space-4); }
+            .header-text h1 { font-size: var(--font-title3); }
+            .header-logo { width: 36px; height: 36px; }
+
+            .tabs-bar { padding: 0 var(--space-4); }
+            .tab {
+                padding: 0.6rem var(--space-4);
+                font-size: var(--font-footnote);
+                min-height: 44px;
+            }
+            .container { padding: var(--space-4); }
+            .test-subtitle { font-size: 1rem; padding: var(--space-4) 1.25rem; }
+            .overview-banner { padding: 1.25rem; }
+            .overview-banner h2 { font-size: var(--font-headline); }
+            .metrics-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-4); }
+            .metric-card { padding: var(--space-4); }
+            .metric-card .value { font-size: var(--font-title1); }
+            .metric-card h3 { font-size: var(--font-caption); }
+            .metric-card .subtext { font-size: var(--font-caption); }
+
+            .chart-grid { gap: var(--space-4); }
+            .chart-container,
+            .map-container { padding: var(--space-4); }
+            .chart-container h2,
+            .map-container h2 { font-size: var(--font-headline); }
+            .chart { height: 300px; }
+            .map { height: 350px; }
+
+            .interpretation { padding: var(--space-4); }
+            .interpretation li { font-size: var(--font-footnote); }
+            .interpretation h3 { font-size: 1rem; }
+
+            .chart-header { flex-direction: column; align-items: flex-start; gap: var(--space-2); }
+            .chart-description { font-size: var(--font-footnote); }
+            .data-source-badge .tooltip { width: 220px; font-size: var(--font-caption); }
+            .legend { font-size: var(--font-caption); padding: var(--space-3); }
+            .legend h4 { font-size: var(--font-caption); }
+
+            .leaflet-control-zoom { transform: scale(0.9); }
+            .leaflet-popup-content { font-size: var(--font-footnote); }
+            .view-toggle-option { font-size: var(--font-caption); padding: 0.35rem 0.65rem; }
+
+            .site-footer { padding: 1.25rem var(--space-4); }
+            .footer-inner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-3);
+            }
+        }
+
+        /* ── Responsive: Mobile ── */
+        @media (max-width: 480px) {
+            .header-text h1 { font-size: var(--font-headline); }
+            .header-meta { font-size: var(--font-caption); }
+            .header-meta span:nth-child(n+4) { display: none; }
+            .tab { font-size: var(--font-caption); padding: var(--space-2) var(--space-3); min-height: 44px; }
+            .container { padding: var(--space-3); }
+            .metrics-grid { grid-template-columns: 1fr; }
+            .chart { height: 280px; }
+            .map { height: 300px; }
+            .metric-card .value { font-size: var(--font-title3); }
+            .stat-hero .stat-value { font-size: 2rem; }
+            .stat-row { grid-template-columns: 1fr; }
+            .stat-secondary + .stat-secondary { border-left: none; border-top: 1px solid var(--color-separator); }
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/main-DcqupBsC.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="modulepreload" crossorigin href="/assets/echarts-CcbDQh3I.js">
+</head>
+<body>
+    <div class="header">
+        <div class="header-inner">
+            <div class="header-top">
+                <img src="/logo.png" alt="SAFE-T" class="header-logo" fetchpriority="high">
+                <div class="header-text">
+                    <h1>SAFE-T <span class="header-sep">/</span> Safety Algorithm Fairness Evaluation for Transportation</h1>
+                    <div class="header-meta">
+                        <span>Durham, NC</span>
+                        <span>&middot;</span>
+                        <span>Census Tract Level</span>
+                        <span>&middot;</span>
+                        <span>Strava Metro &amp; StreetLight Data</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs-bar">
+        <div class="tabs-bar-inner">
+            <div class="tabs" role="tablist" aria-label="Equity audit tests">
+                <button class="tab active" data-test="overview" role="tab" aria-selected="true" aria-controls="overview-content">Overview</button>
+                <button class="tab" data-test="test1" role="tab" aria-selected="false" aria-controls="test1-content">Volume Estimation</button>
+                <button class="tab" data-test="test2" role="tab" aria-selected="false" aria-controls="test2-content">Crash Prediction</button>
+                <button class="tab" data-test="test3" role="tab" aria-selected="false" aria-controls="test3-content">Infrastructure</button>
+                <button class="tab" data-test="test4" role="tab" aria-selected="false" aria-controls="test4-content">Suppressed Demand</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="test-subtitle" id="test-description"></div>
+        <div id="app">
+            <!-- Overview Content -->
+            <div id="overview-content" class="test-content active" role="tabpanel" aria-label="Overview">
+                <div id="overview-skeleton" class="skeleton-loading-overlay">
+                    <div class="skeleton skeleton-overview-banner"></div>
+                    <div class="skeleton-overview-split">
+                        <div class="skeleton skeleton-overview-map"></div>
+                        <div class="skeleton-overview-right">
+                            <div class="skeleton skeleton-overview-card-hero"></div>
+                            <div class="skeleton-overview-card-row">
+                                <div class="skeleton skeleton-overview-card-sm"></div>
+                                <div class="skeleton skeleton-overview-card-sm"></div>
+                                <div class="skeleton skeleton-overview-card-sm"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="overview-banner hidden">
+                    <h2>Durham Transportation Equity Audit</h2>
+                    <p class="banner-description">AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities — but do they treat all communities equitably? SAFE-T is an audit framework that tests this question using Durham, NC as a case study. Because vendor tools like Strava Metro and StreetLight are proprietary, we simulate their documented biases using research-calibrated models layered on real Census, NCDOT, and OpenStreetMap data.</p>
+                    <p class="banner-stats"><span id="tract-count"></span> Tracts &middot; Volume Estimation → Crash Prediction → Infrastructure → Demand</p>
+                </div>
+                <div class="content-split hidden">
+                    <div class="content-map">
+                        <div class="map-container">
+                            <div class="chart-header">
+                                <h2>Durham Income Distribution by Census Tract</h2>
+                                <span class="data-source-badge real">
+                                    Real
+                                    <span class="tooltip">Median household income from the U.S. Census Bureau American Community Survey (ACS 5-year estimates).</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Median household income across Durham census tracts. The equity tests that follow measure how AI transportation tools treat these areas differently.</p>
+                            <div id="overview-map" class="map"></div>
+                        </div>
+                    </div>
+                    <div class="overview-right">
+                        <div class="overview-stats" id="overview-cards"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Overview Content -->
+
+            <!-- Test 1 Content -->
+            <div id="test1-content" class="test-content" role="tabpanel" aria-label="Volume Estimation">
+                <div class="metrics-grid" id="metrics"></div>
+
+                <div class="content-split">
+                    <div class="content-map">
+                        <div class="map-container">
+                            <div class="chart-header">
+                                <h2>Prediction Error by Census Tract</h2>
+                                <span class="data-source-badge simulated">
+                                    Simulated
+                                    <span class="tooltip">Simulated counter locations with bias patterns from research literature. Real counter data (Strava Metro, StreetLight) requires vendor access.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">AI volume prediction error across Durham census tracts. Darker red indicates higher prediction errors, concentrated in low-income areas.</p>
+                            <div id="map" class="map"></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-grid">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2>Accuracy by Income Quintile</h2>
+                                <span class="data-source-badge simulated">
+                                    Simulated
+                                    <span class="tooltip">Real census demographics with simulated volume predictions. Bias model based on documented Strava/StreetLight accuracy disparities.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Prediction accuracy across income quintiles (Q1=poorest, Q5=richest). Shows mean absolute error in predicted vs actual pedestrian/cyclist counts.</p>
+                            <div id="chart-income" class="chart"></div>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2>Accuracy by Minority Percentage</h2>
+                                <span class="data-source-badge simulated">
+                                    Simulated
+                                    <span class="tooltip">Racial composition from US Census ACS. Volume predictions simulated with demographic-correlated bias patterns from research literature.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Prediction errors grouped by census tract racial composition. Areas with higher minority percentages show systematically worse accuracy.</p>
+                            <div id="chart-race" class="chart"></div>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2>Predicted vs Actual Volume</h2>
+                                <span class="data-source-badge simulated">
+                                    Simulated
+                                    <span class="tooltip">Simulated counter data with demographic-correlated bias. Diagonal line represents perfect prediction; deviations indicate systematic error.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Predicted volumes vs actual counts. Perfect predictions follow the diagonal. Systematic deviations reveal where bias occurs.</p>
+                            <div id="chart-scatter" class="chart"></div>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2>Prediction Errors by Quintile</h2>
+                                <span class="data-source-badge simulated">
+                                    Simulated
+                                    <span class="tooltip">Simulated prediction errors across all counter locations. Error model calibrated to documented demographic accuracy gaps in volume estimation tools.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Each dot is one counter location. Dots left of zero indicate underprediction by the AI model.</p>
+                            <div id="chart-histogram" class="chart"></div>
+                        </div>
+
+                        <div id="interpretation"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Test 1 Content -->
+
+            <!-- Test 2 Content -->
+            <div id="test2-content" class="test-content" role="tabpanel" aria-label="Crash Prediction">
+                <div class="metrics-grid" id="test2-metrics"></div>
+
+                <div class="content-split">
+                    <div class="content-map">
+                        <div class="map-container">
+                            <div class="chart-header">
+                                <h2>Crash Distribution Map</h2>
+                                <span class="data-source-badge real">
+                                    Real Data
+                                    <span class="tooltip">NCDOT non-motorist crash locations (pedestrian/bicycle), geocoded to census tracts via spatial join.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Actual vs predicted crash counts by census tract. Toggle between views to compare.</p>
+                            <div class="view-toggle" id="toggle-crash-view">
+                                <button class="view-toggle-option active" data-value="actual">Actual</button>
+                                <button class="view-toggle-option" data-value="predicted">AI Predicted</button>
+                                <div class="view-toggle-indicator"></div>
+                            </div>
+                            <div id="map-crashes" class="map"></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-grid">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2>Model Performance by Quintile</h2>
+                                <span class="data-source-badge real">
+                                    Real Data
+                                    <span class="tooltip">Ridge regression trained on real NCDOT non-motorist crash data (2019-2023), evaluated on 2024. Census demographics as features.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Binary classification (above/below within-quintile median) evaluated per income group. Lower scores in poorer quintiles indicate the model struggles to rank tracts within those areas.</p>
+                            <div id="chart-confusion" class="chart"></div>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2>Crashes Over Time</h2>
+                                <span class="data-source-badge real">
+                                    Real Data
+                                    <span class="tooltip">Non-motorist crash trends from NCDOT ArcGIS Feature Service, aggregated by census tract.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Actual vs predicted crashes over time. Shows persistent over/underprediction patterns by income level.</p>
+                            <div id="chart-timeseries" class="chart"></div>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2>Prediction Error by Income Quintile</h2>
+                                <span class="data-source-badge real">
+                                    Real Data
+                                    <span class="tooltip">Mean absolute error of Ridge regression predictions on real NCDOT non-motorist crash data, grouped by neighborhood income quintile.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Relative prediction error by income level. Higher error in poorer quintiles indicates systematic bias in model accuracy.</p>
+                            <div id="chart-error-quintile" class="chart"></div>
+                        </div>
+
+                        <div id="test2-interpretation"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Test 2 Content -->
+
+            <!-- Test 3 Content -->
+            <div id="test3-content" class="test-content" role="tabpanel" aria-label="Infrastructure">
+                <div class="metrics-grid" id="test3-metrics"></div>
+
+                <div class="content-split">
+                    <div class="content-map">
+                        <div class="map-container">
+                            <div class="chart-header">
+                                <h2>Infrastructure Recommendations Map</h2>
+                                <span class="data-source-badge modeled">
+                                    Modeled
+                                    <span class="tooltip">Project types selected by actual infrastructure gaps (OpenStreetMap feature density per tract). Allocation priority and danger scores are simulated.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Safety project locations from AI vs need-based allocation. Shading shows danger scores; markers show projects. Toggle to compare.</p>
+                            <div class="view-toggle" id="toggle-allocation-type">
+                                <button class="view-toggle-option active" data-value="ai">AI Allocation</button>
+                                <button class="view-toggle-option" data-value="need">Need-Based</button>
+                                <div class="view-toggle-indicator"></div>
+                            </div>
+                            <div id="map-infrastructure" class="map"></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-grid">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2>Budget Allocation by Income</h2>
+                                <span class="data-source-badge modeled">
+                                        Modeled
+                                    <span class="tooltip">$5M budget allocated across income quintiles. Project types reflect real infrastructure gaps from OpenStreetMap density data.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">AI-driven vs need-based safety budget allocation per income quintile.</p>
+                            <div id="chart-allocation" class="chart"></div>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2>Equity Comparison: AI vs Need-Based</h2>
+                                <span class="data-source-badge modeled">
+                                        Modeled
+                                    <span class="tooltip">Equity metrics comparing AI-driven vs need-based allocation. Infrastructure gaps derived from OpenStreetMap feature density per census tract.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Four normalized equity metrics (0-100) comparing AI-driven and need-based allocation strategies.</p>
+                            <div id="chart-radar" class="chart"></div>
+                        </div>
+
+                        <div id="test3-interpretation"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Test 3 Content -->
+
+            <!-- Test 4 Content -->
+            <div id="test4-content" class="test-content" role="tabpanel" aria-label="Suppressed Demand">
+                <div class="metrics-grid" id="test4-metrics"></div>
+
+                <div class="content-split">
+                    <div class="content-map">
+                        <div class="map-container">
+                            <div class="chart-header">
+                                <h2>Demand Distribution Map</h2>
+                                <span class="data-source-badge modeled">
+                                    Modeled
+                                    <span class="tooltip">Infrastructure quality scores derived from OpenStreetMap feature density per census tract. Demand suppression modeled from these real infrastructure conditions.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Suppressed, potential, and actual cycling/walking demand across Durham. High suppression (red) indicates latent demand AI tools miss.</p>
+                            <div class="view-toggle" id="toggle-demand-view">
+                                <button class="view-toggle-option active" data-value="suppressed">Suppressed</button>
+                                <button class="view-toggle-option" data-value="potential">Potential</button>
+                                <button class="view-toggle-option" data-value="actual">Actual</button>
+                                <div class="view-toggle-indicator"></div>
+                            </div>
+                            <div id="map-demand" class="map"></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-grid">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2>Demand Suppression: Q1 vs Q5</h2>
+                                <span class="data-source-badge modeled">
+                                        Modeled
+                                    <span class="tooltip">Funnel comparing potential-to-actual demand conversion by income quintile. Infrastructure quality from OpenStreetMap pedestrian/cyclist feature density.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Demand suppression stages from potential to actual usage. Width represents trip volume at each stage. Q1 areas show severe drop-off.</p>
+                            <div id="chart-funnel" class="chart"></div>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h2>AI Detection Capability</h2>
+                                <span class="data-source-badge modeled">
+                                        Modeled
+                                    <span class="tooltip">AI detection accuracy evaluated against infrastructure scores from OpenStreetMap. Three approaches: naive, sophisticated, and human expert baseline.</span>
+                                </span>
+                            </div>
+                            <p class="chart-description">Detection accuracy for suppressed demand. Naive AI fails; sophisticated AI achieves partial detection. Neither matches human expert baseline.</p>
+                            <div id="chart-scorecard" class="chart"></div>
+                        </div>
+
+                        <div id="test4-interpretation"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Test 4 Content -->
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-origin">
+                <span>Duke University</span>
+                <div class="footer-team">
+                    <a href="https://www.linkedin.com/in/jonasnvs/" target="_blank" rel="noopener">Jonas Neves</a>
+                    <span class="separator">&middot;</span>
+                    <a href="https://www.linkedin.com/in/lindsay-gross1/" target="_blank" rel="noopener">Lindsay Gross</a>
+                    <span class="separator">&middot;</span>
+                    <a href="https://www.linkedin.com/in/shreya-mendi/" target="_blank" rel="noopener">Shreya Mendi</a>
+                    <span class="separator">&middot;</span>
+                    <a href="https://www.linkedin.com/in/arnavmahale/" target="_blank" rel="noopener">Arnav Mahale</a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <a href="https://ko-fi.com/c/83359cd426" target="_blank" rel="noopener">
+                    <svg width="16" height="16" viewBox="0 0 16 16"><path d="M4.25 2.5c-1.336 0-2.75 1.164-2.75 3 0 2.15 1.58 4.144 3.365 5.682A20.6 20.6 0 008 13.393a20.6 20.6 0 003.135-2.211C12.92 9.644 14.5 7.65 14.5 5.5c0-1.836-1.414-3-2.75-3-1.373 0-2.609.986-3.029 2.456a.75.75 0 01-1.442 0C6.859 3.486 5.623 2.5 4.25 2.5zM8 14.25l-.345.666-.002-.001-.006-.003-.018-.01a7.6 7.6 0 01-.31-.17 22.1 22.1 0 01-3.434-2.414C2.045 10.731 0 8.35 0 5.5 0 2.836 2.086 1 4.25 1 5.797 1 7.153 1.802 8 3.02 8.847 1.802 10.203 1 11.75 1 13.914 1 16 2.836 16 5.5c0 2.85-2.045 5.231-3.885 6.818a22.1 22.1 0 01-3.744 2.584l-.018.01-.006.003h-.002L8 14.25z"/></svg>
+                    Support Our Project
+                </a>
+                <a href="https://github.com/safe-t-ai/safe-t-ai.github.io" target="_blank" rel="noopener">
+                    <svg width="18" height="18" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                    Source Code
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</body>
+</html>

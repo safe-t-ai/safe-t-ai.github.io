@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-02-12T17:56:58.363844+00:00",
+  "data_hash": "local",
+  "github_run_url": "",
+  "git_sha": "",
+  "sources": {
+    "real": [
+      "US Census ACS 2022",
+      "OpenStreetMap infrastructure inventory",
+      "NCDOT non-motorist crashes (ArcGIS)"
+    ],
+    "simulated": [
+      "volume predictions",
+      "infrastructure recommendations",
+      "demand analysis"
+    ]
+  }
+}
