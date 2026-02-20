@@ -9,7 +9,7 @@
  *      with value: {"clientId":"<id>","clientSecret":"<secret>"}
  */
 
-const CLIENT_ID = 'Iv23liJac8Tv3k49gcGU';
+const CLIENT_ID = 'Ov23liKaumLzyPokcbFG';
 const PROXY_URL = 'https://cors-proxy.jonasneves.workers.dev';
 const GATE_REPO = 'safe-t-ai/safe-t-ai'; // private repo — collaborator = access granted
 const STORAGE_KEY = 'safe-t-auth';
