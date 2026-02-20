@@ -221,7 +221,7 @@
 
         .req-item {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: var(--space-3);
             padding: var(--space-3) var(--space-4);
             border-radius: var(--radius-md);
@@ -234,7 +234,7 @@
         .req-item.needs-info  { background: #fefce8; }
         .req-item.unknown     { background: var(--color-surface-grouped); }
 
-        .req-icon { flex-shrink: 0; margin-top: 1px; display: flex; }
+        .req-icon { flex-shrink: 0; display: flex; }
         .req-icon svg { width: 17px; height: 17px; }
         .req-icon.action     { color: var(--color-danger); }
         .req-icon.done       { color: var(--color-success); }
@@ -506,7 +506,24 @@
         .status-opt:hover { background: var(--color-surface-grouped); }
         .status-opt.current { font-weight: 600; }
 
-        /* ── Save status indicator ── */
+        /* ── Save button + status indicator ── */
+        .save-btn {
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: var(--font-caption);
+            font-weight: 600;
+            padding: 0.35rem 0.9rem;
+            cursor: pointer;
+            min-height: 32px;
+            transition: background 0.15s var(--ease-spring);
+        }
+        .save-btn:hover { background: var(--color-accent-active); }
+        .save-btn:disabled { opacity: 0.6; cursor: default; }
+        .save-btn:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+        .save-btn:focus:not(:focus-visible) { outline: none; }
         .save-status {
             font-size: var(--font-caption);
             font-weight: 500;
@@ -545,6 +562,7 @@
                 <span class="header-badge">Team</span>
             </div>
             <div class="user-menu">
+                <button id="save-btn" class="save-btn" type="button" hidden>Save</button>
                 <span id="save-status" class="save-status" aria-live="polite"></span>
                 <img id="user-avatar" class="user-avatar" alt="" src="" width="28" height="28">
                 <span id="user-name" class="user-name"></span>
@@ -663,8 +681,8 @@ const GATE_REPO = 'safe-t-ai/safe-t-ai';
 
 // ── State ─────────────────────────────────────────────────────
 let appState = null; // { data, sha, token, user }
-let saveTimer = null;
 let activeDropdown = null;
+let draftsDirty = false;
 
 // ── Data fetch / persist ──────────────────────────────────────
 async function fetchAppData(token) {
@@ -685,9 +703,23 @@ function setSaveStatus(state) {
     el.textContent = { saving: 'Saving…', saved: 'Saved', error: 'Save failed' }[state] ?? '';
 }
 
-async function persistData() {
+function markDirty() {
+    draftsDirty = true;
+    const btn = document.getElementById('save-btn');
+    if (btn) btn.hidden = false;
+}
+
+function clearDirty() {
+    draftsDirty = false;
+    const btn = document.getElementById('save-btn');
+    if (btn) btn.hidden = true;
+}
+
+async function persistData(msg = `[tracker] update via ${appState?.user.login}`) {
     if (!appState) return;
+    const btn = document.getElementById('save-btn');
     setSaveStatus('saving');
+    if (btn) btn.disabled = true;
     try {
         const json = JSON.stringify(appState.data, null, 2);
         const raw = new TextEncoder().encode(json);
@@ -702,25 +734,19 @@ async function persistData() {
                     Accept: 'application/vnd.github+json',
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    message: `[tracker] update via ${appState.user.login}`,
-                    content: btoa(binary),
-                    sha: appState.sha,
-                }),
+                body: JSON.stringify({ message: msg, content: btoa(binary), sha: appState.sha }),
             }
         );
         if (!res.ok) throw new Error('SAVE_FAILED');
         appState.sha = (await res.json()).content.sha;
+        clearDirty();
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus(null), 2500);
     } catch {
         setSaveStatus('error');
+    } finally {
+        if (btn) btn.disabled = false;
     }
-}
-
-function scheduleSave() {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(persistData, 1200);
 }
 
 // ── Rendering ─────────────────────────────────────────────────
@@ -881,19 +907,19 @@ function renderTracker(sections) {
             );
             updateSectionBadge(si);
             updateProgress();
-            scheduleSave();
+            persistData(`[tracker] ${appState.data.sections[si].questions[qi].num}: status → ${newStatus} via ${appState.user.login}`);
             return;
         }
 
         closeActiveDropdown();
     });
 
-    // Draft text edits
+    // Draft text edits — accumulate locally, commit via Save button
     root.addEventListener('input', e => {
         const ta = e.target.closest('.q-draft-textarea');
         if (!ta) return;
         appState.data.sections[+ta.dataset.si].questions[+ta.dataset.qi].draft = ta.value || null;
-        scheduleSave();
+        markDirty();
     });
 
     // Keyboard support for dropdown
@@ -1004,6 +1030,9 @@ async function showApp(user, token) {
     document.getElementById('user-avatar').alt = user.login;
     document.getElementById('user-name').textContent = user.login;
     document.getElementById('logout-btn').addEventListener('click', logout);
+    document.getElementById('save-btn').addEventListener('click', () =>
+        persistData(`[tracker] draft update via ${appState.user.login}`)
+    );
     renderTracker(data.sections);
     renderRequirements(data.requirements, data.facts);
     renderCountdown();
