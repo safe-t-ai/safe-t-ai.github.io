@@ -7,6 +7,8 @@
     <meta name="theme-color" content="#0f172a">
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/png" href="/logo.png">
+    <!-- Reads stored auth synchronously before first paint to suppress login wall flash -->
+    <script>(function(){try{var a=JSON.parse(localStorage.getItem('safe-t-auth'));if(a&&a.token)document.documentElement.dataset.session='1';}catch(e){}}())</script>
     <style>
         :root {
             --color-accent: #0891b2;
@@ -536,6 +538,15 @@
         .save-status[data-state="saved"]  { color: #6ee7b7; }
         .save-status[data-state="error"]  { color: #fca5a5; }
 
+        /* ── Session restore flash prevention ── */
+        :root[data-session="1"] #login-wall { display: none; }
+        :root[data-session="1"] #app { display: block; }
+
+        /* ── Tracker loading skeleton ── */
+        .skel-progress { height: 6px; flex: 1; border-radius: 99px; }
+        .skel-section  { height: 64px; border-radius: var(--radius-lg); margin-bottom: var(--space-4); }
+        .load-error    { padding: var(--space-8); text-align: center; color: var(--color-label-secondary); font-size: var(--font-subhead); }
+
         /* ── Overview card ── */
         .overview-card { background: var(--color-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: var(--space-4); }
         .overview-summary { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); cursor: pointer; font-size: var(--font-subhead); font-weight: 600; color: var(--color-label); gap: var(--space-3); list-style: none; }
@@ -755,6 +766,8 @@ async function fetchAppData(token) {
         `https://api.github.com/repos/${GATE_REPO}/contents/application.json`,
         { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
     );
+    if (res.status === 401) throw new Error('TOKEN_EXPIRED');
+    if (res.status === 403 || res.status === 404) throw new Error('ACCESS_DENIED');
     if (!res.ok) throw new Error('DATA_FETCH_FAILED');
     const file = await res.json();
     const bytes = Uint8Array.from(atob(file.content.replace(/\n/g, '')), c => c.charCodeAt(0));
@@ -1171,6 +1184,48 @@ function setupNav() {
     });
 }
 
+function showTrackerSkeleton() {
+    document.getElementById('progress-wrap').innerHTML = '<div class="skeleton skel-progress"></div>';
+    document.getElementById('tracker-root').innerHTML =
+        Array(5).fill('<div class="skeleton skel-section"></div>').join('');
+}
+
+// Used on session restore: show shell immediately from cached creds, then fetch data.
+// Eliminates the login wall flash and the redundant verifyAccess round-trip.
+async function restoreSession(auth) {
+    document.getElementById('login-wall').remove();
+    const app = document.getElementById('app');
+    app.hidden = false;
+    document.documentElement.removeAttribute('data-session');
+    document.getElementById('user-avatar').src = auth.user.avatar_url;
+    document.getElementById('user-avatar').alt = auth.user.login;
+    document.getElementById('user-name').textContent = auth.user.login;
+    document.getElementById('logout-btn').addEventListener('click', logout);
+    document.getElementById('save-btn').addEventListener('click', () =>
+        persistData(`[tracker] draft update via ${appState.user.login}`)
+    );
+    renderCountdown();
+    setupNav();
+    showTrackerSkeleton();
+    try {
+        const { data, sha } = await fetchAppData(auth.token);
+        appState = { data, sha, token: auth.token, user: auth.user };
+        renderTracker(data.sections);
+        renderRequirements(data.requirements, data.facts);
+        setupOwnerDelegation(document.getElementById('panel-checklist'));
+        setInterval(updateSaveTime, 30000);
+    } catch (err) {
+        if (err.message === 'TOKEN_EXPIRED' || err.message === 'ACCESS_DENIED') {
+            logout();
+        } else {
+            document.getElementById('tracker-root').innerHTML =
+                '<p class="load-error">Failed to load data. Please refresh the page.</p>';
+        }
+    }
+}
+
+// Used on first OAuth login: keep login wall visible until data is ready,
+// so errors can still be shown in the login card.
 async function showApp(user, token) {
     const { data, sha } = await fetchAppData(token);
     appState = { data, sha, token, user };
@@ -1209,17 +1264,14 @@ async function init() {
                 return;
             }
         } catch (err) {
-            showError(err.message === 'ACCESS_DENIED'
+            showError(err.message === 'ACCESS_DENIED' || err.message === 'TOKEN_EXPIRED'
                 ? 'Your GitHub account does not have access to this workspace.'
                 : 'Sign-in failed. Please try again.');
             return;
         }
     }
     const auth = getAuth();
-    if (auth) {
-        try { await verifyAccess(auth.token); await showApp(auth.user, auth.token); }
-        catch { logout(); }
-    }
+    if (auth) await restoreSession(auth);
 }
 
 init();
