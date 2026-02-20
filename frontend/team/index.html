@@ -339,7 +339,7 @@
             cursor: pointer;
             padding: 0;
             margin-top: var(--space-1);
-            min-height: 32px;
+            min-height: 44px;
         }
 
         .q-draft-toggle:hover { color: var(--color-accent-active); }
@@ -962,7 +962,7 @@ function renderTracker(sections) {
                     <button class="q-draft-toggle" data-target="draft-${si}-${qi}" type="button">
                         <span class="toggle-label">${q.draft ? 'Show draft' : 'Add draft'}</span> ▾
                     </button>
-                    <div class="q-draft-box" id="draft-${si}-${qi}">
+                    <div class="q-draft-box ${q.draft ? 'open' : ''}" id="draft-${si}-${qi}">
                         <textarea class="q-draft-textarea" data-si="${si}" data-qi="${qi}" data-limit="${q.limit || ''}" rows="5">${q.draft ? escHtml(q.draft) : ''}</textarea>
                         <button class="q-copy-btn" data-si="${si}" data-qi="${qi}" type="button">Copy</button>
                         <div class="draft-meta">
