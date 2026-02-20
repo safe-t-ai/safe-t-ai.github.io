@@ -577,9 +577,17 @@
         .owner-opt:hover { background: var(--color-surface-grouped); }
         .owner-opt.current { font-weight: 600; }
 
+        /* ── Question prompt + metadata ── */
+        .q-prompt { font-size: var(--font-subhead); color: var(--color-label); line-height: 1.45; }
+        .q-meta-line { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-top: 0.1rem; }
+        .required-badge { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #991b1b; background: #fee2e2; padding: 0.1rem 0.45rem; border-radius: 3px; }
+        .optional-badge { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.04em; color: var(--color-label-tertiary); background: var(--color-fill-tertiary); padding: 0.1rem 0.45rem; border-radius: 3px; }
+        .q-limit-label { font-size: var(--font-caption); color: var(--color-label-tertiary); }
+
         /* ── Word count ── */
         .draft-meta { margin-top: var(--space-2); }
         .word-count { font-size: var(--font-caption); color: var(--color-label-tertiary); }
+        .word-count.over-limit { color: var(--color-danger); font-weight: 500; }
 
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 
@@ -666,7 +674,7 @@
                     <p class="overview-meta">$1M–$3M per org · 36-month funding · Accelerator Sep 2026 · Demo Day Dec 2026</p>
                 </div>
             </details>
-            <p class="format-note">Draft convention: drafts beginning with <code>...</code> are sentence completions — the <code>...</code> stands for the question's sentence opener (e.g. "The public service challenge this project addresses is"). Paste only the continuation into Submittable; the opener is already in the form field.</p>
+            <p class="format-note">Draft convention: drafts beginning with <code>...</code> are sentence completions — paste only the continuation into Submittable. The full question prompt is shown under each item number.</p>
             <div class="progress-bar-wrap" id="progress-wrap"></div>
             <div id="tracker-root"></div>
         </div>
@@ -850,9 +858,27 @@ const STATUS_LABELS = {
 };
 const STATUS_OPTS = ['done', 'draft', 'needs-info', 'not-started', 'action'];
 function wordCount(text) {
-    if (!text?.trim()) return '0 words';
-    const n = text.trim().split(/\s+/).length;
-    return `${n} word${n === 1 ? '' : 's'}`;
+    if (!text?.trim()) return 0;
+    return text.trim().split(/\s+/).length;
+}
+
+function countDisplay(text, limit) {
+    const isChars = limit?.includes('chars');
+    if (isChars) {
+        const n = text?.length ?? 0;
+        const max = parseInt(limit);
+        return `${n} / ${max} char${n === 1 ? '' : 's'}`;
+    }
+    const n = wordCount(text);
+    if (!limit) return `${n} word${n === 1 ? '' : 's'}`;
+    const max = parseInt(limit);
+    return `${n} / ${max} word${n === 1 ? '' : 's'}`;
+}
+
+function isOverLimit(text, limit) {
+    if (!limit) return false;
+    if (limit.includes('chars')) return (text?.length ?? 0) > parseInt(limit);
+    return wordCount(text) > parseInt(limit);
 }
 
 function ownerPill(owner, idx, type) {
@@ -920,26 +946,33 @@ function renderTracker(sections) {
     updateProgress();
 
     root.innerHTML = sections.map((sec, si) => {
-        const questions = sec.questions.map((q, qi) => `
+        const questions = sec.questions.map((q, qi) => {
+            const reqBadge = q.required === false
+                ? `<span class="optional-badge">Optional</span>`
+                : `<span class="required-badge">Required</span>`;
+            const limitBadge = q.limit ? `<span class="q-limit-label">Limit: ${q.limit}</span>` : '';
+            const overLimit = isOverLimit(q.draft, q.limit);
+            return `
             <div class="question-row">
                 <span class="q-num">${q.num}</span>
                 <div class="q-body">
-                    <span class="q-name">${q.name}</span>
+                    <span class="q-prompt">${q.prompt || q.name}</span>
+                    <div class="q-meta-line">${reqBadge}${limitBadge}</div>
                     ${q.note ? `<span class="q-note">${q.note}</span>` : ''}
                     <button class="q-draft-toggle" data-target="draft-${si}-${qi}" type="button">
                         <span class="toggle-label">${q.draft ? 'Show draft' : 'Add draft'}</span> ▾
                     </button>
                     <div class="q-draft-box" id="draft-${si}-${qi}">
-                        <textarea class="q-draft-textarea" data-si="${si}" data-qi="${qi}" rows="5">${q.draft ? escHtml(q.draft) : ''}</textarea>
+                        <textarea class="q-draft-textarea" data-si="${si}" data-qi="${qi}" data-limit="${q.limit || ''}" rows="5">${q.draft ? escHtml(q.draft) : ''}</textarea>
                         <button class="q-copy-btn" data-si="${si}" data-qi="${qi}" type="button">Copy</button>
                         <div class="draft-meta">
-                            <span class="word-count" id="wc-${si}-${qi}">${wordCount(q.draft)}</span>
+                            <span class="word-count${overLimit ? ' over-limit' : ''}" id="wc-${si}-${qi}">${countDisplay(q.draft, q.limit)}</span>
                         </div>
                     </div>
                 </div>
                 <div class="q-actions">${editableBadge(si, qi, q.status)}</div>
             </div>
-        `).join('');
+        `;}).join('');
 
         return `
             <div class="tracker-section" id="tsec-${si}">
@@ -1033,7 +1066,11 @@ function renderTracker(sections) {
         appState.data.sections[si].questions[qi].draft = ta.value || null;
         markDirty();
         const wcEl = document.getElementById(`wc-${si}-${qi}`);
-        if (wcEl) wcEl.textContent = wordCount(ta.value);
+        if (wcEl) {
+            const limit = ta.dataset.limit || null;
+            wcEl.textContent = countDisplay(ta.value, limit);
+            wcEl.classList.toggle('over-limit', isOverLimit(ta.value, limit));
+        }
     });
 
     // Keyboard support for dropdown
