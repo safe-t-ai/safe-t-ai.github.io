@@ -13,7 +13,7 @@ const CLIENT_ID = 'Ov23liKaumLzyPokcbFG';
 const PROXY_URL = 'https://cors-proxy.jonasneves.workers.dev';
 const GATE_REPO = 'safe-t-ai/safe-t-ai'; // private repo — collaborator = access granted
 const STORAGE_KEY = 'safe-t-auth';
-const REDIRECT_URI = () => `${window.location.origin}/team/`;
+function redirectUri() { return `${window.location.origin}/team/`; }
 
 /** @returns {{ token: string, user: object } | null} */
 export function getAuth() {
@@ -47,7 +47,7 @@ export function startLogin() {
     sessionStorage.setItem('oauth_state', state);
     const params = new URLSearchParams({
         client_id: CLIENT_ID,
-        redirect_uri: REDIRECT_URI(),
+        redirect_uri: redirectUri(),
         scope: 'repo',
         state,
     });
@@ -74,7 +74,7 @@ export async function handleCallback() {
     const res = await fetch(`${PROXY_URL}/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_id: CLIENT_ID, code, redirect_uri: REDIRECT_URI() }),
+        body: JSON.stringify({ client_id: CLIENT_ID, code, redirect_uri: redirectUri() }),
     });
     const data = await res.json();
     if (data.error || !data.access_token) {

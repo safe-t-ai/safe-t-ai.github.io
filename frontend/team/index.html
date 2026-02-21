@@ -447,7 +447,7 @@
         .links-list a:focus:not(:focus-visible) { outline: none; }
         .link-icon { width: 28px; height: 28px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
         .link-name { font-weight: 500; flex: 1; }
-        .link-sub { font-size: var(--font-caption); color: var(--color-label-secondary); }
+        .link-sub { font-size: var(--font-caption); color: var(--color-label-secondary); display: block; }
         .link-arrow { color: var(--color-label-tertiary); font-size: var(--font-caption); }
 
         /* ── Skeleton / login wall ── */
@@ -712,11 +712,11 @@
                 <div class="card">
                     <p class="card-title">Quick Links</p>
                     <ul class="links-list">
-                        <li><a href="https://g.co/impactchallenge/aigov" target="_blank" rel="noopener"><span class="link-icon">🏆</span><span class="link-name">Apply on Submittable<span class="link-sub" style="display:block">g.co/impactchallenge/aigov</span></span><span class="link-arrow">↗</span></a></li>
-                        <li><a href="https://safe-t-ai.github.io" target="_blank" rel="noopener"><span class="link-icon">📊</span><span class="link-name">Live Dashboard<span class="link-sub" style="display:block">safe-t-ai.github.io</span></span><span class="link-arrow">↗</span></a></li>
-                        <li><a href="https://github.com/safe-t-ai/safe-t-ai.github.io" target="_blank" rel="noopener"><span class="link-icon">🐙</span><span class="link-name">Source Code (public)<span class="link-sub" style="display:block">safe-t-ai/safe-t-ai.github.io</span></span><span class="link-arrow">↗</span></a></li>
-                        <li><a href="https://services.google.com/fh/files/blogs/gic_aigov_faqs.pdf" target="_blank" rel="noopener"><span class="link-icon">📄</span><span class="link-name">FAQ PDF<span class="link-sub" style="display:block">gic_aigov_faqs.pdf</span></span><span class="link-arrow">↗</span></a></li>
-                        <li><a href="mailto:gic-aigov@google.com"><span class="link-icon">✉️</span><span class="link-name">Google Contact<span class="link-sub" style="display:block">gic-aigov@google.com</span></span></a></li>
+                        <li><a href="https://g.co/impactchallenge/aigov" target="_blank" rel="noopener"><span class="link-icon">🏆</span><span class="link-name">Apply on Submittable<span class="link-sub">g.co/impactchallenge/aigov</span></span><span class="link-arrow">↗</span></a></li>
+                        <li><a href="https://safe-t-ai.github.io" target="_blank" rel="noopener"><span class="link-icon">📊</span><span class="link-name">Live Dashboard<span class="link-sub">safe-t-ai.github.io</span></span><span class="link-arrow">↗</span></a></li>
+                        <li><a href="https://github.com/safe-t-ai/safe-t-ai.github.io" target="_blank" rel="noopener"><span class="link-icon">🐙</span><span class="link-name">Source Code (public)<span class="link-sub">safe-t-ai/safe-t-ai.github.io</span></span><span class="link-arrow">↗</span></a></li>
+                        <li><a href="https://services.google.com/fh/files/blogs/gic_aigov_faqs.pdf" target="_blank" rel="noopener"><span class="link-icon">📄</span><span class="link-name">FAQ PDF<span class="link-sub">gic_aigov_faqs.pdf</span></span><span class="link-arrow">↗</span></a></li>
+                        <li><a href="mailto:gic-aigov@google.com"><span class="link-icon">✉️</span><span class="link-name">Google Contact<span class="link-sub">gic-aigov@google.com</span></span></a></li>
                     </ul>
                 </div>
             </div>
@@ -826,8 +826,7 @@ async function persistData(msg = `[tracker] update via ${appState?.user.login}`)
     try {
         const json = JSON.stringify(appState.data, null, 2);
         const raw = new TextEncoder().encode(json);
-        let binary = '';
-        raw.forEach(b => binary += String.fromCharCode(b));
+        const binary = Array.from(raw, b => String.fromCharCode(b)).join('');
         const res = await fetch(
             `https://api.github.com/repos/${GATE_REPO}/contents/application.json`,
             {
@@ -1232,30 +1231,39 @@ function showTrackerSkeleton() {
         Array(5).fill('<div class="skeleton skel-section"></div>').join('');
 }
 
-// Used on session restore: show shell immediately from cached creds, then fetch data.
-// Eliminates the login wall flash and the redundant verifyAccess round-trip.
-async function restoreSession(auth) {
+/** Wires up the app shell (header, nav, save button) — shared by both entry paths. */
+function setupAppShell(user) {
     document.getElementById('login-wall').remove();
-    const app = document.getElementById('app');
-    app.hidden = false;
+    document.getElementById('app').hidden = false;
     document.documentElement.removeAttribute('data-session');
-    document.getElementById('user-avatar').src = auth.user.avatar_url;
-    document.getElementById('user-avatar').alt = auth.user.login;
-    document.getElementById('user-name').textContent = auth.user.login;
+    document.getElementById('user-avatar').src = user.avatar_url;
+    document.getElementById('user-avatar').alt = user.login;
+    document.getElementById('user-name').textContent = user.login;
     document.getElementById('logout-btn').addEventListener('click', logout);
     document.getElementById('save-btn').addEventListener('click', () =>
         persistData(`[tracker] draft update via ${appState.user.login}`)
     );
     renderCountdown();
     setupNav();
+}
+
+/** Populates tracker and checklist from loaded data. */
+function renderAppData(data) {
+    renderTracker(data.sections);
+    renderRequirements(data.requirements, data.facts);
+    setupOwnerDelegation(document.getElementById('panel-checklist'));
+    setInterval(updateSaveTime, 30000);
+}
+
+// Session restore: show shell immediately from cached creds, then fetch data.
+// Eliminates the login wall flash and the redundant verifyAccess round-trip.
+async function restoreSession(auth) {
+    setupAppShell(auth.user);
     showTrackerSkeleton();
     try {
         const { data, sha } = await fetchAppData(auth.token);
         appState = { data, sha, token: auth.token, user: auth.user };
-        renderTracker(data.sections);
-        renderRequirements(data.requirements, data.facts);
-        setupOwnerDelegation(document.getElementById('panel-checklist'));
-        setInterval(updateSaveTime, 30000);
+        renderAppData(data);
     } catch (err) {
         if (err.message === 'TOKEN_EXPIRED' || err.message === 'ACCESS_DENIED') {
             logout();
@@ -1266,27 +1274,13 @@ async function restoreSession(auth) {
     }
 }
 
-// Used on first OAuth login: keep login wall visible until data is ready,
+// First OAuth login: keep login wall visible until data is ready,
 // so errors can still be shown in the login card.
 async function showApp(user, token) {
     const { data, sha } = await fetchAppData(token);
     appState = { data, sha, token, user };
-    document.getElementById('login-wall').remove();
-    const app = document.getElementById('app');
-    app.hidden = false;
-    document.getElementById('user-avatar').src = user.avatar_url;
-    document.getElementById('user-avatar').alt = user.login;
-    document.getElementById('user-name').textContent = user.login;
-    document.getElementById('logout-btn').addEventListener('click', logout);
-    document.getElementById('save-btn').addEventListener('click', () =>
-        persistData(`[tracker] draft update via ${appState.user.login}`)
-    );
-    renderTracker(data.sections);
-    renderRequirements(data.requirements, data.facts);
-    renderCountdown();
-    setupNav();
-    setupOwnerDelegation(document.getElementById('panel-checklist'));
-    setInterval(updateSaveTime, 30000);
+    setupAppShell(user);
+    renderAppData(data);
 }
 
 function showError(msg) {
