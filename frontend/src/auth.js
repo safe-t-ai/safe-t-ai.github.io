@@ -81,11 +81,9 @@ export async function handleCallback() {
         throw new Error(data.error_description || data.error || 'TOKEN_EXCHANGE_FAILED');
     }
 
-    const userRes = await fetch('https://api.github.com/user', {
-        headers: { Authorization: `Bearer ${data.access_token}`, Accept: 'application/vnd.github+json' }
-    });
-    if (!userRes.ok) throw new Error('USER_FETCH_FAILED');
-    const user = await userRes.json();
+    // Proxy already fetches /user server-side and returns it as data.user.
+    if (!data.user) throw new Error('USER_FETCH_FAILED');
+    const user = data.user;
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: data.access_token, user }));
     return { token: data.access_token, user };
