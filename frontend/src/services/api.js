@@ -9,7 +9,9 @@ class APIClient {
      * @returns {Promise<any>}
      */
     async get(endpoint) {
-        const response = await fetch(`/data/${endpoint}.json`);
+        // Append data branch git SHA so browsers fetch fresh JSON after each data refresh.
+        const v = import.meta.env.VITE_DATA_HASH || 'dev'
+        const response = await fetch(`/data/${endpoint}.json?v=${v}`);
 
         if (!response.ok) {
             throw new Error(`Failed to load ${endpoint}: ${response.statusText}`);
