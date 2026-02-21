@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-24.04-arm
 
     environment:
       name: github-pages
@@ -53,7 +53,9 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install and build
-        run: cd frontend && npm ci && GITHUB_PAGES=true npm run build
+        run: |
+          DATA_HASH=$(git rev-parse origin/data | cut -c1-8)
+          cd frontend && npm ci && VITE_DATA_HASH=$DATA_HASH GITHUB_PAGES=true npm run build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
