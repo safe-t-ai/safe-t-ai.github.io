@@ -3,42 +3,42 @@
     "stage1_potential": 100.0,
     "stage2_destinations": 80.70443752946723,
     "stage3_would_use_if_safe": 56.05665629420085,
-    "stage4_actually_use": 3.9963306247610584,
-    "total_suppression_pct": 96.00366937523894
+    "stage4_actually_use": 3.3266546727651956,
+    "total_suppression_pct": 96.6733453272348
   },
   "Q2": {
     "stage1_potential": 100.0,
     "stage2_destinations": 81.69177557755776,
     "stage3_would_use_if_safe": 57.53766336633663,
-    "stage4_actually_use": 2.6751781781142516,
-    "total_suppression_pct": 97.32482182188575
+    "stage4_actually_use": 2.4584815593896057,
+    "total_suppression_pct": 97.5415184406104
   },
   "Q3": {
     "stage1_potential": 100.0,
     "stage2_destinations": 82.53208225437929,
     "stage3_would_use_if_safe": 58.79812338156892,
-    "stage4_actually_use": 2.387876679878688,
-    "total_suppression_pct": 97.61212332012131
+    "stage4_actually_use": 2.206109753941805,
+    "total_suppression_pct": 97.7938902460582
   },
   "Q4": {
     "stage1_potential": 100.0,
     "stage2_destinations": 83.1357969027672,
     "stage3_would_use_if_safe": 59.703695354150796,
-    "stage4_actually_use": 2.0329836397791756,
-    "total_suppression_pct": 97.96701636022082
+    "stage4_actually_use": 1.838714748276688,
+    "total_suppression_pct": 98.16128525172331
   },
   "Q5 (Richest)": {
     "stage1_potential": 100.0,
     "stage2_destinations": 85.3799302215936,
     "stage3_would_use_if_safe": 63.06989533239038,
-    "stage4_actually_use": 3.7491176427993738,
-    "total_suppression_pct": 96.25088235720062
+    "stage4_actually_use": 3.6860463115466584,
+    "total_suppression_pct": 96.31395368845335
   },
   "overall": {
     "stage1_potential": 100.0,
     "stage2_destinations": 88.0,
     "stage3_would_use_if_safe": 65.0,
-    "stage4_actually_use": 2.915474539568591,
-    "total_suppression_pct": 97.08452546043141
+    "stage4_actually_use": 2.670824895776795,
+    "total_suppression_pct": 97.32917510422321
   }
 }

@@ -32,7 +32,7 @@
     },
     "Q2": {
       "actual_crashes": 3.4615384615384617,
-      "ai_predicted_crashes": 2.6419171569000786,
+      "ai_predicted_crashes": 2.641917156900079,
       "mae": 1.8694394847046096,
       "error_pct": 63.746985134670226
     },
@@ -44,8 +44,8 @@
     },
     "Q4": {
       "actual_crashes": 2.0,
-      "ai_predicted_crashes": 1.711558069991106,
-      "mae": 1.5880939373746972,
+      "ai_predicted_crashes": 1.7115580699911053,
+      "mae": 1.5880939373746967,
       "error_pct": 58.02678804092624
     },
     "Q5 (Richest)": {
