@@ -20,6 +20,10 @@ export function logout() {
     window.location.href = '/team/';
 }
 
+export function clearAuth() {
+    localStorage.removeItem(STORAGE_KEY);
+}
+
 /**
  * Verifies the stored token still has access to the gate repo.
  * Throws 'TOKEN_EXPIRED' or 'ACCESS_DENIED' on failure.

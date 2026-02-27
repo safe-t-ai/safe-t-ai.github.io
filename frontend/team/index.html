@@ -762,7 +762,7 @@
 </div>
 
 <script type="module">
-import { getAuth, logout, verifyAccess, startLogin } from '/src/auth.js';
+import { getAuth, logout, clearAuth, startLogin } from '/src/auth.js';
 
 const GATE_REPO = 'safe-t-ai/safe-t-ai';
 
@@ -1265,22 +1265,16 @@ async function restoreSession(auth) {
         appState = { data, sha, token: auth.token, user: auth.user };
         renderAppData(data);
     } catch (err) {
-        if (err.message === 'TOKEN_EXPIRED' || err.message === 'ACCESS_DENIED') {
+        if (err.message === 'TOKEN_EXPIRED') {
             logout();
+        } else if (err.message === 'ACCESS_DENIED') {
+            clearAuth();
+            window.location.href = '/team/?error=org';
         } else {
             document.getElementById('tracker-root').innerHTML =
                 '<p class="load-error">Failed to load data. Please refresh the page.</p>';
         }
     }
-}
-
-// First OAuth login: keep login wall visible until data is ready,
-// so errors can still be shown in the login card.
-async function showApp(user, token) {
-    const { data, sha } = await fetchAppData(token);
-    appState = { data, sha, token, user };
-    setupAppShell(user);
-    renderAppData(data);
 }
 
 function showError(msg) {
@@ -1291,6 +1285,11 @@ function showError(msg) {
 
 async function init() {
     document.getElementById('login-btn').addEventListener('click', startLogin);
+    if (new URLSearchParams(location.search).get('error') === 'org') {
+        const el = document.getElementById('login-error');
+        el.innerHTML = 'Your account doesn\'t have access to the safe-t-ai organization. <a href="https://github.com/settings/connections/applications/Ov23li3dnFMUNHbu1SjZ" target="_blank" rel="noopener">Grant access in GitHub Settings</a>, then sign in again.';
+        el.classList.add('visible');
+    }
     const auth = getAuth();
     if (auth) await restoreSession(auth);
 }
