@@ -24,8 +24,8 @@
     "stage1_potential": 100.0,
     "stage2_destinations": 83.1357969027672,
     "stage3_would_use_if_safe": 59.703695354150796,
-    "stage4_actually_use": 1.838714748276688,
-    "total_suppression_pct": 98.16128525172331
+    "stage4_actually_use": 1.8403987726725186,
+    "total_suppression_pct": 98.15960122732749
   },
   "Q5 (Richest)": {
     "stage1_potential": 100.0,
@@ -38,7 +38,7 @@
     "stage1_potential": 100.0,
     "stage2_destinations": 88.0,
     "stage3_would_use_if_safe": 65.0,
-    "stage4_actually_use": 2.670824895776795,
-    "total_suppression_pct": 97.32917510422321
+    "stage4_actually_use": 2.6711955366821973,
+    "total_suppression_pct": 97.3288044633178
   }
 }
