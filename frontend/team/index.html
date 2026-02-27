@@ -66,9 +66,6 @@
             background: var(--color-dark);
             color: white;
             padding: 1.25rem var(--space-8);
-            position: sticky;
-            top: 0;
-            z-index: 200;
         }
 
         .header-inner {
@@ -97,26 +94,28 @@
             border-radius: var(--radius-sm);
         }
 
-        .user-menu { display: flex; align-items: center; gap: var(--space-3); }
+        .user-menu { display: flex; align-items: center; gap: var(--space-3); margin-left: auto; }
 
-        .user-avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--color-separator); flex-shrink: 0; }
 
-        .user-name { font-size: var(--font-footnote); color: var(--color-on-dark-secondary); }
+        .user-name { font-size: var(--font-footnote); color: var(--color-label-secondary); }
 
         .logout-btn {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.12);
-            color: var(--color-on-dark-secondary);
+            background: transparent;
+            border: 1px solid var(--color-separator);
+            color: var(--color-label-secondary);
             font-family: inherit;
             font-size: var(--font-caption);
             padding: 0.35rem 0.75rem;
             border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: background 0.15s var(--ease-spring), color 0.15s var(--ease-spring);
-            min-height: 44px;
+            transition: background 0.15s var(--ease-spring), color 0.15s var(--ease-spring), border-color 0.15s var(--ease-spring);
+            min-height: 32px;
+            touch-action: manipulation;
         }
 
-        .logout-btn:hover { background: rgba(255,255,255,0.14); color: white; }
+        .logout-btn:hover { background: var(--color-surface-grouped); color: var(--color-label); border-color: var(--color-label-secondary); }
+        .logout-btn:active { opacity: 0.7; }
         .logout-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
         .logout-btn:focus:not(:focus-visible) { outline: none; }
 
@@ -125,12 +124,16 @@
             background: var(--color-surface);
             border-bottom: 2px solid var(--color-separator);
             padding: 0 var(--space-8);
+            position: sticky;
+            top: 0;
+            z-index: 200;
         }
 
         .nav-bar-inner {
             max-width: var(--max-width);
             margin: 0 auto;
             display: flex;
+            align-items: center;
             gap: 0;
         }
 
@@ -458,7 +461,7 @@
         .login-wall { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: var(--space-6); }
         .login-backdrop { position: fixed; inset: 0; pointer-events: none; overflow: hidden; filter: blur(6px); opacity: 0.5; }
         .login-backdrop-header { background: var(--color-dark); height: 56px; }
-        .login-backdrop-nav { background: var(--color-surface); height: 44px; border-bottom: 2px solid var(--color-separator); }
+        .login-backdrop-nav { background: var(--color-surface); height: 48px; border-bottom: 2px solid var(--color-separator); }
         .login-backdrop-body { padding: var(--space-8); display: flex; flex-direction: column; gap: var(--space-5); }
         .skel-banner { height: 88px; }
         .skel-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
@@ -528,7 +531,7 @@
         }
         .save-btn:hover { background: var(--color-accent-active); }
         .save-btn:disabled { opacity: 0.6; cursor: default; }
-        .save-btn:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+        .save-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
         .save-btn:focus:not(:focus-visible) { outline: none; }
         .save-status {
             font-size: var(--font-caption);
@@ -538,9 +541,9 @@
             color: transparent;
             transition: color 0.2s;
         }
-        .save-status[data-state="saving"] { color: var(--color-on-dark-secondary); }
-        .save-status[data-state="saved"]  { color: #6ee7b7; }
-        .save-status[data-state="error"]  { color: #fca5a5; }
+        .save-status[data-state="saving"] { color: var(--color-label-secondary); }
+        .save-status[data-state="saved"]  { color: var(--color-success); }
+        .save-status[data-state="error"]  { color: var(--color-danger); }
 
         /* ── Session restore flash prevention ── */
         :root[data-session="1"] #login-wall { display: none; }
@@ -619,13 +622,6 @@
                 <span class="header-title">SAFE-T</span>
                 <span class="header-badge">Team</span>
             </div>
-            <div class="user-menu">
-                <button id="save-btn" class="save-btn" type="button" hidden>Save</button>
-                <span id="save-status" class="save-status" aria-live="polite"></span>
-                <img id="user-avatar" class="user-avatar" alt="" src="" width="28" height="28">
-                <span id="user-name" class="user-name"></span>
-                <button class="logout-btn" id="logout-btn" type="button">Sign out</button>
-            </div>
         </div>
     </header>
 
@@ -634,6 +630,13 @@
             <button class="nav-tab active" data-panel="tracker" type="button">Application</button>
             <button class="nav-tab" data-panel="checklist" type="button">Requirements</button>
             <button class="nav-tab" data-panel="dates" type="button">Dates &amp; Links</button>
+            <div class="user-menu">
+                <span id="save-status" class="save-status" aria-live="polite"></span>
+                <button id="save-btn" class="save-btn" type="button" hidden>Save</button>
+                <img id="user-avatar" class="user-avatar" alt="" src="" width="32" height="32">
+                <span id="user-name" class="user-name"></span>
+                <button class="logout-btn" id="logout-btn" type="button">Sign out</button>
+            </div>
         </div>
     </nav>
 
