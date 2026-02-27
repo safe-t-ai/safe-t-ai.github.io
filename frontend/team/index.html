@@ -762,7 +762,7 @@
 </div>
 
 <script type="module">
-import { getAuth, logout, verifyAccess, startLogin, handleCallback } from '/src/auth.js';
+import { getAuth, logout, verifyAccess, startLogin } from '/src/auth.js';
 
 const GATE_REPO = 'safe-t-ai/safe-t-ai';
 
@@ -1291,21 +1291,6 @@ function showError(msg) {
 
 async function init() {
     document.getElementById('login-btn').addEventListener('click', startLogin);
-    if (location.search.includes('code=')) {
-        try {
-            const result = await handleCallback();
-            if (result) {
-                await verifyAccess(result.token);
-                await showApp(result.user, result.token);
-                return;
-            }
-        } catch (err) {
-            showError(err.message === 'ACCESS_DENIED' || err.message === 'TOKEN_EXPIRED'
-                ? 'Your GitHub account does not have access to this workspace.'
-                : 'Sign-in failed. Please try again.');
-            return;
-        }
-    }
     const auth = getAuth();
     if (auth) await restoreSession(auth);
 }
