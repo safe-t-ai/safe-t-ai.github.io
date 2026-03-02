@@ -2,7 +2,7 @@
   "_provenance": {
     "data_type": "real",
     "source": "OpenStreetMap via Overpass API",
-    "queried_at": "2026-02-27T21:36:12.997560+00:00",
+    "queried_at": "2026-03-02T06:59:06.777988+00:00",
     "features_queried": [
       "crossings",
       "bike_infra",
@@ -16,14 +16,14 @@
       "east": -78.7699,
       "west": -79.0199
     },
-    "total_elements": 33033
+    "total_elements": 33032
   },
   "totals": {
     "crossings": 3006,
     "bike_infra": 994,
     "traffic_signals": 812,
     "speed_calming": 715,
-    "footways": 22918
+    "footways": 22917
   },
   "tracts": [
     {
@@ -897,13 +897,13 @@
       "traffic_signals_density": 0.1793237630253395,
       "speed_calming_count": 2,
       "speed_calming_density": 0.0717295052101358,
-      "footways_count": 996,
-      "footways_density": 35.721293594647626,
+      "footways_count": 995,
+      "footways_density": 35.68542884204256,
       "crossings_norm": 0.023173867763021466,
       "bike_infra_norm": 0.014294359155683722,
       "traffic_signals_norm": 0.008799536993104293,
       "speed_calming_norm": 0.009898081895504823,
-      "footways_norm": 0.11566803696526991,
+      "footways_norm": 0.11554999481306445,
       "osm_infrastructure_score": 0.05
     },
     {
