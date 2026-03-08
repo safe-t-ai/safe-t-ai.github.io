@@ -7,6 +7,8 @@
     <meta name="theme-color" content="#0f172a">
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/png" href="/logo.png">
+    <!-- Reads stored auth synchronously before first paint to suppress login wall flash -->
+    <script>(function(){try{var a=JSON.parse(localStorage.getItem('safe-t-auth'));if(a&&a.token)document.documentElement.dataset.session='1';}catch(e){}}())</script>
     <style>
         :root {
             --color-accent: #0891b2;
@@ -64,9 +66,6 @@
             background: var(--color-dark);
             color: white;
             padding: 1.25rem var(--space-8);
-            position: sticky;
-            top: 0;
-            z-index: 200;
         }
 
         .header-inner {
@@ -95,26 +94,28 @@
             border-radius: var(--radius-sm);
         }
 
-        .user-menu { display: flex; align-items: center; gap: var(--space-3); }
+        .user-menu { display: flex; align-items: center; gap: var(--space-3); margin-left: auto; }
 
-        .user-avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--color-separator); flex-shrink: 0; }
 
-        .user-name { font-size: var(--font-footnote); color: var(--color-on-dark-secondary); }
+        .user-name { font-size: var(--font-footnote); color: var(--color-label-secondary); }
 
         .logout-btn {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.12);
-            color: var(--color-on-dark-secondary);
+            background: transparent;
+            border: 1px solid var(--color-separator);
+            color: var(--color-label-secondary);
             font-family: inherit;
             font-size: var(--font-caption);
             padding: 0.35rem 0.75rem;
             border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: background 0.15s var(--ease-spring), color 0.15s var(--ease-spring);
-            min-height: 44px;
+            transition: background 0.15s var(--ease-spring), color 0.15s var(--ease-spring), border-color 0.15s var(--ease-spring);
+            min-height: 32px;
+            touch-action: manipulation;
         }
 
-        .logout-btn:hover { background: rgba(255,255,255,0.14); color: white; }
+        .logout-btn:hover { background: var(--color-surface-grouped); color: var(--color-label); border-color: var(--color-label-secondary); }
+        .logout-btn:active { opacity: 0.7; }
         .logout-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
         .logout-btn:focus:not(:focus-visible) { outline: none; }
 
@@ -123,12 +124,16 @@
             background: var(--color-surface);
             border-bottom: 2px solid var(--color-separator);
             padding: 0 var(--space-8);
+            position: sticky;
+            top: 0;
+            z-index: 200;
         }
 
         .nav-bar-inner {
             max-width: var(--max-width);
             margin: 0 auto;
             display: flex;
+            align-items: center;
             gap: 0;
         }
 
@@ -221,7 +226,7 @@
 
         .req-item {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: var(--space-3);
             padding: var(--space-3) var(--space-4);
             border-radius: var(--radius-md);
@@ -234,7 +239,12 @@
         .req-item.needs-info  { background: #fefce8; }
         .req-item.unknown     { background: var(--color-surface-grouped); }
 
-        .req-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+        .req-icon { flex-shrink: 0; display: flex; }
+        .req-icon svg { width: 17px; height: 17px; }
+        .req-icon.action     { color: var(--color-danger); }
+        .req-icon.done       { color: var(--color-success); }
+        .req-icon.needs-info { color: var(--color-warning); }
+        .req-icon.unknown    { color: var(--color-label-tertiary); }
 
         .req-body { display: flex; flex-direction: column; gap: 0.15rem; }
 
@@ -283,11 +293,15 @@
 
         .tracker-chevron {
             color: var(--color-label-tertiary);
-            font-size: var(--font-footnote);
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
             transition: transform 0.2s var(--ease-spring);
         }
 
         .tracker-section.open .tracker-chevron { transform: rotate(180deg); }
+
+        .chevron-icon { display: inline-block; flex-shrink: 0; }
 
         .tracker-section-body { display: none; border-top: 1px solid var(--color-separator); }
         .tracker-section.open .tracker-section-body { display: block; }
@@ -332,7 +346,7 @@
             cursor: pointer;
             padding: 0;
             margin-top: var(--space-1);
-            min-height: 32px;
+            min-height: 44px;
         }
 
         .q-draft-toggle:hover { color: var(--color-accent-active); }
@@ -350,12 +364,26 @@
 
         .q-draft-box.open { display: block; }
 
-        .q-draft-text {
+        /* ── Editable draft ── */
+        .q-draft-textarea {
+            display: block;
+            width: 100%;
+            font-family: inherit;
             font-size: var(--font-footnote);
-            color: var(--color-label);
             line-height: 1.55;
-            white-space: pre-wrap;
-            padding-right: 72px;
+            color: var(--color-label);
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            padding: 0.2rem 72px 0.2rem 0.2rem;
+            resize: vertical;
+            min-height: 4.5em;
+            transition: border-color 0.15s var(--ease-spring), background 0.15s var(--ease-spring);
+        }
+        .q-draft-textarea:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            background: var(--color-surface);
         }
 
         .q-copy-btn {
@@ -422,7 +450,7 @@
         .links-list a:focus:not(:focus-visible) { outline: none; }
         .link-icon { width: 28px; height: 28px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
         .link-name { font-weight: 500; flex: 1; }
-        .link-sub { font-size: var(--font-caption); color: var(--color-label-secondary); }
+        .link-sub { font-size: var(--font-caption); color: var(--color-label-secondary); display: block; }
         .link-arrow { color: var(--color-label-tertiary); font-size: var(--font-caption); }
 
         /* ── Skeleton / login wall ── */
@@ -433,7 +461,7 @@
         .login-wall { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: var(--space-6); }
         .login-backdrop { position: fixed; inset: 0; pointer-events: none; overflow: hidden; filter: blur(6px); opacity: 0.5; }
         .login-backdrop-header { background: var(--color-dark); height: 56px; }
-        .login-backdrop-nav { background: var(--color-surface); height: 44px; border-bottom: 2px solid var(--color-separator); }
+        .login-backdrop-nav { background: var(--color-surface); height: 48px; border-bottom: 2px solid var(--color-separator); }
         .login-backdrop-body { padding: var(--space-8); display: flex; flex-direction: column; gap: var(--space-5); }
         .skel-banner { height: 88px; }
         .skel-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
@@ -454,6 +482,135 @@
         .login-error { font-size: var(--font-footnote); color: var(--color-danger); background: #fef2f2; border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); margin-top: var(--space-4); display: none; }
         .login-error.visible { display: block; }
 
+        /* ── Editable status badge ── */
+        .status-select { position: relative; display: inline-flex; }
+        .status-select > .status-badge { cursor: pointer; user-select: none; }
+        .status-select > .status-badge::after { content: ''; display: inline-block; width: 0; height: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; border-top: 3.5px solid currentColor; margin-left: 4px; opacity: 0.6; vertical-align: middle; position: relative; top: 1px; }
+        .status-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 4px);
+            background: var(--color-surface);
+            border: 1px solid var(--color-separator);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            z-index: 50;
+            min-width: 140px;
+            overflow: hidden;
+            animation: fadeInUp 0.12s var(--ease-spring) both;
+        }
+        .status-opt {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.5rem var(--space-4);
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: var(--font-footnote);
+            color: var(--color-label);
+            cursor: pointer;
+            min-height: 36px;
+        }
+        .status-opt:hover { background: var(--color-surface-grouped); }
+        .status-opt.current { font-weight: 600; }
+
+        /* ── Save button + status indicator ── */
+        .save-btn {
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: var(--font-caption);
+            font-weight: 600;
+            padding: 0.35rem 0.9rem;
+            cursor: pointer;
+            min-height: 32px;
+            transition: background 0.15s var(--ease-spring);
+        }
+        .save-btn:hover { background: var(--color-accent-active); }
+        .save-btn:disabled { opacity: 0.6; cursor: default; }
+        .save-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+        .save-btn:focus:not(:focus-visible) { outline: none; }
+        .save-status {
+            font-size: var(--font-caption);
+            font-weight: 500;
+            min-width: 52px;
+            text-align: right;
+            color: transparent;
+            transition: color 0.2s;
+        }
+        .save-status[data-state="saving"] { color: var(--color-label-secondary); }
+        .save-status[data-state="saved"]  { color: var(--color-success); }
+        .save-status[data-state="error"]  { color: var(--color-danger); }
+
+        /* ── Session restore flash prevention ── */
+        :root[data-session="1"] #login-wall { display: none; }
+        :root[data-session="1"] #app { display: block; }
+
+        /* ── Tracker loading skeleton ── */
+        .skel-progress { height: 6px; flex: 1; border-radius: 99px; }
+        .skel-section  { height: 64px; border-radius: var(--radius-lg); margin-bottom: var(--space-4); }
+        .load-error    { padding: var(--space-8); text-align: center; color: var(--color-label-secondary); font-size: var(--font-subhead); }
+
+        /* ── Overview card ── */
+        .overview-card { background: var(--color-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: var(--space-4); }
+        .overview-summary { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); cursor: pointer; font-size: var(--font-subhead); font-weight: 600; color: var(--color-label); gap: var(--space-3); list-style: none; }
+        .overview-summary::-webkit-details-marker { display: none; }
+        .overview-summary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; border-radius: var(--radius-md); }
+        .overview-summary:focus:not(:focus-visible) { outline: none; }
+        .overview-chevron { color: var(--color-label-tertiary); display: inline-flex; align-items: center; flex-shrink: 0; transition: transform 0.2s var(--ease-spring); }
+        details[open] .overview-chevron { transform: rotate(180deg); }
+        .overview-body { padding: 0 var(--space-5) var(--space-5); border-top: 1px solid var(--color-separator); display: flex; flex-direction: column; gap: var(--space-4); }
+        .overview-pitch { font-size: var(--font-subhead); color: var(--color-label); line-height: 1.5; padding-top: var(--space-4); }
+        .criteria-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); }
+        .criteria-item { background: var(--color-surface-grouped); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+        .criteria-label { font-size: var(--font-caption); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-label-secondary); margin-bottom: var(--space-1); }
+        .criteria-desc { font-size: var(--font-caption); color: var(--color-label-tertiary); line-height: 1.45; }
+        .overview-meta { font-size: var(--font-caption); color: var(--color-label-tertiary); text-align: right; }
+
+        /* ── Format note ── */
+        .format-note { font-size: var(--font-caption); color: var(--color-label-tertiary); margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); background: var(--color-surface); border-radius: var(--radius-md); border-left: 3px solid var(--color-separator); line-height: 1.5; }
+        .format-note code { font-family: 'SF Mono', 'Monaco', 'Menlo', monospace; font-size: 0.9em; background: var(--color-surface-grouped); padding: 0.1em 0.35em; border-radius: 3px; }
+
+        /* ── Owner pill ── */
+        .owner-wrap { position: relative; display: inline-flex; margin-top: var(--space-1); }
+        .owner-pill { display: inline-flex; align-items: center; font-size: var(--font-caption); font-weight: 500; color: var(--color-label-secondary); background: var(--color-fill-tertiary); border: 1px solid var(--color-separator); border-radius: 99px; padding: 0.15rem 0.6rem; cursor: pointer; user-select: none; min-height: 24px; white-space: nowrap; }
+        .owner-pill::after { content: ''; display: inline-block; width: 0; height: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; border-top: 3.5px solid currentColor; margin-left: 4px; opacity: 0.6; vertical-align: middle; position: relative; top: 1px; }
+        .owner-pill.assigned { color: var(--color-accent-active); background: rgba(8,145,178,0.08); border-color: rgba(8,145,178,0.2); }
+        .owner-dropdown { position: absolute; left: 0; top: calc(100% + 4px); background: var(--color-surface); border: 1px solid var(--color-separator); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 50; min-width: 160px; overflow: hidden; animation: fadeInUp 0.12s var(--ease-spring) both; }
+        .owner-opt { display: block; width: 100%; text-align: left; padding: 0.45rem var(--space-4); background: none; border: none; font-family: inherit; font-size: var(--font-footnote); color: var(--color-label); cursor: pointer; min-height: 36px; }
+        .owner-opt:hover { background: var(--color-surface-grouped); }
+        .owner-opt.current { font-weight: 600; }
+
+        /* ── Question prompt + metadata ── */
+        .q-prompt { font-size: var(--font-subhead); color: var(--color-label); line-height: 1.45; }
+        .q-meta-line { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-top: 0.1rem; }
+        .required-badge { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #991b1b; background: #fee2e2; padding: 0.1rem 0.45rem; border-radius: 3px; }
+        .optional-badge { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.04em; color: var(--color-label-tertiary); background: var(--color-fill-tertiary); padding: 0.1rem 0.45rem; border-radius: 3px; }
+        .q-limit-label { font-size: var(--font-caption); color: var(--color-label-tertiary); }
+
+        /* ── Word count ── */
+        .draft-meta { margin-top: var(--space-2); }
+        .word-count { font-size: var(--font-caption); color: var(--color-label-tertiary); }
+        .word-count.over-limit { color: var(--color-danger); font-weight: 500; }
+
+        /* ── Auth banner ── */
+        #auth-banner {
+            display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+            padding: 0.5rem 1.25rem;
+            background: #fef9f0; border-bottom: 1px solid #e8d9b8;
+            font-size: var(--font-footnote); color: #7a5520;
+        }
+        .banner-btn {
+            padding: 0.25rem 0.75rem; border-radius: 4px; border: 1px solid #c8a050;
+            background: none; color: #7a5520; font: inherit; font-size: var(--font-footnote);
+            font-weight: 600; cursor: pointer; transition: background 100ms;
+            touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+        }
+        .banner-btn:hover { background: rgba(200,160,80,0.12); }
+
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 
         @media (max-width: 768px) {
@@ -465,9 +622,10 @@
             .question-row { grid-template-columns: 44px 1fr auto; }
             .tracker-section-num { display: none; }
             .user-name { display: none; }
+            .criteria-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
-  <script type="module" crossorigin src="/assets/team-DdpUB-Sa.js"></script>
+  <script type="module" crossorigin src="/assets/team-BHLNkgOd.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
 </head>
 <body>
@@ -481,11 +639,6 @@
                 <span class="header-title">SAFE-T</span>
                 <span class="header-badge">Team</span>
             </div>
-            <div class="user-menu">
-                <img id="user-avatar" class="user-avatar" alt="" src="" width="28" height="28">
-                <span id="user-name" class="user-name"></span>
-                <button class="logout-btn" id="logout-btn" type="button">Sign out</button>
-            </div>
         </div>
     </header>
 
@@ -494,8 +647,20 @@
             <button class="nav-tab active" data-panel="tracker" type="button">Application</button>
             <button class="nav-tab" data-panel="checklist" type="button">Requirements</button>
             <button class="nav-tab" data-panel="dates" type="button">Dates &amp; Links</button>
+            <div class="user-menu">
+                <span id="save-status" class="save-status" aria-live="polite"></span>
+                <button id="save-btn" class="save-btn" type="button" hidden>Save</button>
+                <img id="user-avatar" class="user-avatar" alt="" src="" width="32" height="32">
+                <span id="user-name" class="user-name"></span>
+                <button class="logout-btn" id="logout-btn" type="button">Sign out</button>
+            </div>
         </div>
     </nav>
+
+    <div id="auth-banner" hidden>
+        <span>Your GitHub token lacks repo access — saving changes will fail.</span>
+        <button class="banner-btn" id="banner-reauth-btn">Re-authorize →</button>
+    </div>
 
     <main class="main">
 
@@ -510,6 +675,35 @@
 
         <!-- ── Tab: Application Tracker ── -->
         <div class="tab-panel active" id="panel-tracker">
+            <details class="overview-card" id="overview-card">
+                <summary class="overview-summary">
+                    Grant Overview
+                    <span class="overview-chevron" aria-hidden="true"><svg class="chevron-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" focusable="false"><path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </summary>
+                <div class="overview-body">
+                    <p class="overview-pitch">SAFE-T uses AI to identify high-risk road segments in Durham and generate actionable safety reports — helping transportation agencies prioritize SS4A-funded interventions.</p>
+                    <div class="criteria-grid">
+                        <div class="criteria-item">
+                            <p class="criteria-label">Impact</p>
+                            <p class="criteria-desc">Measurable improvement in government service delivery for underserved communities</p>
+                        </div>
+                        <div class="criteria-item">
+                            <p class="criteria-label">Innovation</p>
+                            <p class="criteria-desc">Novel AI application meaningfully beyond current practice</p>
+                        </div>
+                        <div class="criteria-item">
+                            <p class="criteria-label">Feasibility</p>
+                            <p class="criteria-desc">Technical credibility with a realistic implementation and partnership plan</p>
+                        </div>
+                        <div class="criteria-item">
+                            <p class="criteria-label">Scalability</p>
+                            <p class="criteria-desc">Replicable across jurisdictions and sustainable beyond the grant period</p>
+                        </div>
+                    </div>
+                    <p class="overview-meta">$1M–$3M per org · 36-month funding · Accelerator Sep 2026 · Demo Day Dec 2026</p>
+                </div>
+            </details>
+            <p class="format-note">Draft convention: drafts beginning with <code>...</code> are sentence completions — paste only the continuation into Submittable. The full question prompt is shown under each item number.</p>
             <div class="progress-bar-wrap" id="progress-wrap"></div>
             <div id="tracker-root"></div>
         </div>
@@ -543,11 +737,11 @@
                 <div class="card">
                     <p class="card-title">Quick Links</p>
                     <ul class="links-list">
-                        <li><a href="https://g.co/impactchallenge/aigov" target="_blank" rel="noopener"><span class="link-icon">🏆</span><span class="link-name">Apply on Submittable<span class="link-sub" style="display:block">g.co/impactchallenge/aigov</span></span><span class="link-arrow">↗</span></a></li>
-                        <li><a href="https://safe-t-ai.github.io" target="_blank" rel="noopener"><span class="link-icon">📊</span><span class="link-name">Live Dashboard<span class="link-sub" style="display:block">safe-t-ai.github.io</span></span><span class="link-arrow">↗</span></a></li>
-                        <li><a href="https://github.com/safe-t-ai/safe-t-ai.github.io" target="_blank" rel="noopener"><span class="link-icon">🐙</span><span class="link-name">Source Code (public)<span class="link-sub" style="display:block">safe-t-ai/safe-t-ai.github.io</span></span><span class="link-arrow">↗</span></a></li>
-                        <li><a href="https://services.google.com/fh/files/blogs/gic_aigov_faqs.pdf" target="_blank" rel="noopener"><span class="link-icon">📄</span><span class="link-name">FAQ PDF<span class="link-sub" style="display:block">gic_aigov_faqs.pdf</span></span><span class="link-arrow">↗</span></a></li>
-                        <li><a href="mailto:gic-aigov@google.com"><span class="link-icon">✉️</span><span class="link-name">Google Contact<span class="link-sub" style="display:block">gic-aigov@google.com</span></span></a></li>
+                        <li><a href="https://g.co/impactchallenge/aigov" target="_blank" rel="noopener"><span class="link-icon">🏆</span><span class="link-name">Apply on Submittable<span class="link-sub">g.co/impactchallenge/aigov</span></span><span class="link-arrow">↗</span></a></li>
+                        <li><a href="https://safe-t-ai.github.io" target="_blank" rel="noopener"><span class="link-icon">📊</span><span class="link-name">Live Dashboard<span class="link-sub">safe-t-ai.github.io</span></span><span class="link-arrow">↗</span></a></li>
+                        <li><a href="https://github.com/safe-t-ai/safe-t-ai.github.io" target="_blank" rel="noopener"><span class="link-icon">🐙</span><span class="link-name">Source Code (public)<span class="link-sub">safe-t-ai/safe-t-ai.github.io</span></span><span class="link-arrow">↗</span></a></li>
+                        <li><a href="https://services.google.com/fh/files/blogs/gic_aigov_faqs.pdf" target="_blank" rel="noopener"><span class="link-icon">📄</span><span class="link-name">FAQ PDF<span class="link-sub">gic_aigov_faqs.pdf</span></span><span class="link-arrow">↗</span></a></li>
+                        <li><a href="mailto:gic-aigov@google.com"><span class="link-icon">✉️</span><span class="link-name">Google Contact<span class="link-sub">gic-aigov@google.com</span></span></a></li>
                     </ul>
                 </div>
             </div>
