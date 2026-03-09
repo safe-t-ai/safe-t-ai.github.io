@@ -15,13 +15,13 @@
   },
   "summary": {
     "total_potential_demand": 44314,
-    "total_actual_demand": 1183,
-    "total_suppressed_demand": 43131,
-    "suppression_rate": 97.32880446331781,
+    "total_actual_demand": 1185,
+    "total_suppressed_demand": 43129,
+    "suppression_rate": 97.32573079350963,
     "tracts_analyzed": 67,
     "high_suppression_tracts": 66,
-    "naive_ai_correlation": -0.2824562701027379,
-    "sophisticated_ai_correlation": 0.8925168995303209
+    "naive_ai_correlation": -0.2824734298166342,
+    "sophisticated_ai_correlation": 0.8924954242937629
   },
   "high_suppression_threshold": 70,
   "by_quintile": {
@@ -41,17 +41,17 @@
     },
     "Q3": {
       "potential_demand": 701.4158491213869,
-      "actual_demand": 15.474003463160653,
-      "suppressed_demand": 685.9418456582263,
-      "suppression_pct": 96.39894123425137,
-      "infrastructure_score": 0.14449456566928054
+      "actual_demand": 15.558910533011215,
+      "suppressed_demand": 685.8569385883758,
+      "suppression_pct": 96.38110893308132,
+      "infrastructure_score": 0.14475102135348797
     },
     "Q4": {
       "potential_demand": 750.2569480959572,
-      "actual_demand": 13.80771966464829,
-      "suppressed_demand": 736.4492284313089,
-      "suppression_pct": 97.65892063394008,
-      "infrastructure_score": 0.12652563664895095
+      "actual_demand": 13.827588704172241,
+      "suppressed_demand": 736.429359391785,
+      "suppression_pct": 97.65693574113763,
+      "infrastructure_score": 0.12668625615836043
     },
     "Q5 (Richest)": {
       "potential_demand": 673.5568053961617,

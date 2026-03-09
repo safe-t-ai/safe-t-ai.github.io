@@ -2,7 +2,7 @@
   "_provenance": {
     "data_type": "real",
     "source": "OpenStreetMap via Overpass API",
-    "queried_at": "2026-03-02T06:59:06.777988+00:00",
+    "queried_at": "2026-03-09T07:02:49.485902+00:00",
     "features_queried": [
       "crossings",
       "bike_infra",
@@ -16,14 +16,14 @@
       "east": -78.7699,
       "west": -79.0199
     },
-    "total_elements": 33032
+    "total_elements": 33068
   },
   "totals": {
-    "crossings": 3006,
-    "bike_infra": 994,
-    "traffic_signals": 812,
+    "crossings": 3011,
+    "bike_infra": 995,
+    "traffic_signals": 813,
     "speed_calming": 715,
-    "footways": 22917
+    "footways": 22946
   },
   "tracts": [
     {
@@ -197,14 +197,14 @@
       "traffic_signals_density": 2.383402946537687,
       "speed_calming_count": 2,
       "speed_calming_density": 0.4766805893075375,
-      "footways_count": 894,
-      "footways_density": 213.07622342046923,
+      "footways_count": 911,
+      "footways_density": 217.1280084295833,
       "crossings_norm": 0.28730915327238327,
       "bike_infra_norm": 0.30081304988959046,
       "traffic_signals_norm": 0.11695517673565978,
       "speed_calming_norm": 0.06577800163462989,
-      "footways_norm": 0.6993987502765819,
-      "osm_infrastructure_score": 0.3460013150334509
+      "footways_norm": 0.7127344458553686,
+      "osm_infrastructure_score": 0.34933523892814755
     },
     {
       "tract_id": "37063001304",
@@ -489,22 +489,22 @@
     {
       "tract_id": "37063001809",
       "area_km2": 18.774346843040856,
-      "crossings_count": 71,
-      "crossings_density": 3.781756062864993,
-      "bike_infra_count": 8,
-      "bike_infra_density": 0.42611335919605553,
+      "crossings_count": 76,
+      "crossings_density": 4.048076912362528,
+      "bike_infra_count": 9,
+      "bike_infra_density": 0.4793775290955625,
       "traffic_signals_count": 19,
       "traffic_signals_density": 1.012019228090632,
       "speed_calming_count": 16,
       "speed_calming_density": 0.8522267183921111,
-      "footways_count": 551,
-      "footways_density": 29.348557614628326,
-      "crossings_norm": 0.043143280317376145,
-      "bike_infra_norm": 0.02830549474045718,
+      "footways_count": 561,
+      "footways_density": 29.881199313623394,
+      "crossings_norm": 0.04620421703397048,
+      "bike_infra_norm": 0.03184368158301433,
       "traffic_signals_norm": 0.049660460415711864,
       "speed_calming_norm": 0.11760027937555699,
-      "footways_norm": 0.09469336361948436,
-      "osm_infrastructure_score": 0.0607446316692419
+      "footways_norm": 0.09644645454962704,
+      "osm_infrastructure_score": 0.06283268529156544
     },
     {
       "tract_id": "37063002019",
@@ -1193,17 +1193,17 @@
       "crossings_density": 0.45793885150063063,
       "bike_infra_count": 45,
       "bike_infra_density": 0.43845209186230594,
-      "traffic_signals_count": 3,
-      "traffic_signals_density": 0.02923013945748706,
+      "traffic_signals_count": 4,
+      "traffic_signals_density": 0.03897351927664942,
       "speed_calming_count": 0,
       "speed_calming_density": 0.0,
-      "footways_count": 697,
-      "footways_density": 6.79113573395616,
+      "footways_count": 699,
+      "footways_density": 6.810622493594486,
       "crossings_norm": 0.004941261359008699,
       "bike_infra_norm": 0.02912512154879614,
-      "traffic_signals_norm": 0.0014343424938802413,
+      "traffic_signals_norm": 0.0019124566585069884,
       "speed_calming_norm": 0.0,
-      "footways_norm": 0.020449811563724843,
+      "footways_norm": 0.020513948603022126,
       "osm_infrastructure_score": 0.05
     },
     {

@@ -17,15 +17,15 @@
     "stage1_potential": 100.0,
     "stage2_destinations": 82.53208225437929,
     "stage3_would_use_if_safe": 58.79812338156892,
-    "stage4_actually_use": 2.206109753941805,
-    "total_suppression_pct": 97.7938902460582
+    "stage4_actually_use": 2.2182148510759685,
+    "total_suppression_pct": 97.78178514892403
   },
   "Q4": {
     "stage1_potential": 100.0,
     "stage2_destinations": 83.1357969027672,
     "stage3_would_use_if_safe": 59.703695354150796,
-    "stage4_actually_use": 1.8403987726725186,
-    "total_suppression_pct": 98.15960122732749
+    "stage4_actually_use": 1.8430470706422175,
+    "total_suppression_pct": 98.15695292935777
   },
   "Q5 (Richest)": {
     "stage1_potential": 100.0,
@@ -38,7 +38,7 @@
     "stage1_potential": 100.0,
     "stage2_destinations": 88.0,
     "stage3_would_use_if_safe": 65.0,
-    "stage4_actually_use": 2.6711955366821973,
-    "total_suppression_pct": 97.3288044633178
+    "stage4_actually_use": 2.674269206490386,
+    "total_suppression_pct": 97.3257307935096
   }
 }
