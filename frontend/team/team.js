@@ -537,22 +537,8 @@ function setupAppShell(user) {
 
     const avatarBtn = document.getElementById('avatar-btn');
     const avatarDropdown = document.getElementById('avatar-dropdown');
-    avatarBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const open = !avatarDropdown.hidden;
-        avatarDropdown.hidden = open;
-        avatarBtn.setAttribute('aria-expanded', String(!open));
-    });
-    document.addEventListener('click', () => {
-        avatarDropdown.hidden = true;
-        avatarBtn.setAttribute('aria-expanded', 'false');
-    });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            avatarDropdown.hidden = true;
-            avatarBtn.setAttribute('aria-expanded', 'false');
-        }
-    });
+    const avatarMenu = createDropdown('#avatar-menu', '.dropdown-item');
+    avatarBtn.addEventListener('click', () => avatarMenu.toggle(avatarDropdown, avatarBtn));
 
     saveBtnEl.addEventListener('click', () => persistData(commitMsg('draft update')));
     renderCountdown();
