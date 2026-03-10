@@ -35,9 +35,16 @@
             <div class="user-menu">
                 <span id="save-status" class="save-status" aria-live="polite"></span>
                 <button id="save-btn" class="save-btn" type="button" hidden>Save</button>
-                <img id="user-avatar" class="user-avatar" alt="" src="" width="32" height="32">
-                <span id="user-name" class="user-name"></span>
-                <button class="logout-btn" id="logout-btn" type="button">Sign out</button>
+                <div class="avatar-menu" id="avatar-menu">
+                    <button class="avatar-btn" id="avatar-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="User menu">
+                        <img id="user-avatar" class="user-avatar" alt="" src="" width="32" height="32">
+                    </button>
+                    <div class="avatar-dropdown" id="avatar-dropdown" hidden>
+                        <span id="user-name" class="dropdown-username"></span>
+                        <hr class="dropdown-divider">
+                        <button class="dropdown-item" id="logout-btn" type="button">Sign out</button>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
