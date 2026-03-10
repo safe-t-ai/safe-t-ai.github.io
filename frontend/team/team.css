@@ -106,57 +106,47 @@ body {
 .avatar-btn {
     background: none;
     border: none;
-    padding: 0;
+    padding: 0 var(--space-2) 0 0;
     cursor: pointer;
-    border-radius: 50%;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
-    justify-content: center;
-    min-width: 44px;
+    gap: var(--space-2);
     min-height: 44px;
     transition: opacity 0.15s;
     touch-action: manipulation;
 }
 .avatar-btn:hover { opacity: 0.75; }
 .avatar-btn:active { opacity: 0.5; }
-.avatar-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 50%; }
+.avatar-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: var(--radius-sm); }
 .avatar-btn:focus:not(:focus-visible) { outline: none; }
+
+.user-name { font-size: var(--font-footnote); color: var(--color-label-secondary); font-weight: 500; }
 
 .avatar-dropdown {
     position: absolute;
     right: 0;
-    top: calc(100% + 6px);
+    top: calc(100% + 4px);
     background: var(--color-surface);
     border: 1px solid var(--color-separator);
     border-radius: var(--radius-md);
     box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.14);
-    min-width: 160px;
+    min-width: 120px;
     z-index: 300;
-    padding: var(--space-2) 0;
+    padding: var(--space-1) 0;
 }
-
-.dropdown-username {
-    display: block;
-    padding: var(--space-2) var(--space-4);
-    font-size: var(--font-footnote);
-    color: var(--color-label-secondary);
-    font-weight: 500;
-}
-
-.dropdown-divider { border: none; border-top: 1px solid var(--color-separator); margin: var(--space-1) 0; }
 
 .dropdown-item {
     display: block;
     width: 100%;
     background: none;
     border: none;
-    padding: var(--space-2) var(--space-4);
+    padding: 0.4rem var(--space-4);
     text-align: left;
     font-family: inherit;
-    font-size: var(--font-subhead);
+    font-size: var(--font-footnote);
     color: var(--color-danger, #dc2626);
     cursor: pointer;
-    min-height: 44px;
     transition: background 0.1s;
     touch-action: manipulation;
 }
@@ -670,6 +660,6 @@ details[open] .overview-chevron { transform: rotate(180deg); }
     .deadline-banner { flex-direction: column; align-items: flex-start; }
     .question-row { grid-template-columns: 44px 1fr auto; }
     .tracker-section-num { display: none; }
-    .dropdown-username { display: none; }
+    .user-name { display: none; }
     .criteria-grid { grid-template-columns: repeat(2, 1fr); }
 }
