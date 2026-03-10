@@ -605,7 +605,7 @@ details[open] .overview-chevron { transform: rotate(180deg); }
 .word-count.over-limit { color: var(--color-danger); font-weight: 500; }
 
 /* ── Auth banner ── */
-#auth-banner {
+#auth-banner:not([hidden]) {
     display: flex; align-items: center; justify-content: center; gap: 0.75rem;
     padding: 0.5rem 1.25rem;
     background: #fef9f0; border-bottom: 1px solid #e8d9b8;
