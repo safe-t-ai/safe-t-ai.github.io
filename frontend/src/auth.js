@@ -3,8 +3,10 @@
  */
 
 const CLIENT_ID   = 'Ov23li3dnFMUNHbu1SjZ';
-const GATE_REPO   = 'safe-t-ai/safe-t-ai'; // private repo — collaborator = access granted
 const STORAGE_KEY = 'safe-t-auth';
+
+export const GATE_REPO = 'safe-t-ai/safe-t-ai'; // private repo — collaborator = access granted
+export const githubHeaders = token => ({ Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' });
 
 /** @returns {{ token: string, user: object } | null} */
 export function getAuth() {
@@ -52,14 +54,21 @@ export function startLogin() {
     );
     if (!popup) return;
 
+    function cleanup() {
+        window.removeEventListener('message', onMsg);
+        clearInterval(closedPoll);
+    }
+
     function onMsg(e) {
         if (e.data?.type !== 'gh-auth') return;
-        window.removeEventListener('message', onMsg);
+        cleanup();
         if (e.data.auth) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: e.data.auth.token, user: e.data.auth.user }));
             location.reload();
         }
         try { popup.close(); } catch {}
     }
+
+    const closedPoll = setInterval(() => { if (popup.closed) cleanup(); }, 500);
     window.addEventListener('message', onMsg);
 }
