@@ -84,6 +84,7 @@ async function persistData(msg = commitMsg('update')) {
         appState.sha = (await res.json()).content.sha;
         lastSavedAt = Date.now();
         clearDirty();
+        setSaveStatus(null);
         updateSaveTime();
     } catch {
         setSaveStatus('error');
