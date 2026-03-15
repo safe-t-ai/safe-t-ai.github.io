@@ -2,7 +2,6 @@
  * GitHub OAuth auth module — gates access to the private safe-t-ai repo.
  */
 
-const CLIENT_ID   = 'Ov23li3dnFMUNHbu1SjZ';
 const STORAGE_KEY = 'safe-t-auth';
 
 export const GATE_REPO = 'safe-t-ai/safe-t-ai'; // private repo — collaborator = access granted
@@ -39,36 +38,15 @@ export async function verifyAccess(token) {
 }
 
 /** Opens a GitHub OAuth popup. Saves auth and reloads on success. */
-export function startLogin() {
-    const params = new URLSearchParams({
-        client_id:    CLIENT_ID,
-        redirect_uri: 'https://neevs.io/auth/',
-        scope:        'repo',
-        state:        crypto.randomUUID(),
-    });
-
-    const popup = window.open(
-        `https://github.com/login/oauth/authorize?${params}`,
-        'gh-oauth',
-        'width=600,height=700,popup=1'
-    );
-    if (!popup) return;
-
-    function cleanup() {
-        window.removeEventListener('message', onMsg);
-        clearInterval(closedPoll);
+export async function startLogin() {
+    // @ts-ignore — external ES module URL, no type declarations
+    const { connectGitHub } = await import('https://neevs.io/auth/lib.js');
+    try {
+        const { token, username, avatarUrl } = await connectGitHub('repo', 'safe-t-ai');
+        const user = { login: username, avatar_url: avatarUrl };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ token, user }));
+        location.reload();
+    } catch (err) {
+        if (!err.message.includes('cancelled')) throw err;
     }
-
-    function onMsg(e) {
-        if (e.data?.type !== 'gh-auth') return;
-        cleanup();
-        if (e.data.auth) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: e.data.auth.token, user: e.data.auth.user }));
-            location.reload();
-        }
-        try { popup.close(); } catch {}
-    }
-
-    const closedPoll = setInterval(() => { if (popup.closed) cleanup(); }, 500);
-    window.addEventListener('message', onMsg);
 }
