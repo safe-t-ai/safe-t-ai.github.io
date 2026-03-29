@@ -56,13 +56,13 @@ export class InfrastructureAudit {
             {
                 title: 'AI Disparate Impact',
                 value: (ai_allocation.disparate_impact_ratio * 100).toFixed(1) + '%',
-                subtext: 'Q1 vs Q5 per capita (80% = equitable)',
-                sentiment: 'value-danger'
+                subtext: 'Q1 vs Q5 per capita — passes 80% EEOC threshold',
+                sentiment: 'value-warning'
             },
             {
                 title: 'Need-Based Impact',
                 value: need_based_allocation.disparate_impact_ratio.toFixed(1) + 'x',
-                subtext: 'Q1 receives 5x Q5 per capita',
+                subtext: `Q1 receives ${(need_based_allocation.per_capita['Q1 (Poorest)'] / need_based_allocation.per_capita['Q5 (Richest)']).toFixed(0)}x more per capita — proportional to danger`,
                 sentiment: 'value-success'
             },
             {

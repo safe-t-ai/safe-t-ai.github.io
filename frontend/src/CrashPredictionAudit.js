@@ -34,27 +34,28 @@ export class CrashPredictionAudit {
 
     renderMetrics() {
         const { summary, error_by_quintile } = this.data.report;
+        const { by_quintile } = this.data.confusionMatrices;
 
-        const q1_error = error_by_quintile['Q1 (Poorest)'];
-        const q5_error = error_by_quintile['Q5 (Richest)'];
+        const q1_recall = by_quintile['Q1 (Poorest)']?.recall ?? 0;
+        const q5_recall = by_quintile['Q5 (Richest)']?.recall ?? 0;
 
         renderMetrics('test2-metrics', [
             {
-                title: 'Q1 Prediction Error',
-                value: q1_error.error_pct.toFixed(0) + '%',
-                subtext: 'Relative error (poorest quintile)',
+                title: 'Q1 Recall',
+                value: (q1_recall * 100).toFixed(0) + '%',
+                subtext: 'High-crash tracts correctly identified (poorest)',
                 sentiment: 'value-danger'
             },
             {
-                title: 'Q5 Prediction Error',
-                value: q5_error.error_pct.toFixed(0) + '%',
-                subtext: 'Relative error (richest quintile)',
+                title: 'Q5 Recall',
+                value: (q5_recall * 100).toFixed(0) + '%',
+                subtext: 'High-crash tracts correctly identified (richest)',
                 sentiment: 'value-success'
             },
             {
-                title: 'Error Ratio',
-                value: (q1_error.error_pct / q5_error.error_pct).toFixed(1) + 'x',
-                subtext: 'Q1 error rate relative to Q5',
+                title: 'Recall Gap',
+                value: ((q5_recall - q1_recall) * 100).toFixed(0) + ' pts',
+                subtext: 'AI misses more high-crash tracts in poorest areas',
                 sentiment: 'value-danger'
             },
             {
@@ -323,7 +324,7 @@ export class CrashPredictionAudit {
             badge: 'real',
             label: 'Real Data',
             tooltip: 'Mean absolute error of Ridge regression predictions on real NCDOT non-motorist crash data, grouped by neighborhood income quintile.',
-            description: 'Relative prediction error by income level. Higher error in poorer quintiles indicates systematic bias in model accuracy.',
+            description: 'Relative prediction error by income level. The recall gap above is the stronger signal: AI correctly identifies only 29% of high-crash tracts in Q1 vs 67% in Q5.',
         });
         const { error_by_quintile } = this.data.report;
 

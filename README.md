@@ -21,7 +21,7 @@ Durham census demographics (ACS) + NCDOT crash records + OpenStreetMap infrastru
   → four equity audits:
       1. Volume Estimation   — do AI tools undercount pedestrians/cyclists in low-income areas?
       2. Crash Prediction    — does AI model error vary systematically by income quintile?
-      3. Infrastructure      — does AI-driven budget allocation fail the 80% disparate impact threshold?
+      3. Infrastructure      — does AI-driven budget allocation account for differential need across income groups?
       4. Suppressed Demand   — does AI miss latent demand masked by poor infrastructure?
   → static JSON published to GitHub Pages → interactive dashboard
 ```
@@ -78,7 +78,7 @@ For Census data (notebook 01), get a free API key at [api.census.gov/data/key_si
 
 [Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/) · [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/) · [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/) · [Jonas Neves](https://www.linkedin.com/in/jonasnvs/)
 
-Built for the **SCAI Hackathon** at Duke University.
+Built for the **SCAI Hackathon** at Duke University. Submitted to the [Google.org AI for Government Innovation Challenge](https://www.google.org/impact-challenges/ai-government-innovation/) (April 2026).
 
 ## License
 

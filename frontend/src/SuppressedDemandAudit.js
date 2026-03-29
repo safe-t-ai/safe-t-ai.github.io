@@ -68,7 +68,7 @@ export class SuppressedDemandAudit {
         setChartMeta('map-demand', {
             badge: 'modeled',
             label: 'Modeled',
-            tooltip: 'Infrastructure quality scores derived from OpenStreetMap feature density per census tract. Demand suppression modeled from these real infrastructure conditions.',
+            tooltip: 'Infrastructure quality scores derived from OpenStreetMap per-capita feature density per census tract. Demand suppression modeled from these real infrastructure conditions.',
             description: 'Suppressed, potential, and actual cycling/walking demand across Durham. High suppression (red) indicates latent demand AI tools miss.',
         });
         this.map = new DurhamMap('map-demand').initialize();
@@ -202,7 +202,7 @@ export class SuppressedDemandAudit {
         }
 
         const seriesEntries = [
-            { name: 'Naive AI (Strava-style)', data: naive_ai, color: '#c2410c' },
+            { name: 'Naive AI', data: naive_ai, color: '#c2410c' },
             { name: 'Sophisticated AI', data: sophisticated_ai, color: '#d97706' },
             { name: 'Human Expert', data: human_expert_baseline, color: COLORS.success },
         ];
