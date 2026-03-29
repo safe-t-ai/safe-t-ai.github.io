@@ -104,7 +104,7 @@ def publish_artifacts(
     if (repo_path / ".git" / "shallow").exists():
         subprocess.run(["git", "fetch", "--unshallow", "origin", "main"], check=True, cwd=repo_path)
 
-    subprocess.run(["git", "add", "--", *rel_paths], check=True, cwd=repo_path)
+    subprocess.run(["git", "add", "--force", "--", *rel_paths], check=True, cwd=repo_path)
 
     status = subprocess.run(
         ["git", "status", "--porcelain", "--", *rel_paths],
