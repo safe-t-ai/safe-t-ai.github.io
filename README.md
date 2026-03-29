@@ -79,7 +79,7 @@ For Census data (notebook 01), get a free API key at [api.census.gov/data/key_si
 
 [Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/) · [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/) · [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/) · [Jonas Neves](https://www.linkedin.com/in/jonasnvs/)
 
-Built for **AIPI 540 — Deep Learning Applications**, Spring 2026, Duke University.
+Built for the **SCAI Hackathon**, Spring 2026, Duke University.
 
 ## License
 
