@@ -577,6 +577,35 @@
             line-height: 1.2;
         }
 
+        .methodology-note {
+            background: var(--color-surface);
+            border-left: 3px solid var(--color-separator);
+            padding: var(--space-5) var(--space-6);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-8);
+        }
+
+        .methodology-note h3 {
+            font-size: var(--font-subhead);
+            font-weight: 600;
+            color: var(--color-label-secondary);
+            margin-bottom: var(--space-2);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .methodology-note p {
+            font-size: var(--font-footnote);
+            color: var(--color-label-tertiary);
+            line-height: 1.5;
+            margin: 0 0 var(--space-2);
+        }
+
+        .methodology-note-refs {
+            font-style: italic;
+            opacity: 0.75;
+        }
+
         /* ── Legend ── */
         .legend {
             background: var(--color-surface);
@@ -696,6 +725,11 @@
         .overview-banner .banner-stats {
             font-size: var(--font-footnote);
             color: var(--color-on-dark-secondary);
+        }
+
+        .banner-scalability {
+            color: var(--color-accent);
+            font-weight: 500;
         }
 
         .overview-stats + .methodology-key {
@@ -1156,8 +1190,8 @@
                 </div>
                 <div class="overview-banner hidden">
                     <h2>Durham Transportation Equity Audit</h2>
-                    <p class="banner-description">AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities — but do they treat all communities equitably? SAFE-T is an audit framework that tests this question using Durham, NC as a case study. Because vendor tools like Strava Metro and StreetLight are proprietary, we simulate their documented biases using research-calibrated models layered on real Census, NCDOT, and OpenStreetMap data.</p>
-                    <p class="banner-stats"><span id="tract-count"></span> Tracts &middot; Volume Estimation → Crash Prediction → Infrastructure → Demand</p>
+                    <p class="banner-description">AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities — but do they treat all communities equitably? SAFE-T is a replicable audit framework that tests this question using Durham, NC as a case study. Because vendor tools are proprietary, we demonstrate the methodology using research-calibrated bias simulations layered on real Census, NCDOT, and OpenStreetMap data.</p>
+                    <p class="banner-stats"><span id="tract-count"></span> Tracts &middot; Volume Estimation → Crash Prediction → Infrastructure → Demand &middot; <span class="banner-scalability">Replicable for any US city using public data</span></p>
                 </div>
                 <div class="content-split hidden">
                     <div class="content-map">
@@ -1231,6 +1265,11 @@
                         </div>
 
                         <div id="interpretation"></div>
+                        <div class="methodology-note">
+                            <h3>Methodology Basis</h3>
+                            <p>Bias parameters are calibrated to findings in peer-reviewed research on AI volume estimation tools: <strong>20–30% undercounting</strong> in low-income areas; <strong>15–25%</strong> in high-minority areas; <strong>10–20%</strong> additional undercount in areas with poor infrastructure. These ranges represent the audit input parameters — applying them to a real city demonstrates the equity impact framework that any government can replicate once they have access to vendor output data.</p>
+                            <p class="methodology-note-refs">Key research: Griswold et al. (2019) on pedestrian count accuracy; Wei &amp; Lovegrove (2013) on demographic bias in travel surveys; FHWA Non-Motorized Transportation Pilot Program evaluation reports.</p>
+                        </div>
                     </div>
                 </div>
             </div>

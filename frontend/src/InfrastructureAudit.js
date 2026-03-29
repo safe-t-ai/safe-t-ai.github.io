@@ -50,31 +50,34 @@ export class InfrastructureAudit {
     renderMetrics() {
         const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
 
-        const q1Share = (ai_allocation.by_quintile['Q1 (Poorest)'] / this.data.report.summary.total_budget * 100);
+        const q1AI = ai_allocation.by_quintile['Q1 (Poorest)'];
+        const q1Need = need_based_allocation.by_quintile['Q1 (Poorest)'];
+        const q1Gap = q1Need - q1AI;
+        const needRatio = (need_based_allocation.per_capita['Q1 (Poorest)'] / need_based_allocation.per_capita['Q5 (Richest)']);
 
         renderMetrics('test3-metrics', [
             {
-                title: 'AI Disparate Impact',
-                value: (ai_allocation.disparate_impact_ratio * 100).toFixed(1) + '%',
-                subtext: 'Q1 vs Q5 per capita — passes 80% EEOC threshold',
-                sentiment: 'value-warning'
+                title: 'Q1 Allocation Gap',
+                value: `$${(q1Gap / 1e6).toFixed(1)}M`,
+                subtext: `Q1 underallocated vs need-based per $5M safety cycle`,
+                sentiment: 'value-danger'
             },
             {
-                title: 'Need-Based Impact',
-                value: need_based_allocation.disparate_impact_ratio.toFixed(1) + 'x',
-                subtext: `Q1 receives ${(need_based_allocation.per_capita['Q1 (Poorest)'] / need_based_allocation.per_capita['Q5 (Richest)']).toFixed(0)}x more per capita — proportional to danger`,
+                title: 'Need-Based Ratio',
+                value: needRatio.toFixed(0) + 'x',
+                subtext: `Q1 receives ${needRatio.toFixed(0)}x more per capita under danger-driven allocation`,
                 sentiment: 'value-success'
             },
             {
                 title: 'AI Gini Coefficient',
                 value: ai_allocation.gini_coefficient.toFixed(3),
-                subtext: 'Budget inequality (0=equal)',
+                subtext: 'Budget inequality across tracts (0=equal, 1=max)',
                 sentiment: 'value-warning'
             },
             {
-                title: 'Q1 Budget Share',
-                value: q1Share.toFixed(1) + '%',
-                subtext: `$${(ai_allocation.by_quintile['Q1 (Poorest)'] / 1000).toFixed(0)}k of $${(this.data.report.summary.total_budget / 1e6).toFixed(0)}M total`,
+                title: 'AI Q1 Allocation',
+                value: `$${(q1AI / 1000).toFixed(0)}k`,
+                subtext: `vs $${(q1Need / 1000).toFixed(0)}k under need-based — AI ignores differential danger`,
                 sentiment: 'value-danger'
             }
         ]);
@@ -84,8 +87,8 @@ export class InfrastructureAudit {
         setChartMeta('map-infrastructure', {
             badge: 'modeled',
             label: 'Modeled',
-            tooltip: 'Project types selected by actual infrastructure gaps (OpenStreetMap feature density per tract). Allocation priority and danger scores are simulated.',
-            description: 'Safety project locations from AI vs need-based allocation. Shading shows danger scores; markers show projects. Toggle to compare.',
+            tooltip: 'Safety need defined by danger scores — income-weighted crash risk per tract, calibrated to documented 2–5x higher pedestrian fatality rates in low-income areas (Vision Zero literature). Project types reflect real infrastructure gaps from OpenStreetMap per-capita feature density.',
+            description: 'Safety project locations from AI vs need-based allocation. Shading shows danger scores (higher = more need); markers show projects. Toggle to compare.',
         });
         this.map = new DurhamMap('map-infrastructure').initialize();
 

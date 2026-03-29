@@ -7,9 +7,9 @@ import { resizeVisibleCharts } from './services/chartConfig.js';
 
 const DESCRIPTIONS = {
     overview: '',
-    test1: 'Simulating tools like Strava Metro and StreetLight: do they count people equally across neighborhoods?',
-    test2: 'Training a crash model on real NCDOT data: does it predict danger equally across income levels?',
-    test3: 'Simulating AI-weighted budget allocation: who gets safety infrastructure, and who doesn\u2019t?',
+    test1: 'Audit methodology for AI volume estimation: do these tools count pedestrians and cyclists equitably across income levels?',
+    test2: 'Training a crash prediction model on real NCDOT data: does AI model error vary by neighborhood income?',
+    test3: 'When AI allocates safety budgets, does it account for where danger is actually highest?',
     test4: 'When poor infrastructure suppresses usage, can AI tools detect the hidden demand?'
 };
 

@@ -74,7 +74,7 @@ export class VolumeEstimationAudit {
         setChartMeta('map', {
             badge: 'simulated',
             label: 'Simulated',
-            tooltip: 'Simulated counter locations with bias patterns from research literature. Real counter data (Strava Metro, StreetLight) requires vendor access.',
+            tooltip: 'Simulated counter locations using bias patterns from research literature on AI volume estimation tools. Real vendor counter data requires proprietary API access.',
             description: 'AI volume prediction error across Durham census tracts. Darker red indicates higher prediction errors, concentrated in low-income areas.',
         });
         this.map = new DurhamMap('map').initialize();
@@ -147,7 +147,7 @@ export class VolumeEstimationAudit {
         setChartMeta('chart-income', {
             badge: 'simulated',
             label: 'Simulated',
-            tooltip: 'Real census demographics with simulated volume predictions. Bias model based on documented Strava/StreetLight accuracy disparities.',
+            tooltip: 'Real Census demographics with simulated volume predictions. Bias model based on demographic accuracy disparities documented in peer-reviewed research on AI volume estimation.',
             description: 'Prediction accuracy across income quintiles (Q1=poorest, Q5=richest). Shows mean absolute error in predicted vs actual pedestrian/cyclist counts.',
         });
         const { by_income } = this.data.report;
@@ -243,7 +243,7 @@ export class VolumeEstimationAudit {
         setChartMeta('chart-histogram', {
             badge: 'simulated',
             label: 'Simulated',
-            tooltip: 'Simulated prediction errors across all counter locations. Error model calibrated to documented demographic accuracy gaps in volume estimation tools.',
+            tooltip: 'Simulated prediction errors across all counter locations. Error model calibrated to demographic accuracy gaps documented in research literature.',
             description: 'Each dot is one counter location. Dots left of zero indicate underprediction by the AI model.',
         });
         const { scatter_data } = this.data.report;
