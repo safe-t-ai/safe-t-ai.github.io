@@ -126,7 +126,7 @@ gh workflow run deploy.yml
 
 ## Contributors
 
-[Jonas Neves](https://www.linkedin.com/in/jonasnvs/) · [Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/) · [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/) · [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/)
+[Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/) · [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/) · [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/) · [Jonas Neves](https://www.linkedin.com/in/jonasnvs/)
 
 ## Contributing
 
