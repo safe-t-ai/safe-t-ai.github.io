@@ -1,0 +1,77 @@
+{
+  "_provenance": {
+    "data_type": "mixed",
+    "real": [
+      "infrastructure scores (OpenStreetMap)"
+    ],
+    "simulated": [
+      "potential demand",
+      "actual demand",
+      "AI detection models"
+    ],
+    "parameters": {
+      "high_suppression_threshold": 70,
+      "income_factor_slope": 0.5,
+      "destination_factor_min": 0.8,
+      "destination_factor_range": 0.4,
+      "population_proxy_coeff": 0.05,
+      "infrastructure_adjustment_coeff": 50,
+      "detection_threshold_multiplier": 1.5
+    }
+  },
+  "summary": {
+    "total_potential_demand": 44314,
+    "total_actual_demand": 7245,
+    "total_suppressed_demand": 37069,
+    "suppression_rate": 83.64959657624152,
+    "tracts_analyzed": 67,
+    "high_suppression_tracts": 53,
+    "naive_ai_correlation": -0.06393128080332292,
+    "sophisticated_ai_correlation": 0.8276209147377542
+  },
+  "high_suppression_threshold": 70,
+  "by_quintile": {
+    "Q1 (Poorest)": {
+      "potential_demand": 508.4803101413645,
+      "actual_demand": 106.83820020418705,
+      "suppressed_demand": 401.64210993717734,
+      "suppression_pct": 77.61497571880868,
+      "infrastructure_score": 0.4634771539676345
+    },
+    "Q2": {
+      "potential_demand": 684.1919055927922,
+      "actual_demand": 120.45977867337538,
+      "suppressed_demand": 563.7321269194169,
+      "suppression_pct": 77.5439662184367,
+      "infrastructure_score": 0.4442458251099151
+    },
+    "Q3": {
+      "potential_demand": 701.4158491213869,
+      "actual_demand": 111.60244007111213,
+      "suppressed_demand": 589.8134090502749,
+      "suppression_pct": 81.35781142419142,
+      "infrastructure_score": 0.3971145077963359
+    },
+    "Q4": {
+      "potential_demand": 750.2569480959572,
+      "actual_demand": 113.21904727341283,
+      "suppressed_demand": 637.0379008225444,
+      "suppression_pct": 82.33662605936094,
+      "infrastructure_score": 0.3720137936174081
+    },
+    "Q5 (Richest)": {
+      "potential_demand": 673.5568053961617,
+      "actual_demand": 90.08934989074432,
+      "suppressed_demand": 583.4674555054174,
+      "suppression_pct": 81.37457770686895,
+      "infrastructure_score": 0.37674518503603743
+    }
+  },
+  "findings": [
+    "83.6% of potential active transportation demand is suppressed by poor infrastructure",
+    "Q1 (poorest) areas have 77.6% suppression vs 81.4% in Q5",
+    "Naive AI has only -0.06 correlation with potential demand (fails to detect suppressed demand)",
+    "Sophisticated AI achieves 0.83 correlation but still undercounts by 39.9% in Q1",
+    "AI tools measuring only observed demand miss suppressed demand\u2014low-income areas where poor infrastructure collapses actual trips toward zero"
+  ]
+}

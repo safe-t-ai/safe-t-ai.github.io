@@ -1,0 +1,104 @@
+{
+  "sources": {
+    "census_demographics": {
+      "type": "real",
+      "provider": "US Census Bureau ACS 2024",
+      "temporal_coverage": "2020-2024",
+      "fetched_at": null,
+      "files": [
+        "census-tracts.json",
+        "choropleth-data.json"
+      ]
+    },
+    "crash_volumes": {
+      "type": "real",
+      "provider": "NCDOT Non-Motorist Crash Database (ArcGIS)",
+      "temporal_coverage": "2019-2024",
+      "fetched_at": null,
+      "files": [
+        "crash-report.json",
+        "crash-time-series.json",
+        "confusion-matrices.json",
+        "crash-geo-data.json"
+      ]
+    },
+    "volume_predictions": {
+      "type": "simulated",
+      "rationale": "Strava Metro / StreetLight Data require institutional license",
+      "files": [
+        "volume-report.json",
+        "counter-locations.json",
+        "accuracy-by-income.json",
+        "accuracy-by-race.json",
+        "scatter-data.json"
+      ]
+    },
+    "infrastructure_recommendations": {
+      "type": "mixed",
+      "real_source": "OpenStreetMap infrastructure density per tract",
+      "fetched_at": null,
+      "rationale": "Project selection uses real OSM infrastructure gaps; danger scores and allocation logic are simulated",
+      "files": [
+        "infrastructure-report.json",
+        "danger-scores.json",
+        "budget-allocation.json",
+        "recommendations.json"
+      ]
+    },
+    "suppressed_demand": {
+      "type": "mixed",
+      "real_source": "OpenStreetMap infrastructure density per tract",
+      "fetched_at": null,
+      "rationale": "Infrastructure scores from OSM; demand modeling and AI detection are simulated",
+      "files": [
+        "demand-report.json",
+        "demand-funnel.json",
+        "detection-scorecard.json",
+        "demand-geo-data.json"
+      ]
+    }
+  },
+  "plausibility_ranges": {
+    "crashes_per_year": [
+      50,
+      500
+    ],
+    "crashes_total": [
+      300,
+      3000
+    ],
+    "census_tracts": [
+      60,
+      75
+    ],
+    "durham_total_population": [
+      250000,
+      400000
+    ],
+    "median_income_range": [
+      15000,
+      250000
+    ],
+    "budget_allocation_total": [
+      4500000,
+      5500000
+    ],
+    "confusion_matrix_min_f1_spread": 0.05,
+    "osm_crossings_total": [
+      500,
+      10000
+    ],
+    "osm_bike_infra_total": [
+      50,
+      5000
+    ],
+    "osm_traffic_signals_total": [
+      100,
+      5000
+    ],
+    "osm_footways_total": [
+      2000,
+      50000
+    ]
+  }
+}
