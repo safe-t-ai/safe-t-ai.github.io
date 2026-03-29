@@ -5,7 +5,7 @@
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
 import { initChart, COLORS } from './services/chartConfig.js';
-import { renderMetrics, renderInterpretation, initViewToggle } from './services/renderUtils.js';
+import { renderMetrics, renderInterpretation, initViewToggle, setChartMeta } from './services/renderUtils.js';
 
 const PROJECT_COLORS = {
     crosswalk: '#f59e0b',
@@ -81,6 +81,12 @@ export class InfrastructureAudit {
     }
 
     renderMap() {
+        setChartMeta('map-infrastructure', {
+            badge: 'modeled',
+            label: 'Modeled',
+            tooltip: 'Project types selected by actual infrastructure gaps (OpenStreetMap feature density per tract). Allocation priority and danger scores are simulated.',
+            description: 'Safety project locations from AI vs need-based allocation. Shading shows danger scores; markers show projects. Toggle to compare.',
+        });
         this.map = new DurhamMap('map-infrastructure').initialize();
 
         this.map.addChoroplethLayer(
@@ -186,6 +192,12 @@ export class InfrastructureAudit {
     }
 
     renderAllocationChart() {
+        setChartMeta('chart-allocation', {
+            badge: 'modeled',
+            label: 'Modeled',
+            tooltip: '$5M budget allocated across income quintiles. Project types reflect real infrastructure gaps from OpenStreetMap density data.',
+            description: 'AI-driven vs need-based safety budget allocation per income quintile.',
+        });
         const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
 
@@ -238,6 +250,12 @@ export class InfrastructureAudit {
     }
 
     renderEquityComparison() {
+        setChartMeta('chart-radar', {
+            badge: 'modeled',
+            label: 'Modeled',
+            tooltip: 'Equity metrics comparing AI-driven vs need-based allocation. Infrastructure gaps derived from OpenStreetMap feature density per census tract.',
+            description: 'Four normalized equity metrics (0-100) comparing AI-driven and need-based allocation strategies.',
+        });
         const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
         const { summary } = this.data.report;
 

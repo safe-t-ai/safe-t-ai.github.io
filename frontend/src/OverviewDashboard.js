@@ -4,6 +4,7 @@
 
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
+import { setChartMeta } from './services/renderUtils.js';
 
 export class OverviewDashboard {
     constructor() {
@@ -31,6 +32,12 @@ export class OverviewDashboard {
     }
 
     renderMap() {
+        setChartMeta('overview-map', {
+            badge: 'real',
+            label: 'Real',
+            tooltip: 'Median household income from the U.S. Census Bureau American Community Survey (ACS 5-year estimates).',
+            description: 'Median household income across Durham census tracts. The equity tests that follow measure how AI transportation tools treat these areas differently.',
+        });
         this.map = new DurhamMap('overview-map').initialize();
 
         const incomes = this.data.choroplethData.features

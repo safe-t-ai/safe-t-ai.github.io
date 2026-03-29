@@ -10,7 +10,7 @@ import {
     createScatterChartConfig,
     COLORS
 } from './services/chartConfig.js';
-import { renderMetrics, renderInterpretation } from './services/renderUtils.js';
+import { renderMetrics, renderInterpretation, setChartMeta } from './services/renderUtils.js';
 
 export class VolumeEstimationAudit {
     constructor() {
@@ -71,6 +71,12 @@ export class VolumeEstimationAudit {
     }
 
     renderMap() {
+        setChartMeta('map', {
+            badge: 'simulated',
+            label: 'Simulated',
+            tooltip: 'Simulated counter locations with bias patterns from research literature. Real counter data (Strava Metro, StreetLight) requires vendor access.',
+            description: 'AI volume prediction error across Durham census tracts. Darker red indicates higher prediction errors, concentrated in low-income areas.',
+        });
         this.map = new DurhamMap('map').initialize();
 
         this.map.addChoroplethLayer(this.data.choroplethData, {
@@ -138,6 +144,12 @@ export class VolumeEstimationAudit {
     }
 
     renderIncomeChart() {
+        setChartMeta('chart-income', {
+            badge: 'simulated',
+            label: 'Simulated',
+            tooltip: 'Real census demographics with simulated volume predictions. Bias model based on documented Strava/StreetLight accuracy disparities.',
+            description: 'Prediction accuracy across income quintiles (Q1=poorest, Q5=richest). Shows mean absolute error in predicted vs actual pedestrian/cyclist counts.',
+        });
         const { by_income } = this.data.report;
 
         const chartData = by_income.by_quintile.map(q => ({
@@ -165,6 +177,12 @@ export class VolumeEstimationAudit {
     }
 
     renderRaceChart() {
+        setChartMeta('chart-race', {
+            badge: 'simulated',
+            label: 'Simulated',
+            tooltip: 'Racial composition from US Census ACS. Volume predictions simulated with demographic-correlated bias patterns from research literature.',
+            description: 'Prediction errors grouped by census tract racial composition. Areas with higher minority percentages show systematically worse accuracy.',
+        });
         const { by_race } = this.data.report;
 
         const chartData = by_race.by_category.map(c => ({
@@ -190,6 +208,12 @@ export class VolumeEstimationAudit {
     }
 
     renderScatterChart() {
+        setChartMeta('chart-scatter', {
+            badge: 'simulated',
+            label: 'Simulated',
+            tooltip: 'Simulated counter data with demographic-correlated bias. Diagonal line represents perfect prediction; deviations indicate systematic error.',
+            description: 'Predicted volumes vs actual counts. Perfect predictions follow the diagonal. Systematic deviations reveal where bias occurs.',
+        });
         const { scatter_data } = this.data.report;
 
         const config = createScatterChartConfig(scatter_data, {
@@ -216,6 +240,12 @@ export class VolumeEstimationAudit {
     }
 
     renderErrorStripChart() {
+        setChartMeta('chart-histogram', {
+            badge: 'simulated',
+            label: 'Simulated',
+            tooltip: 'Simulated prediction errors across all counter locations. Error model calibrated to documented demographic accuracy gaps in volume estimation tools.',
+            description: 'Each dot is one counter location. Dots left of zero indicate underprediction by the AI model.',
+        });
         const { scatter_data } = this.data.report;
         const quintileLabels = { 1: 'Q1', 2: 'Q2', 3: 'Q3', 4: 'Q4', 5: 'Q5' };
 

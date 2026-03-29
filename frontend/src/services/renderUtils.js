@@ -46,6 +46,28 @@ export function initViewToggle(containerId, onChange) {
 }
 
 /**
+ * Set the data-source badge and description for a chart or map container.
+ * Call this at the top of each renderXxx() method so metadata stays co-located
+ * with the chart code that owns it.
+ *
+ * @param {string} id - The chart/map element id
+ * @param {{ badge: 'real'|'simulated'|'modeled', label: string, tooltip: string, description: string }} meta
+ */
+export function setChartMeta(id, { badge, label, tooltip, description }) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const container = el.closest('.chart-container, .map-container');
+    if (!container) return;
+    const badgeEl = container.querySelector('.data-source-badge');
+    if (badgeEl) {
+        badgeEl.className = `data-source-badge ${badge}`;
+        badgeEl.innerHTML = `${label}<span class="tooltip">${tooltip}</span>`;
+    }
+    const descEl = container.querySelector('.chart-description');
+    if (descEl) descEl.textContent = description;
+}
+
+/**
  * @param {string} elementId
  * @param {string[]} findings
  * @param {string} [title]

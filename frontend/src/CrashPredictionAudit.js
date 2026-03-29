@@ -5,7 +5,7 @@
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
 import { initChart, createBarChartConfig, COLORS } from './services/chartConfig.js';
-import { renderMetrics, renderInterpretation, initViewToggle } from './services/renderUtils.js';
+import { renderMetrics, renderInterpretation, initViewToggle, setChartMeta } from './services/renderUtils.js';
 
 export class CrashPredictionAudit {
     constructor() {
@@ -67,6 +67,12 @@ export class CrashPredictionAudit {
     }
 
     renderMap() {
+        setChartMeta('map-crashes', {
+            badge: 'real',
+            label: 'Real Data',
+            tooltip: 'NCDOT non-motorist crash locations (pedestrian/bicycle), geocoded to census tracts via spatial join.',
+            description: 'Actual vs predicted crash counts by census tract. Toggle between views to compare.',
+        });
         this.map = new DurhamMap('map-crashes').initialize();
         this.updateCrashLayer();
 
@@ -167,6 +173,12 @@ export class CrashPredictionAudit {
     }
 
     renderConfusionMatrix() {
+        setChartMeta('chart-confusion', {
+            badge: 'real',
+            label: 'Real Data',
+            tooltip: 'Ridge regression trained on real NCDOT non-motorist crash data (2019-2023), evaluated on 2024. Census demographics as features.',
+            description: 'Binary classification (above/below within-quintile median) evaluated per income group. Lower scores in poorer quintiles indicate the model struggles to rank tracts within those areas.',
+        });
         const { by_quintile } = this.data.confusionMatrices;
 
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
@@ -241,6 +253,12 @@ export class CrashPredictionAudit {
     }
 
     renderTimeSeriesChart() {
+        setChartMeta('chart-timeseries', {
+            badge: 'real',
+            label: 'Real Data',
+            tooltip: 'Non-motorist crash trends from NCDOT ArcGIS Feature Service, aggregated by census tract.',
+            description: 'Actual vs predicted crashes over time. Shows persistent over/underprediction patterns by income level.',
+        });
         const { years, by_quintile } = this.data.timeSeries;
 
         const quintileSeries = [
@@ -301,6 +319,12 @@ export class CrashPredictionAudit {
     }
 
     renderErrorByQuintile() {
+        setChartMeta('chart-error-quintile', {
+            badge: 'real',
+            label: 'Real Data',
+            tooltip: 'Mean absolute error of Ridge regression predictions on real NCDOT non-motorist crash data, grouped by neighborhood income quintile.',
+            description: 'Relative prediction error by income level. Higher error in poorer quintiles indicates systematic bias in model accuracy.',
+        });
         const { error_by_quintile } = this.data.report;
 
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];

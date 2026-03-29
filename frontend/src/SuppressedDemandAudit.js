@@ -5,7 +5,7 @@
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
 import { initChart, COLORS } from './services/chartConfig.js';
-import { renderMetrics, renderInterpretation, initViewToggle } from './services/renderUtils.js';
+import { renderMetrics, renderInterpretation, initViewToggle, setChartMeta } from './services/renderUtils.js';
 
 export class SuppressedDemandAudit {
     constructor() {
@@ -65,6 +65,12 @@ export class SuppressedDemandAudit {
     }
 
     renderMap() {
+        setChartMeta('map-demand', {
+            badge: 'modeled',
+            label: 'Modeled',
+            tooltip: 'Infrastructure quality scores derived from OpenStreetMap feature density per census tract. Demand suppression modeled from these real infrastructure conditions.',
+            description: 'Suppressed, potential, and actual cycling/walking demand across Durham. High suppression (red) indicates latent demand AI tools miss.',
+        });
         this.map = new DurhamMap('map-demand').initialize();
 
         this.updateDemandLayer();
@@ -135,6 +141,12 @@ export class SuppressedDemandAudit {
     }
 
     renderSuppressionByQuintile() {
+        setChartMeta('chart-funnel', {
+            badge: 'modeled',
+            label: 'Modeled',
+            tooltip: 'Suppression rate per income quintile. Infrastructure scores derived from OpenStreetMap feature density; suppression modeled from infrastructure quality.',
+            description: 'Demand suppression by income quintile. Q1 (poorest) areas have the highest suppression — AI tools see only a fraction of latent demand there.',
+        });
         const byQuintile = this.data.report.by_quintile;
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
         const suppressionRates = quintiles.map(q => +byQuintile[q].suppression_pct.toFixed(1));
@@ -173,6 +185,12 @@ export class SuppressedDemandAudit {
     }
 
     renderDetectionScorecard() {
+        setChartMeta('chart-scorecard', {
+            badge: 'modeled',
+            label: 'Modeled',
+            tooltip: 'AI detection accuracy evaluated against infrastructure scores from OpenStreetMap. Three approaches: naive, sophisticated, and human expert baseline.',
+            description: 'Detection accuracy for suppressed demand. Naive AI fails; sophisticated AI achieves partial detection. Neither matches human expert baseline.',
+        });
         const { naive_ai, sophisticated_ai, human_expert_baseline } = this.data.scorecard;
 
         function scorecardData(d) {
