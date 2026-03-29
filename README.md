@@ -1,7 +1,6 @@
 # SAFE-T: Safety Algorithm Fairness Evaluation for Transportation
 
-[![Deploy](https://img.shields.io/github/actions/workflow/status/safe-t-ai/safe-t-ai.github.io/deploy.yml?branch=main&label=deploy&logo=github&style=classic)](https://github.com/safe-t-ai/safe-t-ai.github.io/actions/workflows/deploy.yml)
-[![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-blue.svg?style=classic)](LICENSE)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/safe-t-ai/safe-t-ai.github.io/deploy.yml?branch=main&label=deploy&logo=github&style=classic)](https://github.com/safe-t-ai/safe-t-ai.github.io/actions/workflows/deploy.yml) [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-blue.svg?style=classic)](LICENSE)
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-blue.svg?style=classic)](LICENSE-CODE)
 [![Python](https://img.shields.io/badge/python-3.9+-blue?logo=python&style=classic)](https://www.python.org/)
 
