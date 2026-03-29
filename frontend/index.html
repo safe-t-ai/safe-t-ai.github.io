@@ -1418,6 +1418,12 @@
                         </div>
 
                         <div id="test4-interpretation"></div>
+                        <div class="methodology-note">
+                            <h3>Methodology Basis</h3>
+                            <p>Suppressed demand is modeled from real OpenStreetMap per-capita infrastructure scores (sidewalks, crosswalks, bike lanes, bus stops per 1,000 residents per tract). Suppression factor: <code>1 − score²</code> applied to a census-proportional potential demand baseline. Q1 tracts score lower on infrastructure quality, producing higher suppression — consistent with documented elasticity of active transport to infrastructure investment.</p>
+                            <p>The three AI detection profiles (Naive, Sophisticated, Human Expert) are parameterized models, not evaluations of specific vendor products. Naive AI correlates with observed demand (which collapses toward zero in suppressed areas); Sophisticated AI partially corrects for infrastructure quality.</p>
+                            <p class="methodology-note-refs">Basis: Handy &amp; Cao (2005) on built environment and travel behavior; NACTO Urban Street Design Guide infrastructure standards; FHWA Active Transportation research program.</p>
+                        </div>
                     </div>
                 </div>
             </div>

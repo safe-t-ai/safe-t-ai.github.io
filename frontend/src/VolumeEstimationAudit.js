@@ -54,12 +54,12 @@ export class VolumeEstimationAudit {
                 sentiment: Math.abs(overall_accuracy.metrics.mean_pct_error) > 10 ? 'value-danger' : 'value-warning'
             },
             {
-                title: 'R\u00B2 (Correlation)',
+                title: 'R\u00B2',
                 value: overall_accuracy.metrics.r_squared.toFixed(3),
                 subtext: overall_accuracy.metrics.r_squared > 0.7
-                    ? 'Strong correlation'
-                    : 'Weak correlation',
-                sentiment: overall_accuracy.metrics.r_squared > 0.7 ? 'value-success' : 'value-danger'
+                    ? 'Variance explained — strong model fit'
+                    : 'Variance explained — moderate fit (simulated data)',
+                sentiment: overall_accuracy.metrics.r_squared > 0.7 ? 'value-success' : 'value-warning'
             },
             {
                 title: 'Total Volume Bias',
