@@ -130,55 +130,43 @@ export class SuppressedDemandAudit {
     }
 
     renderCharts() {
-        this.renderFunnelChart();
+        this.renderSuppressionByQuintile();
         this.renderDetectionScorecard();
     }
 
-    renderFunnelChart() {
-        const { 'Q1 (Poorest)': q1, 'Q5 (Richest)': q5 } = this.data.funnel;
-
-        const funnelFormatter = (params) => `${params.name}: ${Math.round(params.value)}%`;
-
-        const funnelSeries = (name, data, position, color, labelPos) => ({
-            name,
-            type: 'funnel',
-            left: position,
-            width: '22%',
-            label: {
-                position: labelPos,
-                formatter: funnelFormatter,
-                fontSize: 11
-            },
-            labelLine: { show: true },
-            itemStyle: { color, borderColor: '#fff', borderWidth: 1 },
-            emphasis: { label: { fontSize: 13 } },
-            data
-        });
-
-        const stages = [
-            { key: 'stage1_potential', name: 'Potential' },
-            { key: 'stage2_destinations', name: 'Destinations' },
-            { key: 'stage3_would_use_if_safe', name: 'Would Use' },
-            { key: 'stage4_actually_use', name: 'Actually Use' }
-        ];
+    renderSuppressionByQuintile() {
+        const byQuintile = this.data.report.by_quintile;
+        const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
+        const suppressionRates = quintiles.map(q => +byQuintile[q].suppression_pct.toFixed(1));
 
         const option = {
             tooltip: {
-                trigger: 'item',
-                formatter: (params) => `${params.seriesName}<br/>${params.name}: ${Math.round(params.value)}%`
+                trigger: 'axis',
+                formatter: (params) => `${params[0].name}<br/>Suppression rate: <b>${params[0].value}%</b>`
             },
-            legend: {
-                data: ['Q1 (Poorest)', 'Q5 (Richest)'],
-                bottom: 10
+            xAxis: {
+                type: 'category',
+                data: quintiles.map(q => q.replace(' (Poorest)', '\n(Poorest)').replace(' (Richest)', '\n(Richest)'))
             },
-            series: [
-                funnelSeries('Q1 (Poorest)',
-                    stages.map(s => ({ value: q1[s.key], name: s.name })),
-                    '25%', COLORS.error, 'left'),
-                funnelSeries('Q5 (Richest)',
-                    stages.map(s => ({ value: q5[s.key], name: s.name })),
-                    '53%', COLORS.success, 'right')
-            ]
+            yAxis: {
+                type: 'value',
+                min: 0,
+                max: 100,
+                axisLabel: { formatter: '{value}%' }
+            },
+            series: [{
+                type: 'bar',
+                data: suppressionRates.map((v, i) => ({
+                    value: v,
+                    itemStyle: { color: COLORS.quintiles[i] }
+                })),
+                label: {
+                    show: true,
+                    position: 'top',
+                    formatter: '{c}%'
+                },
+                barMaxWidth: 48
+            }]
         };
 
         this.charts.funnel = initChart('chart-funnel', option);
