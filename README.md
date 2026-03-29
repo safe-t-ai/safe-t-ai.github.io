@@ -4,7 +4,7 @@
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-blue.svg?style=classic)](LICENSE-CODE)
 [![Python](https://img.shields.io/badge/python-3.9+-blue?logo=python&style=classic)](https://www.python.org/)
 
-> Auditing framework for evaluating equity and fairness in AI-driven transportation safety systems. Duke University.
+> Auditing framework for evaluating equity and fairness in AI-driven transportation safety systems.
 
 **[Live Demo](https://safe-t-ai.github.io/)**
 
