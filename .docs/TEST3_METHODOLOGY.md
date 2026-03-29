@@ -121,6 +121,8 @@ Simulation calibrated against research literature:
 
 ## Interpretation
 
-The 0.295 disparate impact ratio means AI allocates resources such that the poorest quintile receives only 29.5% as much per-capita funding as the richest quintile. This falls well below the 0.8 threshold used by the EEOC to identify adverse impact in civil rights enforcement.
+The AI disparate impact ratio (Q1 per-capita / Q5 per-capita) is approximately 0.97 — near parity, technically above the 0.8 EEOC adverse impact threshold. This might appear equitable at first glance.
 
-The equity gap (25.7%) represents the magnitude of bias introduced by the AI system compared to a purely need-based approach.
+The real finding is different: the need-based allocation produces a Q1/Q5 ratio of ~15x, because Q1 tracts have roughly 15x higher danger scores per capita than Q5 tracts. AI's near-equal allocation ignores this differential danger. Equal dollars to unequal risk is not equitable — it underserves the communities that need safety investment most.
+
+Exact values vary with each pipeline run (depend on Census vintage and Durham demographics). The directional finding is stable: AI allocation is insensitive to differential danger; need-based allocation is proportional to it.

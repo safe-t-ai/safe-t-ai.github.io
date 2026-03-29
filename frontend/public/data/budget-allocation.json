@@ -38,5 +38,18 @@
   "comparison": {
     "equity_gap": 14.392035599901023,
     "gini_improvement": 0.023991508878631107
+  },
+  "_provenance": {
+    "data_type": "modeled",
+    "real": [
+      "US Census ACS demographics",
+      "OpenStreetMap infrastructure density (per-capita, per tract)"
+    ],
+    "simulated": [
+      "Danger scores (income-weighted crash risk)",
+      "AI allocation (bias_strength=0.6)",
+      "Need-based allocation (danger-score only)"
+    ],
+    "note": "Project types selected from real OSM infrastructure gaps. Budget amounts and priority scoring are simulated."
   }
 }

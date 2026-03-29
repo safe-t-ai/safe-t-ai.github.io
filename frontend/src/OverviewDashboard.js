@@ -13,15 +13,16 @@ export class OverviewDashboard {
     }
 
     async initialize() {
-        const [volumeReport, crashReport, budgetAllocation, demandReport, choroplethData] = await Promise.all([
+        const [volumeReport, crashReport, confusionMatrices, budgetAllocation, demandReport, choroplethData] = await Promise.all([
             api.getTest1Report(),
             api.getCrashReport(),
+            api.getConfusionMatrices(),
             api.getBudgetAllocation(),
             api.getDemandReport(),
             api.getChoroplethData()
         ]);
 
-        this.data = { volumeReport, crashReport, budgetAllocation, demandReport, choroplethData };
+        this.data = { volumeReport, crashReport, confusionMatrices, budgetAllocation, demandReport, choroplethData };
 
         const tractCountEl = document.getElementById('tract-count');
         if (tractCountEl) tractCountEl.textContent = String(choroplethData.features.length);
@@ -118,10 +119,14 @@ export class OverviewDashboard {
     }
 
     renderTestCards() {
-        const { volumeReport, crashReport, budgetAllocation, demandReport } = this.data;
+        const { volumeReport, crashReport, confusionMatrices, budgetAllocation, demandReport } = this.data;
 
-        const q1Error = crashReport.error_by_quintile['Q1 (Poorest)'];
-        const q5Error = crashReport.error_by_quintile['Q5 (Richest)'];
+        const q1Recall = (confusionMatrices.by_quintile['Q1 (Poorest)']?.recall ?? 0) * 100;
+        const q5Recall = (confusionMatrices.by_quintile['Q5 (Richest)']?.recall ?? 0) * 100;
+
+        const needQ1PerCap = budgetAllocation.need_based_allocation.per_capita['Q1 (Poorest)'];
+        const needQ5PerCap = budgetAllocation.need_based_allocation.per_capita['Q5 (Richest)'];
+        const needRatio = Math.round(needQ1PerCap / needQ5PerCap);
 
         const hero = {
             test: 'test1',
@@ -134,14 +139,14 @@ export class OverviewDashboard {
             {
                 test: 'test2',
                 label: 'Crash Prediction',
-                value: `${q1Error.error_pct.toFixed(0)}% vs ${q5Error.error_pct.toFixed(0)}%`,
-                finding: 'Q1 vs Q5 prediction error rate'
+                value: `${q1Recall.toFixed(0)}% vs ${q5Recall.toFixed(0)}%`,
+                finding: 'Q1 vs Q5 recall — AI misses high-crash tracts in poorest areas'
             },
             {
                 test: 'test3',
                 label: 'Infrastructure',
-                value: `${(budgetAllocation.ai_allocation.disparate_impact_ratio * 100).toFixed(1)}%`,
-                finding: 'Disparate impact ratio in AI budget allocation'
+                value: `${needRatio}x`,
+                finding: 'More per-capita need in Q1 than Q5; AI budget allocates nearly equally'
             },
             {
                 test: 'test4',
