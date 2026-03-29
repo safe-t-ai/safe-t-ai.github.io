@@ -46,6 +46,10 @@ frontend/public/data/*
 !frontend/public/data/.gitkeep
 !frontend/public/data/README.md
 
+# Test coverage
+.coverage
+htmlcov/
+
 # Temporary files
 *.log
 *.tmp

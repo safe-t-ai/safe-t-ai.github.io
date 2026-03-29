@@ -124,7 +124,7 @@ gh workflow run data-refresh.yml
 gh workflow run deploy.yml
 ```
 
-## Contributors
+## Team
 
 [Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/) · [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/) · [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/) · [Jonas Neves](https://www.linkedin.com/in/jonasnvs/)
 
