@@ -1,16 +1,16 @@
 {
   "naive_ai": {
-    "correlation_with_potential": -0.06393128080332292,
-    "rmse": 629.000068574304,
-    "bias_q1": -78.98872422916739,
-    "bias_q5": -86.62483265420249,
+    "correlation_with_potential": 0.2438977182666125,
+    "rmse": 603.437508422264,
+    "bias_q1": -83.54886117516968,
+    "bias_q5": -79.40331775104339,
     "detection_rate_high_suppression": 0.0
   },
   "sophisticated_ai": {
-    "correlation_with_potential": 0.8276209147377542,
-    "rmse": 340.41731276416806,
-    "bias_q1": -39.881484052815345,
-    "bias_q5": -40.546300209218785,
+    "correlation_with_potential": 0.8192433341776936,
+    "rmse": 318.7696921441148,
+    "bias_q1": -43.869710333150365,
+    "bias_q5": -34.01398803240904,
     "detection_rate_high_suppression": 100.0
   },
   "human_expert_baseline": {
