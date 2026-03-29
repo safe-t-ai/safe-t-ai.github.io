@@ -1,4 +1,4 @@
-.PHONY: help setup install install-backend install-frontend clean clean-all dev build deploy test data fetch-data fetch-data-api generate-data venv
+.PHONY: help setup install install-backend install-frontend clean clean-all dev build deploy test data run-notebooks venv
 
 .DEFAULT_GOAL := help
 
@@ -44,17 +44,12 @@ data: ## Pull all pre-built data from the data branch
 	git archive origin/data -- frontend/ | tar -xf - --strip-components=1 -C frontend/public/data/
 	@echo "✓ Data restored from data branch"
 
-fetch-data-api: ## Fetch raw data from external APIs (slow, needs API keys)
-	$(PYTHON) scripts/fetch_durham_data.py
-	$(PYTHON) scripts/fetch_ncdot_nonmotorist.py
-	$(PYTHON) scripts/fetch_osm_infrastructure.py
-
-generate-data: ## Run simulations and generate frontend JSON from local raw data
-	$(PYTHON) scripts/simulate_ai_predictions.py
-	$(PYTHON) scripts/simulate_crash_predictions.py
-	$(PYTHON) scripts/simulate_infrastructure_recommendations.py
-	$(PYTHON) scripts/analyze_suppressed_demand.py
-	$(PYTHON) scripts/generate_static_data.py
+run-notebooks: ## Execute all pipeline notebooks locally (requires Jupyter)
+	jupyter nbconvert --to notebook --execute notebooks/01_fetch_data.ipynb --output notebooks/01_fetch_data.ipynb
+	jupyter nbconvert --to notebook --execute notebooks/02_test1_volume_estimation.ipynb --output notebooks/02_test1_volume_estimation.ipynb
+	jupyter nbconvert --to notebook --execute notebooks/03_test2_crash_prediction.ipynb --output notebooks/03_test2_crash_prediction.ipynb
+	jupyter nbconvert --to notebook --execute notebooks/04_test3_infrastructure.ipynb --output notebooks/04_test3_infrastructure.ipynb
+	jupyter nbconvert --to notebook --execute notebooks/05_test4_suppressed_demand.ipynb --output notebooks/05_test4_suppressed_demand.ipynb
 
 ##@ Build & Deploy
 
