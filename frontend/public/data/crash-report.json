@@ -56,9 +56,9 @@
     }
   },
   "findings": [
-    "AI correctly identifies 29% of high-crash tracts in Q1 vs 67% in Q5 \u2014 a 38 percentage point recall gap",
-    "Ridge regression trained on real 2019-2023 non-motorist crash data with demographic features",
-    "Model shows systematic underperformance in poorest quintile when predicting 2024 crashes",
+    "AI prediction error is 70% in Q1 vs 46% in Q5 \u2014 1.5x worse in the poorest areas",
+    "Ridge regression trained on real 2019-2022 non-motorist crash data with demographic features",
+    "Model shows systematic underperformance in poorest quintile when predicting 2023 crashes",
     "AI-guided safety investments systematically underallocate resources to underserved communities"
   ]
 }

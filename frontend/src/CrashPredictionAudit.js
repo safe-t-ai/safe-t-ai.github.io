@@ -33,29 +33,31 @@ export class CrashPredictionAudit {
     }
 
     renderMetrics() {
-        const { summary, error_by_quintile } = this.data.report;
+        const { summary } = this.data.report;
         const { by_quintile } = this.data.confusionMatrices;
 
-        const q1_recall = by_quintile['Q1 (Poorest)']?.recall ?? 0;
-        const q5_recall = by_quintile['Q5 (Richest)']?.recall ?? 0;
+        const q1_accuracy = by_quintile['Q1 (Poorest)']?.accuracy ?? 0;
+        const q5_accuracy = by_quintile['Q5 (Richest)']?.accuracy ?? 0;
+        const q1_error = this.data.report.error_by_quintile['Q1 (Poorest)']?.error_pct ?? 0;
+        const q5_error = this.data.report.error_by_quintile['Q5 (Richest)']?.error_pct ?? 0;
 
         renderMetrics('test2-metrics', [
             {
-                title: 'Q1 Recall',
-                value: (q1_recall * 100).toFixed(0) + '%',
-                subtext: 'High-crash tracts correctly identified (poorest)',
+                title: 'Q1 Model Accuracy',
+                value: (q1_accuracy * 100).toFixed(0) + '%',
+                subtext: 'Correctly classifies high-crash tracts in poorest areas',
                 sentiment: 'value-danger'
             },
             {
-                title: 'Q5 Recall',
-                value: (q5_recall * 100).toFixed(0) + '%',
-                subtext: 'High-crash tracts correctly identified (richest)',
+                title: 'Q5 Model Accuracy',
+                value: (q5_accuracy * 100).toFixed(0) + '%',
+                subtext: 'Correctly classifies high-crash tracts in richest areas',
                 sentiment: 'value-success'
             },
             {
-                title: 'Recall Gap',
-                value: ((q5_recall - q1_recall) * 100).toFixed(0) + ' pts',
-                subtext: 'AI misses more high-crash tracts in poorest areas',
+                title: 'Accuracy Gap',
+                value: ((q5_accuracy - q1_accuracy) * 100).toFixed(0) + ' pts',
+                subtext: 'AI ranks crash risk less reliably in poorest neighborhoods',
                 sentiment: 'value-danger'
             },
             {
@@ -324,7 +326,7 @@ export class CrashPredictionAudit {
             badge: 'real',
             label: 'Real Data',
             tooltip: 'Mean absolute error of Ridge regression predictions on real NCDOT non-motorist crash data, grouped by neighborhood income quintile.',
-            description: 'Relative prediction error by income level. The recall gap above is the stronger signal: AI correctly identifies only 29% of high-crash tracts in Q1 vs 67% in Q5.',
+            description: 'Relative prediction error by income level. Compares mean absolute error as a percentage of actual crash count, per income quintile.',
         });
         const { error_by_quintile } = this.data.report;
 
