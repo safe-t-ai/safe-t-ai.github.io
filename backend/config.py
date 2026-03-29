@@ -75,6 +75,24 @@ VOLUME_SIMULATION_CONFIG = {
 SUPPRESSED_DEMAND_CONFIG = {
     'base_rate': 0.10,
     'infrastructure_quality_correlation': 0.65,
+    'income_factor_slope': 0.5,            # Potential demand scales up to 1.5x in poorest areas (car-free assumption)
+    'destination_factor_min': 0.8,         # Min destination availability factor
+    'destination_factor_range': 0.4,       # Uniform random range for destination factor
+    'population_proxy_coeff': 0.05,        # Sophisticated AI: population weight in demand proxy
+    'infrastructure_adjustment_coeff': 50, # Sophisticated AI: infrastructure score weight in demand proxy
+    'ai_noise_std': 30,                    # Std dev of noise on sophisticated AI prediction
+    'detection_threshold_multiplier': 1.5, # Multiple of actual_demand that counts as "detected" in high-suppression tracts
+}
+
+# Hypothetical human-expert benchmark for suppressed demand detection.
+# Not empirically measured — represents estimated expert survey capability used for comparison only.
+HUMAN_EXPERT_DEMAND_BASELINE = {
+    'correlation_with_potential': 0.85,
+    'rmse': 60.0,
+    'bias_q1': -5.0,
+    'bias_q5': -5.0,
+    'detection_rate_high_suppression': 80.0,
+    '_note': 'Hypothetical benchmark; not empirically measured.',
 }
 
 HIGH_SUPPRESSION_THRESHOLD = 70  # Suppression % that defines "high suppression"

@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 from config import RAW_DATA_DIR, SIMULATED_DATA_DIR, BIAS_PARAMETERS, VOLUME_SIMULATION_CONFIG
+from utils.demographic_analysis import calculate_income_quintiles
 
 SIMULATED_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -58,14 +59,20 @@ def generate_ground_truth_counters(census_gdf):
 def apply_ai_bias(ground_truth_df, census_gdf):
     """Apply documented bias patterns to create AI predictions"""
 
+    # Join income quintile from full census distribution
+    census_quintiled = calculate_income_quintiles(census_gdf[['tract_id', 'median_income']].copy())
+    ground_truth_df = ground_truth_df.merge(
+        census_quintiled[['tract_id', 'income_quintile']],
+        on='tract_id', how='left'
+    )
+
     ai_predictions = []
 
     for _, counter in ground_truth_df.iterrows():
         true_volume = counter['daily_volume']
-        income = counter['median_income']
         pct_minority = counter['pct_minority']
 
-        income_quintile = get_income_quintile(income, census_gdf)
+        income_quintile = counter['income_quintile']
         total_bias = calculate_demographic_bias(income_quintile, pct_minority)
         noise = np.random.normal(1.0, BIAS_PARAMETERS['base_noise'])
         predicted_volume = int(true_volume * total_bias * noise)
@@ -134,6 +141,8 @@ def generate_tract_level_predictions(census_gdf):
 
     predictions = []
 
+    tract_summary = calculate_income_quintiles(tract_summary)
+
     for _, tract in tract_summary.iterrows():
         population = tract['total_population']
         base_rate = VOLUME_SIMULATION_CONFIG['base_active_transport_rate']
@@ -148,9 +157,8 @@ def generate_tract_level_predictions(census_gdf):
 
         true_daily_volume = int(population * base_rate * density_factor)
 
-        income = tract['median_income']
         pct_minority = tract['pct_minority']
-        income_quintile = get_income_quintile(income, census_gdf)
+        income_quintile = tract['income_quintile']
         total_bias = calculate_demographic_bias(income_quintile, pct_minority)
         noise = np.random.normal(1.0, VOLUME_SIMULATION_CONFIG['aggregate_noise_std'])
 
@@ -198,21 +206,6 @@ def generate_tract_level_predictions(census_gdf):
     print(f"\nSaved tract-level predictions to {output_file}")
 
     return df
-
-def get_income_quintile(income, census_gdf):
-    """Calculate income quintile (1=lowest, 5=highest)"""
-    quintiles = census_gdf['median_income'].quantile([0.2, 0.4, 0.6, 0.8])
-
-    if income <= quintiles[0.2]:
-        return 1
-    elif income <= quintiles[0.4]:
-        return 2
-    elif income <= quintiles[0.6]:
-        return 3
-    elif income <= quintiles[0.8]:
-        return 4
-    else:
-        return 5
 
 def calculate_demographic_bias(income_quintile, pct_minority):
     """Calculate combined income + racial bias multiplier."""

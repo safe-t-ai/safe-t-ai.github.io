@@ -105,7 +105,7 @@ Evaluates whether AI crash prediction models accurately predict danger across al
 
 ### Core Issue
 
-**The Problem:** Police-reported crash data has systematic underreporting in low-income areas (60% reporting rate vs 90% in wealthy areas). AI models trained on this biased data learn to predict where crashes are *reported*, not where they *occur*.
+**The Problem:** Police-reported crash data has systematic underreporting in low-income areas. AI models trained on this biased data learn to predict where crashes are *reported*, not where they *occur*. The simulation models this bias; exact rates are simulation parameters, not measured values.
 
 ### Methodology
 

@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / 'backend'))
 
 import geopandas as gpd
-from config import HIGH_SUPPRESSION_THRESHOLD, RAW_DATA_DIR, SIMULATED_DATA_DIR
+from config import HIGH_SUPPRESSION_THRESHOLD, RAW_DATA_DIR, SIMULATED_DATA_DIR, SUPPRESSED_DEMAND_CONFIG
 from models.demand_analyzer import SuppressedDemandAnalyzer
 from utils.data_loading import load_infrastructure_data
 
@@ -107,7 +107,15 @@ def main():
             'data_type': 'mixed',
             'real': ['infrastructure scores (OpenStreetMap)'],
             'simulated': ['potential demand', 'actual demand', 'AI detection models'],
-            'parameters': {'high_suppression_threshold': HIGH_SUPPRESSION_THRESHOLD},
+            'parameters': {
+                'high_suppression_threshold': HIGH_SUPPRESSION_THRESHOLD,
+                'income_factor_slope': SUPPRESSED_DEMAND_CONFIG['income_factor_slope'],
+                'destination_factor_min': SUPPRESSED_DEMAND_CONFIG['destination_factor_min'],
+                'destination_factor_range': SUPPRESSED_DEMAND_CONFIG['destination_factor_range'],
+                'population_proxy_coeff': SUPPRESSED_DEMAND_CONFIG['population_proxy_coeff'],
+                'infrastructure_adjustment_coeff': SUPPRESSED_DEMAND_CONFIG['infrastructure_adjustment_coeff'],
+                'detection_threshold_multiplier': SUPPRESSED_DEMAND_CONFIG['detection_threshold_multiplier'],
+            },
         },
         'summary': results['summary'],
         'high_suppression_threshold': HIGH_SUPPRESSION_THRESHOLD,
@@ -117,7 +125,7 @@ def main():
             f"Q1 (poorest) areas have {results['by_quintile']['Q1 (Poorest)']['suppression_pct']:.1f}% suppression vs {results['by_quintile']['Q5 (Richest)']['suppression_pct']:.1f}% in Q5",
             f"Naive AI has only {naive['correlation_with_potential']:.2f} correlation with potential demand (fails to detect suppressed demand)",
             f"Sophisticated AI achieves {soph['correlation_with_potential']:.2f} correlation but still undercounts by {abs(soph['bias_q1']):.1f}% in Q1",
-            "Standard AI tools (Strava Metro) perpetuate inequity by measuring observed demand instead of potential need"
+            "AI tools measuring only observed demand miss suppressed demand—low-income areas where poor infrastructure collapses actual trips toward zero"
         ]
     }
 

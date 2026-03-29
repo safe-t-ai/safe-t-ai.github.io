@@ -10,7 +10,7 @@ import pandas as pd
 import geopandas as gpd
 from typing import Dict
 from scipy.stats import pearsonr
-from config import SUPPRESSED_DEMAND_CONFIG, HIGH_SUPPRESSION_THRESHOLD, DEFAULT_RANDOM_SEED, QUINTILE_LABELS
+from config import SUPPRESSED_DEMAND_CONFIG, HIGH_SUPPRESSION_THRESHOLD, DEFAULT_RANDOM_SEED, QUINTILE_LABELS, HUMAN_EXPERT_DEMAND_BASELINE
 
 
 class SuppressedDemandAnalyzer:
@@ -65,11 +65,14 @@ class SuppressedDemandAnalyzer:
 
             # Potential demand higher in low-income areas (if infrastructure were safe)
             # Rationale: Can't afford cars, would use active transportation if safe
-            income_factor = 1 + (1 - norm_income) * 0.5  # Up to 1.5x in poorest areas
+            income_factor = 1 + (1 - norm_income) * SUPPRESSED_DEMAND_CONFIG['income_factor_slope']
 
             # Destination density (simplified: assume proportional to population density)
             # In reality, would use actual POI data
-            destination_factor = 0.8 + np.random.uniform(0, 0.4)  # 0.8 to 1.2
+            destination_factor = (
+                SUPPRESSED_DEMAND_CONFIG['destination_factor_min'] +
+                np.random.uniform(0, SUPPRESSED_DEMAND_CONFIG['destination_factor_range'])
+            )
 
             # Calculate potential daily trips
             potential_trips = population * base_rate * income_factor * destination_factor
@@ -167,11 +170,13 @@ class SuppressedDemandAnalyzer:
 
         # Sophisticated AI: Tries to infer suppressed demand
         # Uses population and infrastructure as proxies, but still has errors
-        population_proxy = demand_df['population'] * 0.05
-        infrastructure_adjustment = (1 - demand_df['infrastructure_score']) * 50
+        population_proxy = demand_df['population'] * SUPPRESSED_DEMAND_CONFIG['population_proxy_coeff']
+        infrastructure_adjustment = (
+            (1 - demand_df['infrastructure_score']) * SUPPRESSED_DEMAND_CONFIG['infrastructure_adjustment_coeff']
+        )
 
         # Add the adjustment with some error
-        noise = np.random.normal(0, 30, len(demand_df))
+        noise = np.random.normal(0, SUPPRESSED_DEMAND_CONFIG['ai_noise_std'], len(demand_df))
         demand_df['ai_sophisticated_prediction'] = (
             demand_df['actual_demand'] +
             population_proxy +
@@ -231,14 +236,16 @@ class SuppressedDemandAnalyzer:
                 'total_suppression_pct': (1 - stage4_pct) * 100
             }
 
-        # Overall funnel
+        # Overall funnel — stages 2 and 3 are weighted averages across quintiles
         total_potential = demand_df['potential_demand'].sum()
         total_actual = demand_df['actual_demand'].sum()
+        stage2_overall = float(np.mean([funnel_data[q]['stage2_destinations'] for q in QUINTILE_LABELS]))
+        stage3_overall = float(np.mean([funnel_data[q]['stage3_would_use_if_safe'] for q in QUINTILE_LABELS]))
 
         funnel_data['overall'] = {
             'stage1_potential': 100.0,
-            'stage2_destinations': 88.0,
-            'stage3_would_use_if_safe': 65.0,
+            'stage2_destinations': round(stage2_overall, 1),
+            'stage3_would_use_if_safe': round(stage3_overall, 1),
             'stage4_actually_use': (total_actual / total_potential * 100) if total_potential > 0 else 0,
             'total_suppression_pct': (1 - total_actual / total_potential) * 100 if total_potential > 0 else 0
         }
@@ -340,12 +347,13 @@ class SuppressedDemandAnalyzer:
         high_suppression = demand_df[demand_df['suppression_pct'] > HIGH_SUPPRESSION_THRESHOLD]
 
         if len(high_suppression) > 0:
+            threshold = SUPPRESSED_DEMAND_CONFIG['detection_threshold_multiplier']
             detection_naive = (
-                (high_suppression['ai_naive_prediction'] > high_suppression['actual_demand'] * 1.5).sum() /
+                (high_suppression['ai_naive_prediction'] > high_suppression['actual_demand'] * threshold).sum() /
                 len(high_suppression) * 100
             )
             detection_sophisticated = (
-                (high_suppression['ai_sophisticated_prediction'] > high_suppression['actual_demand'] * 1.5).sum() /
+                (high_suppression['ai_sophisticated_prediction'] > high_suppression['actual_demand'] * threshold).sum() /
                 len(high_suppression) * 100
             )
         else:
@@ -367,13 +375,7 @@ class SuppressedDemandAnalyzer:
                 'bias_q5': float(q5_soph_error),
                 'detection_rate_high_suppression': float(detection_sophisticated)
             },
-            'human_expert_baseline': {
-                'correlation_with_potential': 0.85,
-                'rmse': 60.0,
-                'bias_q1': -5.0,
-                'bias_q5': -5.0,
-                'detection_rate_high_suppression': 80.0
-            }
+            'human_expert_baseline': HUMAN_EXPERT_DEMAND_BASELINE
         }
 
     def generate_network_flow(self, demand_df: pd.DataFrame, top_n: int = 20) -> Dict:

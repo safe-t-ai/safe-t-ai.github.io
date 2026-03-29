@@ -14,6 +14,7 @@ from config import (
     INFRASTRUCTURE_PROJECT_TYPES, INFRASTRUCTURE_DEFAULT_BUDGET,
     DANGER_SCORE_CONFIG, DEFAULT_RANDOM_SEED, QUINTILE_LABELS,
 )
+from utils.demographic_analysis import calculate_gini_coefficient
 
 
 class InfrastructureRecommendationAuditor:
@@ -247,14 +248,14 @@ class InfrastructureRecommendationAuditor:
         ai_disparate_impact = ai_per_capita[QUINTILE_LABELS[0]] / ai_per_capita[QUINTILE_LABELS[-1]]
         need_disparate_impact = need_per_capita[QUINTILE_LABELS[0]] / need_per_capita[QUINTILE_LABELS[-1]]
 
-        def gini_coefficient(values):
-            sorted_values = np.sort(values)
-            n = len(values)
-            cumsum = np.cumsum(sorted_values)
-            return (2 * np.sum((np.arange(1, n+1)) * sorted_values)) / (n * cumsum[-1]) - (n + 1) / n
-
-        ai_gini = gini_coefficient(ai_with_quintiles['cost'].values)
-        need_gini = gini_coefficient(need_with_quintiles['cost'].values)
+        # Gini over per-tract total allocation (tracts receiving no projects count as 0)
+        all_tract_ids = self.census_gdf['tract_id']
+        ai_by_tract = self.ai_recommendations.groupby('tract_id')['cost'].sum()
+        need_by_tract = self.need_based_recommendations.groupby('tract_id')['cost'].sum()
+        ai_per_tract = all_tract_ids.map(ai_by_tract).fillna(0).values
+        need_per_tract = all_tract_ids.map(need_by_tract).fillna(0).values
+        ai_gini = calculate_gini_coefficient(ai_per_tract)
+        need_gini = calculate_gini_coefficient(need_per_tract)
 
         return {
             'ai_allocation': {

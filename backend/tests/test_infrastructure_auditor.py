@@ -53,3 +53,31 @@ def test_infrastructure_budget_from_config():
     """Test that budget is loaded from config."""
     assert INFRASTRUCTURE_DEFAULT_BUDGET > 0
     assert isinstance(INFRASTRUCTURE_DEFAULT_BUDGET, int)
+
+
+def test_calculate_equity_metrics(sample_census_gdf, sample_infrastructure_df):
+    """Test equity metrics: Gini uses per-tract allocation, disparate impact is Q1/Q5 per-capita."""
+    auditor = InfrastructureRecommendationAuditor(sample_census_gdf, sample_infrastructure_df)
+    auditor.simulate_ai_recommendations()
+    auditor.simulate_need_based_recommendations()
+
+    metrics = auditor.calculate_equity_metrics()
+
+    assert 'ai_allocation' in metrics
+    assert 'need_based_allocation' in metrics
+    assert 'comparison' in metrics
+
+    ai = metrics['ai_allocation']
+    nb = metrics['need_based_allocation']
+
+    assert 'disparate_impact_ratio' in ai
+    assert 'gini_coefficient' in ai
+    assert 'per_capita' in ai
+
+    # Gini must be in [0, 1]
+    assert 0 <= ai['gini_coefficient'] <= 1
+    assert 0 <= nb['gini_coefficient'] <= 1
+
+    # Disparate impact is Q1/Q5 per-capita — non-negative
+    assert ai['disparate_impact_ratio'] >= 0
+    assert nb['disparate_impact_ratio'] >= 0

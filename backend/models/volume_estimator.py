@@ -57,6 +57,16 @@ class VolumeEstimationAuditor:
         if 'pct_minority' in self.ai_predictions_df.columns:
             self.ai_predictions_df = calculate_minority_category(self.ai_predictions_df)
 
+        # Ensure error columns exist for equity gap analysis and map aggregation
+        if 'error' not in self.ai_predictions_df.columns:
+            self.ai_predictions_df['error'] = (
+                self.ai_predictions_df['predicted_volume'] - self.ai_predictions_df['true_volume']
+            )
+        if 'error_pct' not in self.ai_predictions_df.columns:
+            self.ai_predictions_df['error_pct'] = (
+                self.ai_predictions_df['error'] / self.ai_predictions_df['true_volume'] * 100
+            )
+
     def analyze_overall_accuracy(self):
         """Calculate overall prediction accuracy metrics"""
 

@@ -71,9 +71,14 @@ def calculate_error_metrics(true_values, predicted_values):
     return metrics
 
 def calculate_r_squared(true_values, predicted_values):
-    """Calculate R² coefficient of determination"""
-    correlation = np.corrcoef(true_values, predicted_values)[0, 1]
-    return correlation ** 2
+    """Calculate R² coefficient of determination (1 - SS_res / SS_tot)."""
+    true_values = np.array(true_values)
+    predicted_values = np.array(predicted_values)
+    ss_tot = np.sum((true_values - true_values.mean()) ** 2)
+    if ss_tot == 0:
+        return 1.0 if np.allclose(predicted_values, true_values) else 0.0
+    ss_res = np.sum((true_values - predicted_values) ** 2)
+    return float(1.0 - ss_res / ss_tot)
 
 def equity_gap_analysis(df, metric_column, group_column):
     """
