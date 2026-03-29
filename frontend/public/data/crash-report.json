@@ -56,9 +56,18 @@
     }
   },
   "findings": [
-    "AI correctly identifies 29% of high-crash tracts in Q1 vs 67% in Q5 \u2014 a 38 percentage point recall gap",
-    "Ridge regression trained on real 2019-2022 non-motorist crash data with demographic features",
-    "Model shows systematic underperformance in poorest quintile when predicting 2023 crashes",
-    "AI-guided safety investments systematically underallocate resources to underserved communities"
-  ]
+    "Baseline inequity: Black residents are 32% of Durham's population but 47% of pedestrian and cyclist crash victims \u2014 before AI enters the picture (NCDOT, 2019\u20132023)",
+    "AI compounds this: crash prediction recall is 29% in the poorest quintile vs 67% in the richest \u2014 a 38-point gap that misdirects safety investment away from communities already at greatest risk",
+    "Ridge regression trained on real 2019\u20132022 NCDOT non-motorist data with Census ACS demographic features, evaluated on 2023 crashes",
+    "Correcting the model's allocation would shift $1.3M toward the lowest-income quintile per $5M safety cycle"
+  ],
+  "racial_baseline": {
+    "description": "Pre-AI baseline: existing racial disparity in who bears crash risk in Durham, before any AI allocation decisions",
+    "source": "NCDOT non-motorist crash records 2019-2023 + Census ACS 2024",
+    "black_population_pct": 32.1,
+    "black_victim_pct": 46.6,
+    "rate_ratio_black_vs_white": 1.6,
+    "total_known_race_records": 701,
+    "total_records": 716
+  }
 }

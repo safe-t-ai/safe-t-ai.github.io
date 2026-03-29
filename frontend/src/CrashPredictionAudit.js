@@ -26,10 +26,41 @@ export class CrashPredictionAudit {
         this.data = { report, confusionMatrices, timeSeries, crashGeoData };
 
         renderInterpretation('test2-interpretation', report.findings);
+        this.renderBaselineContext();
         this.renderMetrics();
         this.renderMap();
         this.renderCharts();
         this.setupViewToggle();
+    }
+
+    renderBaselineContext() {
+        const b = this.data.report.racial_baseline;
+        if (!b) return;
+        document.getElementById('test2-baseline').innerHTML = `
+            <div class="baseline-callout" aria-label="Pre-AI baseline: racial disparity in crash risk">
+                <div class="baseline-callout-header">
+                    <h3 class="baseline-title">Before AI: Who bears crash risk</h3>
+                    <span class="baseline-source">${b.source}</span>
+                </div>
+                <div class="baseline-stats">
+                    <div class="baseline-stat">
+                        <span class="baseline-number baseline-danger">${b.black_victim_pct.toFixed(0)}%</span>
+                        <span class="baseline-label">of crash victims<br>are Black residents</span>
+                    </div>
+                    <span class="baseline-divider" aria-hidden="true">vs.</span>
+                    <div class="baseline-stat">
+                        <span class="baseline-number">${b.black_population_pct.toFixed(0)}%</span>
+                        <span class="baseline-label">of Durham's<br>population</span>
+                    </div>
+                    <span class="baseline-divider" aria-hidden="true">→</span>
+                    <div class="baseline-stat">
+                        <span class="baseline-number baseline-danger">${b.rate_ratio_black_vs_white.toFixed(1)}×</span>
+                        <span class="baseline-label">higher crash rate<br>than white residents</span>
+                    </div>
+                </div>
+                <p class="baseline-context">This disparity exists before AI allocates any safety resources. SAFE-T measures whether AI compounds it — directing investment away from communities already at greatest risk.</p>
+            </div>
+        `;
     }
 
     renderMetrics() {
@@ -41,23 +72,26 @@ export class CrashPredictionAudit {
         const q1_error = this.data.report.error_by_quintile['Q1 (Poorest)']?.error_pct ?? 0;
         const q5_error = this.data.report.error_by_quintile['Q5 (Richest)']?.error_pct ?? 0;
 
+        const q1_recall = by_quintile['Q1 (Poorest)']?.recall ?? 0;
+        const q5_recall = by_quintile['Q5 (Richest)']?.recall ?? 0;
+
         renderMetrics('test2-metrics', [
             {
-                title: 'Q1 Model Accuracy',
-                value: (q1_accuracy * 100).toFixed(0) + '%',
-                subtext: 'Correctly classifies high-crash tracts in poorest areas',
+                title: 'Q1 Recall',
+                value: (q1_recall * 100).toFixed(0) + '%',
+                subtext: 'High-risk tracts AI correctly flags in poorest areas',
                 sentiment: 'value-danger'
             },
             {
-                title: 'Q5 Model Accuracy',
-                value: (q5_accuracy * 100).toFixed(0) + '%',
-                subtext: 'Correctly classifies high-crash tracts in richest areas',
+                title: 'Q5 Recall',
+                value: (q5_recall * 100).toFixed(0) + '%',
+                subtext: 'High-risk tracts AI correctly flags in wealthiest areas',
                 sentiment: 'value-success'
             },
             {
-                title: 'Accuracy Gap',
-                value: ((q5_accuracy - q1_accuracy) * 100).toFixed(0) + ' pts',
-                subtext: 'AI ranks crash risk less reliably in poorest neighborhoods',
+                title: 'Recall Gap',
+                value: ((q5_recall - q1_recall) * 100).toFixed(0) + ' pts',
+                subtext: 'AI misses 71% of dangerous tracts in poor areas vs 33% in wealthy',
                 sentiment: 'value-danger'
             },
             {

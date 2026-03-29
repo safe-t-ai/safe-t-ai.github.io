@@ -540,6 +540,88 @@
             box-shadow: none;
         }
 
+        /* ── Baseline context callout (Test 2) ── */
+        .baseline-callout {
+            background: var(--color-surface);
+            border-left: 3px solid var(--color-warning);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5) var(--space-6);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--space-4);
+        }
+
+        .baseline-callout-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+        }
+
+        .baseline-title {
+            font-size: var(--font-headline);
+            font-weight: 600;
+            color: var(--color-label);
+            margin: 0;
+        }
+
+        .baseline-source {
+            font-size: var(--font-footnote);
+            color: var(--color-label-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .baseline-stats {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-3);
+        }
+
+        .baseline-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-1);
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .baseline-number {
+            font-size: var(--font-metric);
+            font-weight: 700;
+            color: var(--color-label);
+            line-height: 1;
+        }
+
+        .baseline-number.baseline-danger { color: var(--color-danger); }
+
+        .baseline-label {
+            font-size: var(--font-footnote);
+            color: var(--color-label-secondary);
+            line-height: 1.4;
+        }
+
+        .baseline-divider {
+            font-size: var(--font-title3);
+            color: var(--color-label-tertiary);
+            font-weight: 300;
+            padding: 0 var(--space-1);
+            flex-shrink: 0;
+        }
+
+        .baseline-context {
+            font-size: var(--font-footnote);
+            color: var(--color-label-secondary);
+            margin: 0;
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--color-separator);
+            line-height: 1.47;
+        }
+
         /* ── Key Findings ── */
         .interpretation {
             background: var(--color-surface);
@@ -1277,6 +1359,7 @@
 
             <!-- Test 2 Content -->
             <div id="test2-content" class="test-content" role="tabpanel" aria-label="Crash Prediction">
+                <div id="test2-baseline"></div>
                 <div class="metrics-grid" id="test2-metrics"></div>
 
                 <div class="content-split">
