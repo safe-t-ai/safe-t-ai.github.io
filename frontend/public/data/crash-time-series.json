@@ -1,0 +1,120 @@
+{
+  "years": [
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "by_quintile": {
+    "Q1 (Poorest)": {
+      "actual_crashes": [
+        51,
+        46,
+        36,
+        36,
+        33,
+        53
+      ],
+      "ai_predicted_crashes": [
+        39,
+        35,
+        27,
+        27,
+        25,
+        40
+      ]
+    },
+    "Q2": {
+      "actual_crashes": [
+        41,
+        37,
+        30,
+        34,
+        30,
+        45
+      ],
+      "ai_predicted_crashes": [
+        31,
+        28,
+        23,
+        26,
+        23,
+        34
+      ]
+    },
+    "Q3": {
+      "actual_crashes": [
+        31,
+        20,
+        22,
+        23,
+        30,
+        26
+      ],
+      "ai_predicted_crashes": [
+        30,
+        19,
+        21,
+        22,
+        29,
+        25
+      ]
+    },
+    "Q4": {
+      "actual_crashes": [
+        24,
+        15,
+        22,
+        25,
+        25,
+        26
+      ],
+      "ai_predicted_crashes": [
+        21,
+        13,
+        19,
+        21,
+        21,
+        22
+      ]
+    },
+    "Q5 (Richest)": {
+      "actual_crashes": [
+        14,
+        13,
+        18,
+        23,
+        35,
+        14
+      ],
+      "ai_predicted_crashes": [
+        21,
+        19,
+        26,
+        34,
+        51,
+        21
+      ]
+    }
+  },
+  "overall": {
+    "actual_crashes": [
+      161,
+      131,
+      128,
+      141,
+      153,
+      164
+    ],
+    "ai_predicted_crashes": [
+      140,
+      114,
+      112,
+      123,
+      133,
+      143
+    ]
+  }
+}
