@@ -92,13 +92,21 @@ export class InfrastructureAudit {
         });
         this.map = new DurhamMap('map-infrastructure').initialize();
 
+        // Compute quantile breaks from actual danger score values
+        const dangerVals = this.data.dangerScores.features
+            .map(f => f.properties.danger_score)
+            .filter(v => v != null && v > 0)
+            .sort((a, b) => a - b);
+        const dq = (p) => dangerVals[Math.min(Math.floor(dangerVals.length * p), dangerVals.length - 1)];
+        const dangerBreaks = [dq(0.2), dq(0.4), dq(0.6), dq(0.8), dangerVals[dangerVals.length - 1]];
+
         this.map.addChoroplethLayer(
             this.data.dangerScores,
             'danger_score',
             {
-                fillOpacity: 0.3,
+                fillOpacity: 0.6,
                 colors: ['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15'],
-                breaks: [15, 18, 21, 24, 30],
+                breaks: dangerBreaks,
                 popupFields: [
                     { label: 'Median Income', field: 'median_income_y', format: v => `$${v?.toLocaleString()}` },
                     { label: 'Minority %', field: 'pct_minority', format: v => `${v?.toFixed(1)}%` },
