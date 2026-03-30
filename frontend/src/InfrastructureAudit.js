@@ -264,6 +264,17 @@ export class InfrastructureAudit {
 
         const normalize = (val, max) => Math.min((val / max) * 100, 100);
 
+        // Normalize disparate_impact_ratio against the max across both strategies,
+        // so AI (0.97) vs need-based (15.4) renders honestly rather than both clamping to ~100.
+        const maxDir = Math.max(
+            ai_allocation.disparate_impact_ratio,
+            need_based_allocation.disparate_impact_ratio
+        );
+        const maxQ1PerCap = Math.max(
+            ai_allocation.per_capita['Q1 (Poorest)'],
+            need_based_allocation.per_capita['Q1 (Poorest)']
+        );
+
         const metrics = ['Equity', 'Q1 Per Capita', 'Budget Equality', 'Project Count'];
 
         const seriesEntries = [
@@ -275,9 +286,16 @@ export class InfrastructureAudit {
             tooltip: {
                 trigger: 'axis',
                 axisPointer: { type: 'shadow' },
-                formatter: (params) =>
-                    `<strong>${params[0].name}</strong><br/>` +
-                    params.map(p => `${p.marker} ${p.seriesName}: ${Number(p.value).toFixed(1)}`).join('<br/>')
+                formatter: (params) => {
+                    const labels = [
+                        `Equity ratio (Q1/Q5 per capita)`,
+                        `Q1 per-capita budget`,
+                        `Budget equality (1 − Gini)`,
+                        `Projects funded`
+                    ];
+                    return `<strong>${params[0].name}</strong><br/>` +
+                        params.map((p, i) => `${p.marker} ${p.seriesName}: ${Number(p.value).toFixed(1)} — ${labels[i]}`).join('<br/>');
+                }
             },
             legend: {
                 data: seriesEntries.map(s => s.name),
@@ -301,8 +319,8 @@ export class InfrastructureAudit {
                 name,
                 type: 'bar',
                 data: [
-                    normalize(alloc.disparate_impact_ratio * 100, 100),
-                    normalize(alloc.per_capita['Q1 (Poorest)'], 30),
+                    normalize(alloc.disparate_impact_ratio, maxDir),
+                    normalize(alloc.per_capita['Q1 (Poorest)'], maxQ1PerCap),
                     (1 - alloc.gini_coefficient) * 100,
                     normalize(projects, 50)
                 ],
