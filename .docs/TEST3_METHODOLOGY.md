@@ -1,9 +1,5 @@
 # Test 3: Infrastructure Recommendation Audit - Methodology
 
-## Overview
-
-Test 3 evaluates whether AI-driven infrastructure recommendation systems allocate resources equitably across demographic groups. The test simulates two allocation strategies—AI-based (biased) and need-based (equitable)—and measures disparities using established equity metrics.
-
 ## Simulation Design
 
 ### Danger Score Generation
@@ -44,7 +40,6 @@ need_priority = danger_score
 ```
 
 - **No income consideration**: Only actual crash risk matters
-- **Baseline**: Represents ideal equity-driven allocation
 
 ### Project Selection
 
@@ -84,13 +79,11 @@ gini = Σ|xi - xj| / (2n² * mean(x))
 ```
 
 - **Range**: 0 (perfect equality) to 1 (maximum inequality)
-- **Results**: AI shows higher Gini (more concentrated allocation); need-based lower Gini (more spread across tracts)
+- AI shows higher Gini (more concentrated allocation); need-based lower Gini
 
 ### Per Capita Allocation
 
-Budget divided by tract population:
-
-Per-capita values are pipeline-dependent (vary with census vintage and Durham tract population distribution). The directional finding is stable: AI allocation produces higher per-capita spending in wealthier quintiles; need-based allocation reduces this disparity by prioritizing high-danger tracts.
+Per-capita values are pipeline-dependent (vary with census vintage and tract population distribution). The directional finding is stable: AI allocation produces higher per-capita spending in wealthier quintiles; need-based allocation reduces this disparity by prioritizing high-danger tracts.
 
 ## Data Sources
 
@@ -121,8 +114,6 @@ Simulation calibrated against research literature:
 
 ## Interpretation
 
-The AI disparate impact ratio (Q1 per-capita / Q5 per-capita) is approximately 0.97 — near parity, technically above the 0.8 EEOC adverse impact threshold. This might appear equitable at first glance.
-
-The real finding is different: the need-based allocation produces a Q1/Q5 ratio of ~15x, because Q1 tracts have roughly 15x higher danger scores per capita than Q5 tracts. AI's near-equal allocation ignores this differential danger. Equal dollars to unequal risk is not equitable — it underserves the communities that need safety investment most.
+The AI disparate impact ratio (Q1 per-capita / Q5 per-capita) is approximately 0.97, technically above the 0.8 EEOC adverse impact threshold. But need-based allocation produces a Q1/Q5 ratio of ~15x, because Q1 tracts have roughly 15x higher danger scores per capita. AI's near-equal allocation ignores this differential danger. Equal dollars to unequal risk is not equitable.
 
 Exact values vary with each pipeline run (depend on Census vintage and Durham demographics). The directional finding is stable: AI allocation is insensitive to differential danger; need-based allocation is proportional to it.

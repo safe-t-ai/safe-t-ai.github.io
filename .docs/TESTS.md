@@ -2,9 +2,7 @@
 
 ## Test 1: Volume Estimation Equity Audit
 
-### Overview
-
-Evaluates whether AI volume estimation tools (like Strava Metro, StreetLight Data) accurately predict pedestrian and cyclist volumes across all demographic groups, or if they systematically undercount in disadvantaged areas.
+Evaluates whether AI volume estimation tools (Strava Metro, StreetLight Data) accurately predict pedestrian and cyclist volumes across all demographic groups, or systematically undercount in disadvantaged areas.
 
 ### Methodology
 
@@ -82,7 +80,7 @@ Evaluates whether AI volume estimation tools (like Strava Metro, StreetLight Dat
 
 ## Test 3: Infrastructure Recommendation Audit
 
-Evaluates whether AI-driven infrastructure recommendation systems allocate safety improvement budgets equitably, or optimize for metrics that favor already well-served areas. Compares AI allocation (biased by volume predictions) against need-based allocation (driven by danger scores and real infrastructure gaps from OpenStreetMap).
+Evaluates whether AI-driven infrastructure recommendation systems allocate safety improvement budgets equitably. Compares AI allocation (biased by volume predictions) against need-based allocation (driven by danger scores and real infrastructure gaps from OpenStreetMap).
 
 See [TEST3_METHODOLOGY.md](TEST3_METHODOLOGY.md) for simulation design, equity metric formulas, and validation details.
 
@@ -99,9 +97,7 @@ See [TEST3_METHODOLOGY.md](TEST3_METHODOLOGY.md) for simulation design, equity m
 
 **Data basis: real** — NCDOT non-motorist crash records 2019–2023 (training), 2024 (test). No simulation.
 
-### Overview
-
-Measures whether a crash prediction model trained on real NCDOT data produces systematically worse predictions in low-income tracts than in wealthy tracts. Uses binary classification (above/below within-quintile median crash count) evaluated per income quintile.
+Measures whether a crash prediction model trained on real NCDOT data produces systematically worse predictions in low-income tracts. Uses binary classification (above/below within-quintile median crash count) evaluated per income quintile.
 
 ### Methodology
 
@@ -146,13 +142,11 @@ AI misses 71% of genuinely dangerous tracts in the poorest areas vs 33% in the w
 
 **Status:** Backend complete, frontend in development
 
-### Overview
-
 Detects whether AI systems capture only observed behavior and miss latent demand in underserved areas where poor infrastructure suppresses usage.
 
 ### Core Issue
 
-**The Problem:** AI trained on observed bike/ped counts in areas with poor infrastructure learns that those areas have "low demand," creating a self-fulfilling prophecy where they never get improvements.
+AI trained on observed bike/ped counts in areas with poor infrastructure learns that those areas have "low demand," creating a self-fulfilling prophecy where they never get improvements.
 
 ### Methodology
 

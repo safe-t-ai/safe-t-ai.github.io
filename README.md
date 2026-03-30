@@ -12,7 +12,7 @@
 
 ## What it does
 
-AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities. This audit tests whether those tools treat Durham's communities equitably across four tests measuring how income and race correlate with AI accuracy, resource allocation, and demand visibility.
+AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities. Four tests measure how income and race correlate with AI accuracy, resource allocation, and demand visibility in Durham, NC.
 
 ## How it works
 
