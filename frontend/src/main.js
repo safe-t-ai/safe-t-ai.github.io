@@ -97,14 +97,7 @@ class App {
 
         document.querySelectorAll('.test-content').forEach(content => {
             const el = /** @type {HTMLElement} */ (content);
-            const isTarget = el.id === `${testId}-content`;
-            el.classList.toggle('active', isTarget);
-            // Re-trigger fade-in animation
-            if (isTarget) {
-                el.style.animation = 'none';
-                el.offsetHeight; // force reflow
-                el.style.animation = '';
-            }
+            el.classList.toggle('active', el.id === `${testId}-content`);
         });
 
         const descEl = document.getElementById('test-description');
@@ -131,10 +124,12 @@ class App {
         activeTab?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 
         this.currentTest = testId;
-        setTimeout(() => {
+        // Wait for layout to settle before resizing — rAF fires after paint,
+        // preventing gray Leaflet tiles from a premature invalidateSize call.
+        requestAnimationFrame(() => {
             resizeVisibleCharts();
             this.modules[testId]?.map?.invalidateSize();
-        }, 50);
+        });
     }
 
     showSkeleton(container) {

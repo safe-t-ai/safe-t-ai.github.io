@@ -121,8 +121,8 @@ export class OverviewDashboard {
     renderTestCards() {
         const { volumeReport, crashReport, confusionMatrices, budgetAllocation, demandReport } = this.data;
 
-        const q1Accuracy = (confusionMatrices.by_quintile['Q1 (Poorest)']?.accuracy ?? 0) * 100;
-        const q5Accuracy = (confusionMatrices.by_quintile['Q5 (Richest)']?.accuracy ?? 0) * 100;
+        const q1Recall = (confusionMatrices.by_quintile['Q1 (Poorest)']?.recall ?? 0) * 100;
+        const q5Recall = (confusionMatrices.by_quintile['Q5 (Richest)']?.recall ?? 0) * 100;
 
         const needQ1PerCap = budgetAllocation.need_based_allocation.per_capita['Q1 (Poorest)'];
         const needQ5PerCap = budgetAllocation.need_based_allocation.per_capita['Q5 (Richest)'];
@@ -139,8 +139,8 @@ export class OverviewDashboard {
             {
                 test: 'test2',
                 label: 'Crash Prediction',
-                value: `${q1Accuracy.toFixed(0)}% vs ${q5Accuracy.toFixed(0)}%`,
-                finding: 'Q1 vs Q5 model accuracy — AI classifies crash risk less reliably in poorest areas'
+                value: `${q1Recall.toFixed(0)}% vs ${q5Recall.toFixed(0)}%`,
+                finding: 'Q1 vs Q5 recall — AI misses high-risk tracts in poor areas far more than wealthy areas'
             },
             {
                 test: 'test3',
