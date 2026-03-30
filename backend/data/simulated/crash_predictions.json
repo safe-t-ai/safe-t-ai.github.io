@@ -55,8 +55,17 @@
       "error_pct": 47.19662920221803
     }
   },
+  "racial_baseline": {
+    "description": "Pre-AI baseline: existing racial disparity in who bears crash risk in Durham, before any AI allocation decisions",
+    "source": "NCDOT non-motorist crash records 2019-2024 + Census ACS 2024",
+    "black_population_pct": 32.1,
+    "black_victim_pct": 47.1,
+    "rate_ratio_black_vs_white": 1.9,
+    "total_known_race_records": 867,
+    "total_records": 883
+  },
   "findings": [
-    "AI prediction error is 44% in Q1 vs 47% in Q5 \u2014 0.9x worse in the poorest areas",
+    "AI correctly identifies 29% of high-crash tracts in Q1 vs 67% in Q5 \u2014 a 38 percentage point recall gap",
     "Ridge regression trained on real 2019-2023 non-motorist crash data with demographic features",
     "Model shows systematic underperformance in poorest quintile when predicting 2024-2024 crashes",
     "AI-guided safety investments systematically underallocate resources to underserved communities"
