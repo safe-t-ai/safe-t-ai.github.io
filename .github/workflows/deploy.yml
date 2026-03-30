@@ -29,13 +29,6 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
-      - name: Fetch data from data branch
-        run: |
-          git fetch origin data --depth=1
-          mkdir -p frontend/public/data
-          git archive origin/data -- frontend/ | tar -x -C /tmp/
-          cp /tmp/frontend/* frontend/public/data/
-
       - name: Verify data files
         run: |
           FILE_COUNT=$(ls frontend/public/data/*.json 2>/dev/null | wc -l)
@@ -54,7 +47,7 @@ jobs:
 
       - name: Install and build
         run: |
-          DATA_HASH=$(git rev-parse origin/data | cut -c1-8)
+          DATA_HASH=$(git rev-parse HEAD | cut -c1-8)
           cd frontend && npm ci && VITE_DATA_HASH=$DATA_HASH GITHUB_PAGES=true npm run build
 
       - name: Upload Pages artifact
