@@ -85,30 +85,32 @@ export class SuppressedDemandAudit {
 
     updateDemandLayer() {
         const views = {
-            potential: { field: 'potential_demand', title: 'Potential Demand' },
-            actual:    { field: 'actual_demand',    title: 'Actual Demand' },
-            suppressed:{ field: 'suppressed_demand',title: 'Suppressed Demand' }
+            potential:  { field: 'potential_demand',  title: 'Potential Demand',  colors: ['#f7fbff', '#deebf7', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'] },
+            actual:     { field: 'actual_demand',     title: 'Actual Demand',     colors: ['#f7fbff', '#deebf7', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'] },
+            suppressed: { field: 'suppressed_demand', title: 'Suppressed Demand', colors: ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#ef3b2c', '#cb181d', '#99000d'] }
         };
 
-        const { field, title } = views[this.currentView];
+        const { field, title, colors } = views[this.currentView];
+
+        // Compute quantile breaks from actual feature values for this field
+        const vals = this.data.demandGeoData.features
+            .map(f => f.properties[field])
+            .filter(v => v != null && v > 0)
+            .sort((a, b) => a - b);
+        const q = (p) => Math.round(vals[Math.min(Math.floor(vals.length * p), vals.length - 1)]);
+        const breaks = [q(0.125), q(0.25), q(0.375), q(0.5), q(0.625), q(0.75), q(0.875)];
 
         if (this.map.choroplethLayer) {
             this.map.map.removeLayer(this.map.choroplethLayer);
         }
-
-        const colors = this.currentView === 'suppressed'
-            ? ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#ef3b2c', '#cb181d', '#99000d']
-            : ['#f7fbff', '#deebf7', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'];
 
         this.map.addChoroplethLayer(
             this.data.demandGeoData,
             field,
             {
                 fillOpacity: 0.7,
-                colors: colors,
-                breaks: this.currentView === 'suppressed'
-                    ? [20, 40, 60, 80, 100, 150, 200]
-                    : [200, 300, 400, 500, 600, 700, 800],
+                colors,
+                breaks,
                 popupFields: [
                     { label: 'Income Quintile', field: 'income_quintile' },
                     { label: 'Potential Demand', field: 'potential_demand', format: v => `${v?.toFixed(0)} trips/day` },
@@ -118,21 +120,16 @@ export class SuppressedDemandAudit {
             }
         );
 
-        const items = this.currentView === 'suppressed'
-            ? [
-                { color: '#fee5d9', label: '<20' },
-                { color: '#fcbba1', label: '20-60' },
-                { color: '#fb6a4a', label: '60-150' },
-                { color: '#99000d', label: '>150 trips/day' }
+        const fmt = v => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v);
+        this.map.addLegend({
+            title: `${title} (trips/day)`,
+            colorScale: [
+                { color: colors[0], label: `<${fmt(breaks[1])}` },
+                { color: colors[2], label: `${fmt(breaks[1])}–${fmt(breaks[3])}` },
+                { color: colors[4], label: `${fmt(breaks[3])}–${fmt(breaks[5])}` },
+                { color: colors[6], label: `>${fmt(breaks[5])}` }
             ]
-            : [
-                { color: '#f7fbff', label: '<200' },
-                { color: '#deebf7', label: '200-400' },
-                { color: '#6baed6', label: '400-600' },
-                { color: '#08519c', label: '>600 trips/day' }
-            ];
-
-        this.map.addLegend({ title, colorScale: items });
+        });
     }
 
     renderCharts() {
