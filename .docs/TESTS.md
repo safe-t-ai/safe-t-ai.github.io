@@ -121,7 +121,7 @@ Measures whether a crash prediction model trained on real NCDOT data produces sy
 
 AI misses 71% of genuinely dangerous tracts in the poorest areas vs 33% in the wealthiest. Safety investment directed by this model flows predominantly to areas the model correctly identifies — meaning low-income neighborhoods are systematically under-served.
 
-**Pre-AI baseline (before model runs):** Black residents are 32% of Durham's population but 47% of non-motorist crash victims (NCDOT 2019–2023). Rate ratio: 1.6× higher than white residents. SAFE-T measures whether AI compounds this existing disparity.
+**Pre-AI baseline (before model runs):** Black residents are 32.1% of Durham's population (ACS 5-year) but ~47% of non-motorist crash victims with known race (NCDOT 2019–2024, 883 records). Rate ratio: ~1.6× higher than their population share. SAFE-T measures whether AI compounds this existing disparity.
 
 ### Visualizations
 

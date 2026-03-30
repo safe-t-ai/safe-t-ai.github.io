@@ -28,7 +28,7 @@ SAFE-T demonstrates four audit methodologies using Durham, NC as a case study.
 **SAFE-T measures whether AI compounds existing inequity, not just whether AI is biased in isolation.**
 
 Two layers:
-1. **Baseline disparity** (pre-AI): In Durham, Black residents are 32% of the population but 47% of pedestrian and cyclist crash victims (NCDOT, 2019–2023).
+1. **Baseline disparity** (pre-AI): In Durham, Black residents are 32.1% of the population but ~47% of pedestrian and cyclist crash victims (NCDOT, 2019–2024; race known).
 2. **AI amplification** (what SAFE-T measures): AI trained on biased inputs undercounts pedestrian volume in low-income areas, predicts crashes less accurately in Q1 tracts, ignores 15x differential infrastructure need. Directs safety investment away from communities at greatest risk.
 
 - Tests 1, 3, 4 (simulations): "how AI would compound the known baseline disparity, given documented bias parameters from research literature"

@@ -133,6 +133,53 @@ def disparate_impact_ratio(favorable_outcome_rate_protected, favorable_outcome_r
         'reference_rate': float(favorable_outcome_rate_reference),
     }
 
+def racial_crash_baseline(census_gdf, crash_df, analysis_years, source_label):
+    """
+    Compute pre-AI racial baseline: who bears crash risk vs. who lives in Durham.
+
+    Population shares come from the same ACS census tract data used throughout
+    the pipeline (census_gdf), so this is always consistent with other metrics.
+    Crash shares exclude records with unknown race.
+
+    Args:
+        census_gdf: GeoDataFrame with black_population, white_population, total_population per tract
+        crash_df: DataFrame with NM_Race column and CrashYear column
+        analysis_years: list of years to include
+        source_label: string used in the returned source field (e.g. "NCDOT 2019-2024")
+
+    Returns:
+        dict suitable for the racial_baseline key in crash_predictions.json
+    """
+    total_pop = census_gdf['total_population'].sum()
+    black_pop_pct = census_gdf['black_population'].sum() / total_pop * 100
+    white_pop_pct = census_gdf['white_population'].sum() / total_pop * 100
+
+    filtered = crash_df[crash_df['CrashYear'].isin(analysis_years)]
+    total_records = len(filtered)
+    race_known = filtered[filtered['NM_Race'].notna() & (filtered['NM_Race'] != 'Unknown')]
+    total_known = len(race_known)
+
+    black_victims = (race_known['NM_Race'] == 'Black').sum()
+    white_victims = (race_known['NM_Race'] == 'White').sum()
+
+    black_crash_pct = black_victims / total_known * 100 if total_known > 0 else 0
+    white_crash_pct = white_victims / total_known * 100 if total_known > 0 else 0
+
+    black_rate = black_crash_pct / black_pop_pct if black_pop_pct > 0 else 0
+    white_rate = white_crash_pct / white_pop_pct if white_pop_pct > 0 else 0
+    rate_ratio = black_rate / white_rate if white_rate > 0 else 0
+
+    return {
+        'description': 'Pre-AI baseline: existing racial disparity in who bears crash risk in Durham, before any AI allocation decisions',
+        'source': source_label,
+        'black_population_pct': round(black_pop_pct, 1),
+        'black_victim_pct': round(black_crash_pct, 1),
+        'rate_ratio_black_vs_white': round(rate_ratio, 1),
+        'total_known_race_records': int(total_known),
+        'total_records': int(total_records),
+    }
+
+
 def calculate_gini_coefficient(values):
     """
     Calculate Gini coefficient (0=perfect equality, 1=perfect inequality)
