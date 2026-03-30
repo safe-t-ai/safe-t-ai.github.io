@@ -657,25 +657,30 @@
         .methodology-note {
             background: var(--color-surface);
             border-left: 3px solid var(--color-separator);
-            padding: var(--space-5) var(--space-6);
+            padding: var(--space-6);
             border-radius: var(--radius-lg);
             margin-bottom: var(--space-8);
+            box-shadow: var(--shadow-sm);
         }
 
         .methodology-note h3 {
-            font-size: var(--font-subhead);
+            font-size: var(--font-caption);
             font-weight: 600;
             color: var(--color-label-secondary);
-            margin-bottom: var(--space-2);
+            margin: 0 0 var(--space-3) 0;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.07em;
         }
 
         .methodology-note p {
             font-size: var(--font-footnote);
             color: var(--color-label-tertiary);
             line-height: 1.5;
-            margin: 0 0 var(--space-2);
+            margin: 0 0 var(--space-3);
+        }
+
+        .methodology-note p:last-child {
+            margin-bottom: 0;
         }
 
         .methodology-note-refs {
@@ -1498,7 +1503,7 @@
                         <div id="test4-interpretation"></div>
                         <div class="methodology-note">
                             <h3>Methodology Basis</h3>
-                            <p>Suppressed demand is modeled from real OpenStreetMap per-capita infrastructure scores (sidewalks, crosswalks, bike lanes, bus stops per 1,000 residents per tract). Suppression factor: <code>1 − score²</code> applied to a census-proportional potential demand baseline. Q1 tracts score lower on infrastructure quality, producing higher suppression — consistent with documented elasticity of active transport to infrastructure investment.</p>
+                            <p>Suppressed demand is modeled from real OpenStreetMap per-capita infrastructure scores (sidewalks, crosswalks, bike lanes, bus stops per 1,000 residents per tract). Suppression factor: <em>1 − score²</em> applied to a census-proportional potential demand baseline. Q1 tracts score lower on infrastructure quality, producing higher suppression — consistent with documented elasticity of active transport to infrastructure investment.</p>
                             <p>The three AI detection profiles (Naive, Sophisticated, Human Expert) are parameterized models, not evaluations of specific vendor products. Naive AI correlates with observed demand (which collapses toward zero in suppressed areas); Sophisticated AI partially corrects for infrastructure quality.</p>
                             <p class="methodology-note-refs">Basis: Handy &amp; Cao (2005) on built environment and travel behavior; NACTO Urban Street Design Guide infrastructure standards; FHWA Active Transportation research program.</p>
                         </div>
