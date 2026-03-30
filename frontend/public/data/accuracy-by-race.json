@@ -5,37 +5,37 @@
       "count": 1,
       "mean_minority_pct": 19.5,
       "mae": 3.0,
-      "mape": 8.333333333333332,
-      "bias": 8.333333333333332,
-      "mean_error_pct": 8.333333333333332
+      "mape": 8.823529411764707,
+      "bias": 8.823529411764707,
+      "mean_error_pct": 8.823529411764707
     },
     {
       "category": "Medium (30-60%)",
       "count": 8,
       "mean_minority_pct": 45.375,
-      "mae": 5.25,
-      "mape": 12.908722513420564,
-      "bias": -9.206900142243352,
-      "mean_error_pct": -9.206900142243352
+      "mae": 5.5,
+      "mape": 14.720540318830993,
+      "bias": -6.3604632970081445,
+      "mean_error_pct": -6.3604632970081445
     },
     {
       "category": "High (>60%)",
       "count": 6,
       "mean_minority_pct": 79.80000000000001,
-      "mae": 10.5,
-      "mape": 33.922340300438016,
-      "bias": -33.922340300438016,
-      "mean_error_pct": -33.922340300438016
+      "mae": 9.666666666666666,
+      "mape": 34.176610320775076,
+      "bias": -34.176610320775076,
+      "mean_error_pct": -34.176610320775076
     }
   ],
   "equity_gap": {
     "best_group": "Low (<30%)",
     "worst_group": "High (>60%)",
-    "best_group_mean": 8.3333333333,
-    "worst_group_mean": -33.92234030043333,
-    "gap": 42.25567363373334,
-    "gap_pct": -124.5659151446976,
+    "best_group_mean": 8.8235294118,
+    "worst_group_mean": -34.17661032076666,
+    "gap": 43.000139732566666,
+    "gap_pct": -125.81745038196073,
     "statistically_significant": true,
-    "p_value": 0.024924966433097787
+    "p_value": 0.0369061075403874
   }
 }
