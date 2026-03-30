@@ -60,7 +60,7 @@
     "source": "NCDOT non-motorist crash records 2019-2024 + Census ACS 2024",
     "black_population_pct": 32.1,
     "black_victim_pct": 47.1,
-    "rate_ratio_black_vs_white": 1.9,
+    "rate_ratio_black_vs_white": 1.7,
     "total_known_race_records": 867,
     "total_records": 883
   },
