@@ -97,48 +97,48 @@ See [TEST3_METHODOLOGY.md](TEST3_METHODOLOGY.md) for simulation design, equity m
 
 ## Test 2: Crash Prediction Bias Audit
 
-**Status:** Backend complete, frontend in development
+**Data basis: real** — NCDOT non-motorist crash records 2019–2023 (training), 2024 (test). No simulation.
 
 ### Overview
 
-Evaluates whether AI crash prediction models accurately predict danger across all demographics, or if they learn enforcement/reporting bias patterns.
-
-### Core Issue
-
-**The Problem:** Police-reported crash data has systematic underreporting in low-income areas. AI models trained on this biased data learn to predict where crashes are *reported*, not where they *occur*. The simulation models this bias; exact rates are simulation parameters, not measured values.
+Measures whether a crash prediction model trained on real NCDOT data produces systematically worse predictions in low-income tracts than in wealthy tracts. Uses binary classification (above/below within-quintile median crash count) evaluated per income quintile.
 
 ### Methodology
 
 **Data:**
-- Real NCDOT crash data (years configured in `config.CRASH_ANALYSIS_YEARS`)
-- Temporal split: Train on `CRASH_TRAINING_YEARS`, test on `CRASH_TEST_YEARS`
-- Features: Income, minority %, population density, historical crashes
+- Real NCDOT ArcGIS Feature Service (non-motorist crashes — pedestrian/bicycle)
+- Geocoded to Durham census tracts via spatial join
+- Train years: 2019–2023. Test year: 2024.
+- Features: median household income, minority %, population density, historical crash rate
 
-**Analysis:**
-1. Generate ground truth crashes (income-correlated)
-2. Simulate reporting bias (income-dependent)
-3. Train AI on biased reported data
-4. Compare predictions to ground truth
+**Model:**
+- Ridge regression with 5-fold stratified cross-validation (stratified by income quintile)
 
-**Expected Findings:**
-- AI shows 25-40% higher MAE in Q1 vs Q5
-- False negative rate 2-3x higher in low-income areas
-- ROC AUC 0.15-0.20 points lower in high-minority areas
+**Primary metric:** Recall — share of genuinely high-risk tracts the model correctly flags. Accuracy is not the lead metric (only 5pp gap vs 38pp recall gap).
 
-### Planned Visualizations
+### Findings (real data)
 
-1. Geographic crash distribution map
-2. Confusion matrices by income quintile
-3. Prediction error by income quintile
-4. Time series (actual vs reported vs predicted)
-5. Error metrics dashboard
+| Metric | Q1 (Poorest) | Q5 (Richest) | Gap |
+|--------|-------------|-------------|-----|
+| **Recall** | 29% | 67% | **38 points** |
+| Accuracy | 64% | 69% | 5 points |
+
+AI misses 71% of genuinely dangerous tracts in the poorest areas vs 33% in the wealthiest. Safety investment directed by this model flows predominantly to areas the model correctly identifies — meaning low-income neighborhoods are systematically under-served.
+
+**Pre-AI baseline (before model runs):** Black residents are 32% of Durham's population but 47% of non-motorist crash victims (NCDOT 2019–2023). Rate ratio: 1.6× higher than white residents. SAFE-T measures whether AI compounds this existing disparity.
+
+### Visualizations
+
+1. Geographic crash distribution map (actual vs predicted, shared color scale)
+2. Confusion matrix heatmap by income quintile (precision, recall, F1)
+3. Prediction error (MAE %) by income quintile
+4. Time series: actual vs predicted crashes by quintile (Q1 vs Q5)
 
 ### Implementation Status
 
 - ✅ Backend model (`backend/models/crash_predictor.py`)
-- ✅ Data simulation (`scripts/simulate_crash_predictions.py`)
-- ⏳ Static data export
-- ⏳ Frontend visualizations
+- ✅ Static data export (`frontend/public/data/crash-*.json`)
+- ✅ Frontend visualizations (`frontend/src/CrashPredictionAudit.js`)
 
 ---
 
