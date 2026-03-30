@@ -255,5 +255,18 @@
       "pct_minority": 55.7
     }
   ],
-  "interpretation": []
+  "interpretation": [],
+  "_provenance": {
+    "data_type": "mixed",
+    "real": [
+      "US Census ACS 2022 demographics (tract-level income, minority %)",
+      "Durham census tract geometries (Census TIGER)"
+    ],
+    "simulated": [
+      "Counter locations (15 randomly placed, income-stratified)",
+      "Ground truth pedestrian/cyclist volumes (income-correlated synthetic)",
+      "AI volume predictions (bias_low_income=-0.25, bias_high_income=0.08 from research literature)"
+    ],
+    "note": "Test 1 is a methodology demonstration. Bias parameters calibrated to peer-reviewed research. No real vendor AI predictions included."
+  }
 }

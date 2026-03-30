@@ -1272,7 +1272,7 @@
                 </div>
                 <div class="overview-banner hidden">
                     <h2>Durham Transportation Equity Audit</h2>
-                    <p class="banner-description">AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities — but do they treat all communities equitably? SAFE-T is a replicable audit framework that tests this question using Durham, NC as a case study. Because vendor tools are proprietary, we demonstrate the methodology using research-calibrated bias simulations layered on real Census, NCDOT, and OpenStreetMap data.</p>
+                    <p class="banner-description">In Durham, Black residents are 32% of the population but 47% of pedestrian and cyclist crash victims — before any AI tool makes a single allocation decision. SAFE-T measures whether AI transportation tools compound this existing disparity, directing safety investment away from communities already at greatest risk. Because vendor tools are proprietary, we demonstrate the audit methodology using research-calibrated simulations layered on real Census, NCDOT, and OpenStreetMap data — a replicable framework any US city can run.</p>
                     <p class="banner-stats"><span id="tract-count"></span> Tracts &middot; Volume Estimation → Crash Prediction → Infrastructure → Demand &middot; <span class="banner-scalability">Replicable for any US city using public data</span></p>
                 </div>
                 <div class="content-split hidden">
@@ -1454,6 +1454,12 @@
                         </div>
 
                         <div id="test3-interpretation"></div>
+                        <div class="methodology-note">
+                            <h3>Methodology Basis</h3>
+                            <p>Infrastructure gaps are derived from real OpenStreetMap feature density per census tract (sidewalk coverage, crosswalk count, bike lane km, signal density — normalized per 1,000 residents). Danger scores weight these gaps against census demographics to estimate crash risk.</p>
+                            <p>The AI allocation model and need-based allocation model are parameterized simulations — not evaluations of a specific vendor product. The AI model applies a 0.6 income bias weight (calibrated to documented patterns in AI transportation tools) alongside a 0.4 danger weight, simulating how volume-prediction bias propagates into budget decisions. The need-based model allocates purely by danger score.</p>
+                            <p class="methodology-note-refs">Basis: real OSM infrastructure data + Census ACS demographics; simulated AI allocation bias (strength=0.6) calibrated to Strava Metro / StreetLight Data undercounting research.</p>
+                        </div>
                     </div>
                 </div>
             </div>
