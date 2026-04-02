@@ -1,0 +1,54 @@
+name: Fix broken notebooks
+
+on:
+  push:
+    branches: [main]
+    paths: ["notebooks/*.ipynb"]
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Unwrap Colab get_ipynb wrapper if present
+        id: fix
+        run: |
+          python3 - <<'EOF'
+          import json, os, glob
+
+          fixed = []
+          for path in glob.glob("notebooks/*.ipynb"):
+              with open(path) as f:
+                  nb = json.load(f)
+              if "ipynb" in nb and "cells" not in nb:
+                  nb = nb["ipynb"]
+                  nb.setdefault("nbformat", 4)
+                  nb.setdefault("nbformat_minor", 5)
+                  with open(path, "w") as f:
+                      json.dump(nb, f, indent=1)
+                      f.write("\n")
+                  fixed.append(path)
+                  print(f"Fixed: {path}")
+
+          if fixed:
+              with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                  f.write("changed=true\n")
+          else:
+              print("All notebooks OK")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                  f.write("changed=false\n")
+          EOF
+
+      - name: Commit fixes
+        if: steps.fix.outputs.changed == 'true'
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add notebooks/*.ipynb
+          git commit -m "fix: unwrap Colab notebook wrapper [auto]"
+          git push
