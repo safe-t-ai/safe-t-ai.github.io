@@ -38,9 +38,9 @@ export class SuppressedDemandAudit {
 
         renderMetrics('test4-metrics', [
             {
-                title: 'Suppressed Demand',
+                title: 'Daily Trips Suppressed',
                 value: summary.total_suppressed_demand.toLocaleString() + ' trips/day',
-                subtext: `${summary.suppression_rate.toFixed(1)}% of potential lost`,
+                subtext: `${summary.suppression_rate.toFixed(1)}% of potential demand prevented by missing infrastructure`,
                 sentiment: 'value-danger'
             },
             {
@@ -69,7 +69,7 @@ export class SuppressedDemandAudit {
             badge: 'modeled',
             label: 'Modeled',
             tooltip: 'Infrastructure quality scores derived from OpenStreetMap per-capita feature density per census tract. Demand suppression modeled from these real infrastructure conditions.',
-            description: 'Suppressed, potential, and actual cycling/walking demand across Durham. High suppression (red) indicates latent demand AI tools miss.',
+            description: 'Suppressed, potential, and actual cycling/walking demand across Durham. High suppression (red) indicates latent demand AI tools miss — the trips that "no one walks there" arguments dismiss.',
         });
         this.map = new DurhamMap('map-demand').initialize();
 

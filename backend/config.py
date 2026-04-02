@@ -18,6 +18,12 @@ CENSUS_VINTAGE = 2024  # ACS 5-year estimates vintage year
 TIGER_VINTAGE = 2023   # TIGER/Line geometry service (lags ACS; boundaries only change at decennial census)
 TIGER_TRACTS_LAYER = 8 # Census Tracts layer ID (was 6 in ACS2022, moved to 8 in ACS2023+)
 
+# Simulation assumptions for crowdsourced active-transportation data bias.
+# Direction (underrepresentation of low-income and minority users) is supported
+# by literature: Roy et al. (2019) found ~12% increase in Strava counts per 10%
+# increase in white population share; Williams & Behrendt (2025) document equity
+# implications of Strava Metro demographic skew. Specific magnitudes are
+# plausible estimates, not empirically derived.
 BIAS_PARAMETERS = {
     'low_income_undercount': 0.25,
     'high_income_overcount': 0.08,
