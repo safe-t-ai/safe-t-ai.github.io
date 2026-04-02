@@ -36,8 +36,8 @@
       "id": "37063002100",
       "name": "Tract 37063002100",
       "potential": 1129.0229015449902,
-      "actual": 66.06780639522904,
-      "suppressed": 1062.955095149761,
+      "actual": 78.87990223430347,
+      "suppressed": 1050.1429993106867,
       "income_level": "Medium"
     },
     {
@@ -213,13 +213,13 @@
     {
       "source": "potential_37063002100",
       "target": "actual_37063002100",
-      "value": 66.06780639522904,
+      "value": 78.87990223430347,
       "type": "realized"
     },
     {
       "source": "potential_37063002100",
       "target": "suppressed_37063002100",
-      "value": 1062.955095149761,
+      "value": 1050.1429993106867,
       "type": "suppressed"
     },
     {

@@ -31,14 +31,14 @@
     "stage1_potential": 100.0,
     "stage2_destinations": 85.3799302215936,
     "stage3_would_use_if_safe": 63.06989533239038,
-    "stage4_actually_use": 20.59668224895661,
-    "total_suppression_pct": 79.40331775104339
+    "stage4_actually_use": 20.732550477955165,
+    "total_suppression_pct": 79.26744952204483
   },
   "overall": {
     "stage1_potential": 100.0,
     "stage2_destinations": 82.7,
     "stage3_would_use_if_safe": 59.0,
-    "stage4_actually_use": 19.070288672676796,
-    "total_suppression_pct": 80.9297113273232
+    "stage4_actually_use": 19.09920024891249,
+    "total_suppression_pct": 80.90079975108752
   }
 }

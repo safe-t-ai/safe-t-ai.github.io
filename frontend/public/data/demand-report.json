@@ -21,13 +21,13 @@
   },
   "summary": {
     "total_potential_demand": 44314,
-    "total_actual_demand": 8450,
-    "total_suppressed_demand": 35863,
-    "suppression_rate": 80.9297113273232,
+    "total_actual_demand": 8463,
+    "total_suppressed_demand": 35850,
+    "suppression_rate": 80.90079975108752,
     "tracts_analyzed": 67,
     "high_suppression_tracts": 50,
-    "naive_ai_correlation": 0.2438977182666125,
-    "sophisticated_ai_correlation": 0.8192433341776936
+    "naive_ai_correlation": 0.24797693077877545,
+    "sophisticated_ai_correlation": 0.8203028400765606
   },
   "high_suppression_threshold": 70,
   "by_quintile": {
@@ -61,16 +61,16 @@
     },
     "Q5 (Richest)": {
       "potential_demand": 673.5568053961617,
-      "actual_demand": 138.73035497367047,
-      "suppressed_demand": 534.8264504224913,
-      "suppression_pct": 73.56078492655625,
-      "infrastructure_score": 0.4770320432712523
+      "actual_demand": 139.64550467646148,
+      "suppressed_demand": 533.9113007197003,
+      "suppression_pct": 73.47972813828926,
+      "infrastructure_score": 0.47863324290868875
     }
   },
   "findings": [
     "80.9% of potential active transportation demand is suppressed by poor infrastructure",
-    "Q1 (poorest) areas have 82.7% suppression vs 73.6% in Q5",
-    "Naive AI has only 0.24 correlation with potential demand (fails to detect suppressed demand)",
+    "Q1 (poorest) areas have 82.7% suppression vs 73.5% in Q5",
+    "Naive AI has only 0.25 correlation with potential demand (fails to detect suppressed demand)",
     "Sophisticated AI achieves 0.82 correlation but still undercounts by 43.9% in Q1",
     "AI tools measuring only observed demand miss suppressed demand\u2014low-income areas where poor infrastructure collapses actual trips toward zero"
   ]
