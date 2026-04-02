@@ -14,10 +14,10 @@ const DESCRIPTIONS = {
 };
 
 const SO_WHAT = {
-    test1: 'If counters undercount low-income areas, those areas look like they have less traffic — and get less funding.',
-    test2: 'Undercounted traffic means crash models underpredict risk where people are actually getting hurt.',
-    test3: 'When AI allocates safety budgets, neighborhoods that were undercounted get passed over twice.',
-    test4: 'People who lack safe infrastructure don\u2019t walk or bike — so the data says there\u2019s no demand, and nothing gets built.'
+    test1: 'Crowdsourced tools like Strava underrepresent low-income areas — seeding a data gap that compounds through every downstream decision.',
+    test2: 'Trained on reported crashes alone, AI predicts danger far less accurately in low-income tracts — missing 71% of high-risk areas vs 33% in wealthy ones.',
+    test3: 'When safety budgets follow AI predictions, the allocation gap follows the prediction gap — money goes where data is dense, not where need is highest.',
+    test4: 'Without infrastructure, people don\u2019t walk or bike. No trips means no signal. The absence of demand looks like confirmation that nothing should be built.'
 };
 
 // Literal paths required for Vite code splitting

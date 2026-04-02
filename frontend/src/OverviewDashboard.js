@@ -121,48 +121,66 @@ export class OverviewDashboard {
         const needQ5PerCap = budgetAllocation.need_based_allocation.per_capita['Q5 (Richest)'];
         const needRatio = Math.round(needQ1PerCap / needQ5PerCap);
 
-        const hero = {
-            test: 'test1',
-            label: 'Volume Estimation',
-            value: `${Math.abs(volumeReport.by_income.equity_gap.gap).toFixed(1)}pp`,
-            finding: 'Accuracy gap between highest and lowest income quintiles'
-        };
-
-        const secondary = [
+        const steps = [
+            {
+                test: 'test1',
+                num: 1,
+                label: 'Volume Estimation',
+                value: `${Math.abs(volumeReport.by_income.equity_gap.gap).toFixed(1)}pp`,
+                finding: 'AI undercounts pedestrians in low-income areas — the data gap that starts the chain',
+                connector: 'trained on undercounted data',
+                real: false,
+            },
             {
                 test: 'test2',
+                num: 2,
                 label: 'Crash Prediction',
-                value: `${q1Recall.toFixed(0)}% vs ${q5Recall.toFixed(0)}%`,
-                finding: 'Q1 vs Q5 recall — AI misses high-risk tracts in poor areas far more than wealthy areas'
+                value: `${q1Recall.toFixed(0)}% → ${q5Recall.toFixed(0)}%`,
+                finding: 'Q1 vs Q5 recall — AI misses danger in poor areas far more than wealthy areas',
+                connector: 'safety budget follows the model',
+                real: true,
             },
             {
                 test: 'test3',
+                num: 3,
                 label: 'Infrastructure',
-                value: `${needRatio}x`,
-                finding: 'More per-capita need in Q1 than Q5; AI budget allocates nearly equally'
+                value: `${needRatio}×`,
+                finding: 'Q1 has far more per-capita need; AI allocates budgets nearly equally',
+                connector: 'without infrastructure, people stay home',
+                real: false,
             },
             {
                 test: 'test4',
+                num: 4,
                 label: 'Suppressed Demand',
                 value: `${demandReport.summary.suppression_rate.toFixed(0)}%`,
-                finding: 'Potential demand suppressed by poor infrastructure'
-            }
+                finding: 'No trips → no signal → "no demand" — the false reading that closes the loop',
+                connector: null,
+                real: false,
+            },
         ];
 
         const container = document.getElementById('overview-cards');
         container.innerHTML = `
-            <button class="stat-hero" data-test="${hero.test}">
-                <div class="stat-label">${hero.label}</div>
-                <div class="stat-value">${hero.value}</div>
-                <div class="stat-desc">${hero.finding}</div>
-            </button>
-            <div class="stat-row">
-                ${secondary.map(s => `
-                    <button class="stat-secondary" data-test="${s.test}">
-                        <div class="stat-label">${s.label}</div>
-                        <div class="stat-value">${s.value}</div>
-                        <div class="stat-desc">${s.finding}</div>
+            <div class="cascade-header">
+                <div class="cascade-title">The compound effect</div>
+            </div>
+            <div class="cascade-steps">
+                ${steps.map(s => `
+                    <button class="cascade-step" data-test="${s.test}">
+                        <div class="cascade-step-inner">
+                            <div class="step-num">${s.num}</div>
+                            <div class="cascade-step-body">
+                                <div class="cascade-step-top">
+                                    <span class="cascade-step-label">${s.label}</span>
+                                    ${s.real ? '<span class="cascade-step-real">Real data</span>' : ''}
+                                </div>
+                                <div class="cascade-step-value">${s.value}</div>
+                                <div class="cascade-step-finding">${s.finding}</div>
+                            </div>
+                        </div>
                     </button>
+                    ${s.connector ? `<div class="cascade-connector">${s.connector}</div>` : ''}
                 `).join('')}
             </div>
         `;
