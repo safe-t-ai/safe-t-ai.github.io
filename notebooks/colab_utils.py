@@ -83,6 +83,11 @@ def save_notebook(
             print("Warning: get_ipynb returned empty — notebook not saved.")
             return None
 
+        # get_ipynb wraps the notebook under an 'ipynb' key at the top level.
+        # Extract the actual notebook content before writing.
+        if "ipynb" in notebook_json:
+            notebook_json = notebook_json["ipynb"]
+
         # Colab's get_ipynb response omits top-level format fields required by
         # the Jupyter spec. Inject defaults if missing so Colab can open the file.
         notebook_json.setdefault("nbformat", 4)
