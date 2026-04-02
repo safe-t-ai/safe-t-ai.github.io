@@ -880,59 +880,6 @@
             gap: var(--space-6);
         }
 
-        /* ── Cascade Section ── */
-        .cascade-section {
-            margin-top: var(--space-10);
-            padding-top: var(--space-8);
-            border-top: 1px solid var(--color-separator);
-            max-width: 520px;
-        }
-
-        /* ── Equity Context Section ── */
-        .equity-context-section {
-            margin-top: var(--space-10);
-            padding-top: var(--space-8);
-            border-top: 1px solid var(--color-separator);
-        }
-
-        .equity-section-title {
-            margin-bottom: var(--space-6);
-        }
-
-        .equity-section-title h2 {
-            font-size: var(--font-title3);
-            font-weight: 600;
-            color: var(--color-label);
-            margin-bottom: var(--space-2);
-        }
-
-        .equity-section-title p {
-            font-size: var(--font-subhead);
-            color: var(--color-label-secondary);
-        }
-
-        .equity-var-card {
-            background: var(--color-surface);
-            border-radius: var(--radius-md);
-            padding: var(--space-5) var(--space-5);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .equity-var-card strong {
-            display: block;
-            font-size: var(--font-headline);
-            font-weight: 600;
-            color: var(--color-label);
-            margin-bottom: var(--space-3);
-        }
-
-        .equity-var-card p {
-            font-size: var(--font-footnote);
-            color: var(--color-label-secondary);
-            line-height: 1.5;
-            margin: 0;
-        }
-
         /* ── Cascade Cards ── */
         .cascade-header {
             margin-bottom: var(--space-4);
@@ -1466,46 +1413,23 @@
                     <div class="content-map">
                         <div class="map-container">
                             <div class="chart-header">
-                                <h2>Durham Income Distribution by Census Tract</h2>
-                                <span class="data-source-badge"><span class="tooltip"></span></span>
+                                <h2 id="overview-map-title">Durham Income Distribution by Census Tract</h2>
+                                <span class="data-source-badge real"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div id="overview-map" class="map"></div>
-                        </div>
-                    </div>
-                    <div class="overview-right">
-                        <!-- methodology key appended here by renderMethodology() -->
-                    </div>
-                </div>
-                <div class="equity-context-section hidden">
-                    <div class="equity-section-title">
-                        <h2>Durham's equity lens</h2>
-                        <p>These are the variables Durham Transportation uses for Bike Walk project prioritization — the same frame SAFE-T audits through.</p>
-                    </div>
-                    <div class="content-split">
-                        <div class="content-map">
-                            <div class="map-container">
-                                <div class="chart-header">
-                                    <h2 id="equity-map-title"></h2>
-                                    <span class="data-source-badge real"><span class="tooltip"></span></span>
-                                </div>
-                                <p class="chart-description" id="equity-map-desc"></p>
-                                <div id="equity-context-map" class="map"></div>
-                            </div>
-                        </div>
-                        <div class="overview-right">
-                            <div class="view-toggle" id="toggle-equity-view">
-                                <button class="view-toggle-option active" data-value="tdi">TDI</button>
+                            <div class="view-toggle" id="toggle-overview-map">
+                                <button class="view-toggle-option active" data-value="income">Income</button>
+                                <button class="view-toggle-option" data-value="tdi">TDI</button>
                                 <button class="view-toggle-option" data-value="no_vehicle">Zero-car</button>
                                 <button class="view-toggle-option" data-value="bus_stops">Bus stops</button>
                                 <div class="view-toggle-indicator"></div>
                             </div>
-                            <div id="equity-var-desc"></div>
+                            <div id="overview-map" class="map"></div>
                         </div>
                     </div>
-                </div>
-                <div class="cascade-section hidden">
-                    <div class="overview-stats" id="overview-cards"></div>
+                    <div class="overview-right">
+                        <div class="overview-stats" id="overview-cards"></div>
+                    </div>
                 </div>
             </div>
             <!-- End Overview Content -->

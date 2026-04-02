@@ -10,8 +10,6 @@ export class OverviewDashboard {
     constructor() {
         this.data = {};
         this.map = null;
-        this.equityMap = null;
-        this.currentEquityView = 'tdi';
     }
 
     async initialize() {
@@ -33,50 +31,165 @@ export class OverviewDashboard {
         this.renderMethodology();
         this.renderMap();
         this.renderTestCards();
-        this.renderEquityContext();
     }
 
     renderMap() {
-        setChartMeta('overview-map', {
-            badge: 'real',
-            label: 'Real',
-            tooltip: 'Median household income from the U.S. Census Bureau American Community Survey (ACS 5-year estimates).',
-            description: 'Median household income across Durham census tracts. The equity tests that follow measure how AI transportation tools treat these areas differently.',
-        });
+        const VIEWS = {
+            income: {
+                label: 'Real',
+                badge: 'real',
+                tooltip: 'Median household income from the U.S. Census Bureau American Community Survey (ACS 5-year estimates).',
+                description: 'Median household income across Durham census tracts. Income quintiles (Q1–Q5) are the stratification axis for all four audit tests.',
+                title: 'Durham Income Distribution by Census Tract',
+                getData: () => this.data.choroplethData,
+                field: 'median_income',
+                colors: ['#b45309', '#d97706', '#e2e8f0', '#0891b2', '#155e75'],
+                getBreaks(vals) {
+                    const q = p => vals[Math.floor(vals.length * p)];
+                    return [q(0.2), q(0.4), q(0.6), q(0.8), Infinity];
+                },
+                getLegend(colors, breaks) {
+                    const fmt = v => `$${Math.round(v / 1000)}k`;
+                    return {
+                        title: 'Median Household Income',
+                        colorScale: [
+                            { color: colors[0], label: `< ${fmt(breaks[0])}` },
+                            { color: colors[1], label: `${fmt(breaks[0])} – ${fmt(breaks[1])}` },
+                            { color: colors[2], label: `${fmt(breaks[1])} – ${fmt(breaks[2])}` },
+                            { color: colors[3], label: `${fmt(breaks[2])} – ${fmt(breaks[3])}` },
+                            { color: colors[4], label: `> ${fmt(breaks[3])}` },
+                        ],
+                    };
+                },
+                popupFields: [
+                    { label: 'Median Income', field: 'median_income', format: v => `$${v?.toLocaleString()}` },
+                    { label: 'Population', field: 'total_population', format: v => v?.toLocaleString() },
+                    { label: 'Minority %', field: 'pct_minority', format: v => `${v?.toFixed(1)}%` },
+                ],
+            },
+            tdi: {
+                label: 'Real',
+                badge: 'real',
+                tooltip: 'NCDOT Transportation Disadvantage Index — composite score combining income, minority status, disability, limited English proficiency, and zero-car households. Block group scores averaged to census tract. Source: NCDOT ArcGIS public service.',
+                description: 'Higher score = greater transportation disadvantage. Durham uses TDI for Bike Walk project prioritization.',
+                title: 'Transportation Disadvantage Index (NCDOT)',
+                getData: () => this.data.equityContext,
+                field: 'tdi_score_county',
+                colors: ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#ef3b2c', '#cb181d', '#99000d'],
+                getBreaks(vals) {
+                    const q = p => vals[Math.min(Math.floor(vals.length * p), vals.length - 1)];
+                    return [q(0.14), q(0.28), q(0.42), q(0.57), q(0.71), q(0.85), Infinity];
+                },
+                getLegend(colors, breaks) {
+                    const fmt = v => v >= 100 ? Math.round(v).toString() : v >= 10 ? v.toFixed(1) : v.toFixed(2);
+                    return {
+                        title: 'TDI Score (County)',
+                        colorScale: [
+                            { color: colors[0], label: `< ${fmt(breaks[1])}` },
+                            { color: colors[2], label: `${fmt(breaks[1])} – ${fmt(breaks[3])}` },
+                            { color: colors[4], label: `${fmt(breaks[3])} – ${fmt(breaks[5])}` },
+                            { color: colors[6], label: `> ${fmt(breaks[5])}` },
+                        ],
+                    };
+                },
+                popupFields: [
+                    { label: 'TDI Score', field: 'tdi_score_county', format: v => v?.toFixed(1) ?? '—' },
+                    { label: 'Zero-car households', field: 'pct_no_vehicle', format: v => v != null ? `${v.toFixed(1)}%` : '—' },
+                    { label: 'Bus stops / 1k residents', field: 'stops_per_1k', format: v => v?.toFixed(1) ?? '—' },
+                    { label: 'Median income', field: 'median_income', format: v => v != null ? `$${v.toLocaleString()}` : '—' },
+                ],
+            },
+            no_vehicle: {
+                label: 'Real',
+                badge: 'real',
+                tooltip: 'Percentage of households with no vehicle available. Source: U.S. Census ACS 5-year estimates, Table B08201.',
+                description: 'Car-free households are most likely to walk and cycle — and least likely to appear in Strava or StreetLight data.',
+                title: 'Zero-car Households (%)',
+                getData: () => this.data.equityContext,
+                field: 'pct_no_vehicle',
+                colors: ['#f7fbff', '#deebf7', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'],
+                getBreaks(vals) {
+                    const q = p => vals[Math.min(Math.floor(vals.length * p), vals.length - 1)];
+                    return [q(0.14), q(0.28), q(0.42), q(0.57), q(0.71), q(0.85), Infinity];
+                },
+                getLegend(colors, breaks) {
+                    const fmt = v => v >= 100 ? Math.round(v).toString() : v >= 10 ? v.toFixed(1) : v.toFixed(2);
+                    return {
+                        title: 'Zero-car Households (%)',
+                        colorScale: [
+                            { color: colors[0], label: `< ${fmt(breaks[1])}` },
+                            { color: colors[2], label: `${fmt(breaks[1])} – ${fmt(breaks[3])}` },
+                            { color: colors[4], label: `${fmt(breaks[3])} – ${fmt(breaks[5])}` },
+                            { color: colors[6], label: `> ${fmt(breaks[5])}` },
+                        ],
+                    };
+                },
+                popupFields: [
+                    { label: 'TDI Score', field: 'tdi_score_county', format: v => v?.toFixed(1) ?? '—' },
+                    { label: 'Zero-car households', field: 'pct_no_vehicle', format: v => v != null ? `${v.toFixed(1)}%` : '—' },
+                    { label: 'Bus stops / 1k residents', field: 'stops_per_1k', format: v => v?.toFixed(1) ?? '—' },
+                    { label: 'Median income', field: 'median_income', format: v => v != null ? `$${v.toLocaleString()}` : '—' },
+                ],
+            },
+            bus_stops: {
+                label: 'Real',
+                badge: 'real',
+                tooltip: 'GoDurham bus stops per 1,000 residents per census tract. Source: GoDurham GTFS static feed. Boardings not in public GTFS.',
+                description: 'High density marks transit-dependent populations — exactly who crowdsourced mobility data systematically misses.',
+                title: 'Bus Stop Density (per 1,000 residents)',
+                getData: () => this.data.equityContext,
+                field: 'stops_per_1k',
+                colors: ['#f7fcf5', '#e5f5e0', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c'],
+                getBreaks(vals) {
+                    const q = p => vals[Math.min(Math.floor(vals.length * p), vals.length - 1)];
+                    return [q(0.14), q(0.28), q(0.42), q(0.57), q(0.71), q(0.85), Infinity];
+                },
+                getLegend(colors, breaks) {
+                    const fmt = v => v >= 100 ? Math.round(v).toString() : v >= 10 ? v.toFixed(1) : v.toFixed(2);
+                    return {
+                        title: 'Bus Stops / 1,000 Residents',
+                        colorScale: [
+                            { color: colors[0], label: `< ${fmt(breaks[1])}` },
+                            { color: colors[2], label: `${fmt(breaks[1])} – ${fmt(breaks[3])}` },
+                            { color: colors[4], label: `${fmt(breaks[3])} – ${fmt(breaks[5])}` },
+                            { color: colors[6], label: `> ${fmt(breaks[5])}` },
+                        ],
+                    };
+                },
+                popupFields: [
+                    { label: 'TDI Score', field: 'tdi_score_county', format: v => v?.toFixed(1) ?? '—' },
+                    { label: 'Zero-car households', field: 'pct_no_vehicle', format: v => v != null ? `${v.toFixed(1)}%` : '—' },
+                    { label: 'Bus stops / 1k residents', field: 'stops_per_1k', format: v => v?.toFixed(1) ?? '—' },
+                    { label: 'Median income', field: 'median_income', format: v => v != null ? `$${v.toLocaleString()}` : '—' },
+                ],
+            },
+        };
+
         this.map = new DurhamMap('overview-map').initialize();
 
-        const incomes = this.data.choroplethData.features
-            .map(f => f.properties.median_income)
-            .filter(v => v != null)
-            .sort((a, b) => a - b);
-        const quantile = (arr, q) => arr[Math.floor(arr.length * q)];
-        const breaks = [0.2, 0.4, 0.6, 0.8].map(q => quantile(incomes, q));
-        const fmt = v => `$${Math.round(v / 1000)}k`;
+        const updateView = (viewKey) => {
+            const v = VIEWS[viewKey];
+            const data = v.getData();
 
-        this.map.addChoroplethLayer(this.data.choroplethData, {
-            valueField: 'median_income',
-            colors: ['#b45309', '#d97706', '#e2e8f0', '#0891b2', '#155e75'],
-            breaks: [...breaks, Infinity],
-            fillOpacity: 0.7,
-            popupFields: [
-                { label: 'Median Income', field: 'median_income', format: v => `$${v?.toLocaleString()}` },
-                { label: 'Population', field: 'total_population', format: v => v?.toLocaleString() },
-                { label: 'Minority %', field: 'pct_minority', format: v => `${v?.toFixed(1)}%` }
-            ]
-        });
+            document.getElementById('overview-map-title').textContent = v.title;
+            setChartMeta('overview-map', { badge: v.badge, label: v.label, tooltip: v.tooltip, description: v.description });
 
-        this.map.addLegend({
-            title: 'Median Household Income',
-            colorScale: [
-                { color: '#b45309', label: `< ${fmt(breaks[0])}` },
-                { color: '#d97706', label: `${fmt(breaks[0])} – ${fmt(breaks[1])}` },
-                { color: '#e2e8f0', label: `${fmt(breaks[1])} – ${fmt(breaks[2])}` },
-                { color: '#0891b2', label: `${fmt(breaks[2])} – ${fmt(breaks[3])}` },
-                { color: '#155e75', label: `> ${fmt(breaks[3])}` }
-            ]
-        });
+            const vals = data.features
+                .map(f => f.properties[v.field])
+                .filter(x => x != null && x > 0)
+                .sort((a, b) => a - b);
+            const breaks = v.getBreaks(vals);
 
-        this.map.fitBounds(this.data.choroplethData);
+            if (this.map.choroplethLayer) this.map.map.removeLayer(this.map.choroplethLayer);
+            if (this.map.legendControl) this.map.map.removeControl(this.map.legendControl);
+
+            this.map.addChoroplethLayer(data, v.field, { colors: v.colors, breaks, fillOpacity: 0.7, popupFields: v.popupFields });
+            this.map.addLegend(v.getLegend(v.colors, breaks));
+            this.map.fitBounds(data);
+        };
+
+        updateView('income');
+        initViewToggle('toggle-overview-map', updateView);
 
         this._onResize = () => {
             if (this.map && document.getElementById('overview-map')?.offsetParent !== null) {
@@ -185,8 +298,6 @@ export class OverviewDashboard {
             </div>
         `;
 
-        document.querySelector('.cascade-section')?.classList.remove('hidden');
-
         container.addEventListener('click', (e) => {
             const btn = /** @type {HTMLElement} */ (e.target).closest('[data-test]');
             if (!btn) return;
@@ -194,120 +305,14 @@ export class OverviewDashboard {
         });
     }
 
-    renderEquityContext() {
-        const VIEWS = {
-            tdi: {
-                field: 'tdi_score_county',
-                title: 'Transportation Disadvantage Index (NCDOT)',
-                tooltip: 'NCDOT Transportation Disadvantage Index — composite score combining income, minority status, disability, limited English proficiency, and zero-car households. Block group scores averaged to census tract. Source: NCDOT ArcGIS public service.',
-                description: 'Higher score = greater transportation disadvantage relative to Durham County peers. Durham uses this for Bike Walk project prioritization.',
-                colors: ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#ef3b2c', '#cb181d', '#99000d'],
-                desc: '<strong>Transportation Disadvantage Index</strong><p>NCDOT composite score combining income, minority status, disability, limited English proficiency, and zero-car households. Higher = more disadvantaged. Durham uses this for Bike Walk project prioritization.</p>',
-            },
-            no_vehicle: {
-                field: 'pct_no_vehicle',
-                title: 'Zero-car Households (%)',
-                tooltip: 'Percentage of households with no vehicle available. Source: U.S. Census ACS 5-year estimates, Table B08201.',
-                description: 'Car-free households are most likely to walk and cycle for daily trips — and least likely to appear in Strava or StreetLight data.',
-                colors: ['#f7fbff', '#deebf7', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'],
-                desc: '<strong>Zero-car households</strong><p>Percentage of households with no vehicle available. Car-free residents are most likely to walk and cycle — and least likely to appear in Strava or StreetLight data. Source: Census ACS B08201.</p>',
-            },
-            bus_stops: {
-                field: 'stops_per_1k',
-                title: 'Bus Stop Density (per 1,000 residents)',
-                tooltip: 'GoDurham bus stops per 1,000 residents per census tract. Source: GoDurham GTFS static feed. Boardings not in public GTFS.',
-                description: 'High density marks transit-dependent populations — exactly the communities crowdsourced mobility data systematically misses.',
-                colors: ['#f7fcf5', '#e5f5e0', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c'],
-                desc: '<strong>Bus stop density</strong><p>GoDurham stops per 1,000 residents. High density marks transit-dependent populations — exactly who crowdsourced mobility data misses. Source: GoDurham GTFS.</p>',
-            },
-        };
-
-        const section = document.querySelector('.equity-context-section');
-        section.classList.remove('hidden');
-
-        this.equityMap = new DurhamMap('equity-context-map').initialize();
-
-        const updateView = (viewKey) => {
-            this.currentEquityView = viewKey;
-            const v = VIEWS[viewKey];
-
-            document.getElementById('equity-map-title').textContent = v.title;
-            document.getElementById('equity-map-desc').textContent = v.description;
-
-            const container = document.getElementById('equity-context-map').closest('.map-container');
-            const badgeEl = container.querySelector('.data-source-badge');
-            if (badgeEl) badgeEl.innerHTML = `Real<span class="tooltip">${v.tooltip}</span>`;
-
-            document.getElementById('equity-var-desc').innerHTML = `<div class="equity-var-card">${v.desc}</div>`;
-
-            const vals = this.data.equityContext.features
-                .map(f => f.properties[v.field])
-                .filter(x => x != null && x > 0)
-                .sort((a, b) => a - b);
-            const q = (p) => vals[Math.min(Math.floor(vals.length * p), vals.length - 1)];
-            const breaks = [q(0.14), q(0.28), q(0.42), q(0.57), q(0.71), q(0.85), Infinity];
-
-            if (this.equityMap.choroplethLayer) {
-                this.equityMap.map.removeLayer(this.equityMap.choroplethLayer);
-            }
-            if (this.equityMap.legendControl) {
-                this.equityMap.map.removeControl(this.equityMap.legendControl);
-            }
-
-            this.equityMap.addChoroplethLayer(this.data.equityContext, v.field, {
-                colors: v.colors,
-                breaks,
-                fillOpacity: 0.7,
-                popupFields: [
-                    { label: 'TDI Score', field: 'tdi_score_county', format: val => val?.toFixed(1) ?? '—' },
-                    { label: 'Zero-car households', field: 'pct_no_vehicle', format: val => val != null ? `${val.toFixed(1)}%` : '—' },
-                    { label: 'Bus stops / 1k residents', field: 'stops_per_1k', format: val => val?.toFixed(1) ?? '—' },
-                    { label: 'Median income', field: 'median_income', format: val => val != null ? `$${val.toLocaleString()}` : '—' },
-                ],
-            });
-
-            const fmt = (v) => v >= 100 ? Math.round(v).toString() : v >= 10 ? v.toFixed(1) : v.toFixed(2);
-            this.equityMap.addLegend({
-                title: v.title,
-                colorScale: [
-                    { color: v.colors[0], label: `< ${fmt(breaks[1])}` },
-                    { color: v.colors[2], label: `${fmt(breaks[1])} – ${fmt(breaks[3])}` },
-                    { color: v.colors[4], label: `${fmt(breaks[3])} – ${fmt(breaks[5])}` },
-                    { color: v.colors[6], label: `> ${fmt(breaks[5])}` },
-                ],
-            });
-
-            this.equityMap.fitBounds(this.data.equityContext);
-        };
-
-        updateView('tdi');
-        initViewToggle('toggle-equity-view', updateView);
-
-        this._onEquityResize = () => {
-            if (this.equityMap && document.getElementById('equity-context-map')?.offsetParent !== null) {
-                this.equityMap.invalidateSize();
-            }
-        };
-        window.addEventListener('resize', this._onEquityResize);
-    }
-
     cleanup() {
         if (this._onResize) {
             window.removeEventListener('resize', this._onResize);
             this._onResize = null;
         }
-        if (this._onEquityResize) {
-            window.removeEventListener('resize', this._onEquityResize);
-            this._onEquityResize = null;
-        }
         if (this.map) {
             this.map.cleanup();
             this.map = null;
         }
-        if (this.equityMap) {
-            this.equityMap.cleanup();
-            this.equityMap = null;
-        }
     }
-
 }
