@@ -70,8 +70,8 @@ export class OverviewDashboard {
             tdi: {
                 label: 'Real',
                 badge: 'real',
-                tooltip: 'NCDOT Transportation Disadvantage Index — composite score combining income, minority status, disability, limited English proficiency, and zero-car households. Block group scores averaged to census tract. Source: NCDOT ArcGIS public service.',
-                description: 'Higher score = greater transportation disadvantage. Durham uses TDI for Bike Walk project prioritization.',
+                tooltip: 'NCDOT Transportation Disadvantage Index — county-relative ranking across 7 indicators: race, income, vehicle access, disability, elderly, youth, and limited English proficiency. Block group scores averaged to census tract. Source: NCDOT ArcGIS public service.',
+                description: 'County-relative ranking: higher = greater transportation disadvantage compared to other Durham block groups. Durham uses TDI for Bike Walk project prioritization.',
                 title: 'Transportation Disadvantage Index (NCDOT)',
                 getData: () => this.data.equityContext,
                 field: 'tdi_score_county',
@@ -94,6 +94,7 @@ export class OverviewDashboard {
                 },
                 popupFields: [
                     { label: 'TDI Score', field: 'tdi_score_county', format: v => v?.toFixed(1) ?? '—' },
+                    { label: 'Disability %', field: 'disability_pct', format: v => v != null ? `${v.toFixed(1)}%` : '—' },
                     { label: 'Zero-car households', field: 'pct_no_vehicle', format: v => v != null ? `${v.toFixed(1)}%` : '—' },
                     { label: 'Bus stops / 1k residents', field: 'stops_per_1k', format: v => v?.toFixed(1) ?? '—' },
                     { label: 'Median income', field: 'median_income', format: v => v != null ? `$${v.toLocaleString()}` : '—' },
