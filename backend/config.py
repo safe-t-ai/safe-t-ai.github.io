@@ -61,6 +61,17 @@ NCDOT_NONMOTORIST_SERVICE = (
     "/NCDOT_NonMotoristCrashes/FeatureServer/0"
 )
 
+# NCDOT Transportation Disadvantage Index — block group polygons with TDI scores
+# Fields: GEOID (12-char BG FIPS), Score_County, Score_State, Score_Division
+NCDOT_TDI_SERVICE = (
+    "https://services.arcgis.com/NuWFvHYDMVmmxMeM/arcgis/rest/services"
+    "/Transportation_Disadvantage_Index_Data_2/FeatureServer/0"
+)
+
+# GoDurham (Durham Area Transit Authority) GTFS static feed
+# Includes stops.txt with lat/lon. Boardings not in public GTFS.
+GTFS_GODURHAM_URL = "https://godurham.rideralerts.com/InfoPoint/GTFS-Zip.ashx"
+
 # Volume simulation parameters
 VOLUME_SIMULATION_CONFIG = {
     'num_counters': 15,
