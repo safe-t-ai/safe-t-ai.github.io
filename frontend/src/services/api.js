@@ -20,6 +20,9 @@ class APIClient {
         return response.json();
     }
 
+    // Overview equity context (TDI, zero-car households, bus stops)
+    getEquityContext() { return this.get('equity-context'); }
+
     // Test 1 endpoints
     /** @returns {Promise<VolumeReport>} */
     getTest1Report() { return this.get('volume-report'); }

@@ -4,25 +4,28 @@
 
 import api from './services/api.js';
 import { DurhamMap } from './components/common/DurhamMap.js';
-import { setChartMeta } from './services/renderUtils.js';
+import { setChartMeta, initViewToggle } from './services/renderUtils.js';
 
 export class OverviewDashboard {
     constructor() {
         this.data = {};
         this.map = null;
+        this.equityMap = null;
+        this.currentEquityView = 'tdi';
     }
 
     async initialize() {
-        const [volumeReport, crashReport, confusionMatrices, budgetAllocation, demandReport, choroplethData] = await Promise.all([
+        const [volumeReport, crashReport, confusionMatrices, budgetAllocation, demandReport, choroplethData, equityContext] = await Promise.all([
             api.getTest1Report(),
             api.getCrashReport(),
             api.getConfusionMatrices(),
             api.getBudgetAllocation(),
             api.getDemandReport(),
-            api.getChoroplethData()
+            api.getChoroplethData(),
+            api.getEquityContext(),
         ]);
 
-        this.data = { volumeReport, crashReport, confusionMatrices, budgetAllocation, demandReport, choroplethData };
+        this.data = { volumeReport, crashReport, confusionMatrices, budgetAllocation, demandReport, choroplethData, equityContext };
 
         const tractCountEl = document.getElementById('tract-count');
         if (tractCountEl) tractCountEl.textContent = String(choroplethData.features.length);
@@ -30,6 +33,7 @@ export class OverviewDashboard {
         this.renderMethodology();
         this.renderMap();
         this.renderTestCards();
+        this.renderEquityContext();
     }
 
     renderMap() {
@@ -80,17 +84,6 @@ export class OverviewDashboard {
             }
         };
         window.addEventListener('resize', this._onResize);
-    }
-
-    cleanup() {
-        if (this._onResize) {
-            window.removeEventListener('resize', this._onResize);
-            this._onResize = null;
-        }
-        if (this.map) {
-            this.map.cleanup();
-            this.map = null;
-        }
     }
 
     renderMethodology() {
@@ -179,6 +172,122 @@ export class OverviewDashboard {
             if (!btn) return;
             window.dispatchEvent(new CustomEvent('navigate-test', { detail: /** @type {HTMLElement} */ (btn).dataset.test }));
         });
+    }
+
+    renderEquityContext() {
+        const VIEWS = {
+            tdi: {
+                field: 'tdi_score_county',
+                title: 'Transportation Disadvantage Index (NCDOT)',
+                tooltip: 'NCDOT Transportation Disadvantage Index — composite score combining income, minority status, disability, limited English proficiency, and zero-car households. Block group scores averaged to census tract. Source: NCDOT ArcGIS public service.',
+                description: 'Higher score = greater transportation disadvantage relative to Durham County peers. Durham uses this for Bike Walk project prioritization.',
+                colors: ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#ef3b2c', '#cb181d', '#99000d'],
+                desc: '<strong>Transportation Disadvantage Index</strong><p>NCDOT composite score combining income, minority status, disability, limited English proficiency, and zero-car households. Higher = more disadvantaged. Durham uses this for Bike Walk project prioritization.</p>',
+            },
+            no_vehicle: {
+                field: 'pct_no_vehicle',
+                title: 'Zero-car Households (%)',
+                tooltip: 'Percentage of households with no vehicle available. Source: U.S. Census ACS 5-year estimates, Table B08201.',
+                description: 'Car-free households are most likely to walk and cycle for daily trips — and least likely to appear in Strava or StreetLight data.',
+                colors: ['#f7fbff', '#deebf7', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'],
+                desc: '<strong>Zero-car households</strong><p>Percentage of households with no vehicle available. Car-free residents are most likely to walk and cycle — and least likely to appear in Strava or StreetLight data. Source: Census ACS B08201.</p>',
+            },
+            bus_stops: {
+                field: 'stops_per_1k',
+                title: 'Bus Stop Density (per 1,000 residents)',
+                tooltip: 'GoDurham bus stops per 1,000 residents per census tract. Source: GoDurham GTFS static feed. Boardings not in public GTFS.',
+                description: 'High density marks transit-dependent populations — exactly the communities crowdsourced mobility data systematically misses.',
+                colors: ['#f7fcf5', '#e5f5e0', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c'],
+                desc: '<strong>Bus stop density</strong><p>GoDurham stops per 1,000 residents. High density marks transit-dependent populations — exactly who crowdsourced mobility data misses. Source: GoDurham GTFS.</p>',
+            },
+        };
+
+        const section = document.querySelector('.equity-context-section');
+        section.classList.remove('hidden');
+
+        this.equityMap = new DurhamMap('equity-context-map').initialize();
+
+        const updateView = (viewKey) => {
+            this.currentEquityView = viewKey;
+            const v = VIEWS[viewKey];
+
+            document.getElementById('equity-map-title').textContent = v.title;
+            document.getElementById('equity-map-desc').textContent = v.description;
+
+            const container = document.getElementById('equity-context-map').closest('.map-container');
+            const badgeEl = container.querySelector('.data-source-badge');
+            if (badgeEl) badgeEl.innerHTML = `Real<span class="tooltip">${v.tooltip}</span>`;
+
+            document.getElementById('equity-var-desc').innerHTML = `<div class="equity-var-card">${v.desc}</div>`;
+
+            const vals = this.data.equityContext.features
+                .map(f => f.properties[v.field])
+                .filter(x => x != null && x > 0)
+                .sort((a, b) => a - b);
+            const q = (p) => vals[Math.min(Math.floor(vals.length * p), vals.length - 1)];
+            const breaks = [q(0.14), q(0.28), q(0.42), q(0.57), q(0.71), q(0.85), Infinity];
+
+            if (this.equityMap.choroplethLayer) {
+                this.equityMap.map.removeLayer(this.equityMap.choroplethLayer);
+            }
+            if (this.equityMap.legendControl) {
+                this.equityMap.map.removeControl(this.equityMap.legendControl);
+            }
+
+            this.equityMap.addChoroplethLayer(this.data.equityContext, v.field, {
+                colors: v.colors,
+                breaks,
+                fillOpacity: 0.7,
+                popupFields: [
+                    { label: 'TDI Score', field: 'tdi_score_county', format: val => val?.toFixed(1) ?? '—' },
+                    { label: 'Zero-car households', field: 'pct_no_vehicle', format: val => val != null ? `${val.toFixed(1)}%` : '—' },
+                    { label: 'Bus stops / 1k residents', field: 'stops_per_1k', format: val => val?.toFixed(1) ?? '—' },
+                    { label: 'Median income', field: 'median_income', format: val => val != null ? `$${val.toLocaleString()}` : '—' },
+                ],
+            });
+
+            const fmt = (v) => v >= 100 ? Math.round(v).toString() : v >= 10 ? v.toFixed(1) : v.toFixed(2);
+            this.equityMap.addLegend({
+                title: v.title,
+                colorScale: [
+                    { color: v.colors[0], label: `< ${fmt(breaks[1])}` },
+                    { color: v.colors[2], label: `${fmt(breaks[1])} – ${fmt(breaks[3])}` },
+                    { color: v.colors[4], label: `${fmt(breaks[3])} – ${fmt(breaks[5])}` },
+                    { color: v.colors[6], label: `> ${fmt(breaks[5])}` },
+                ],
+            });
+
+            this.equityMap.fitBounds(this.data.equityContext);
+        };
+
+        updateView('tdi');
+        initViewToggle('toggle-equity-view', updateView);
+
+        this._onEquityResize = () => {
+            if (this.equityMap && document.getElementById('equity-context-map')?.offsetParent !== null) {
+                this.equityMap.invalidateSize();
+            }
+        };
+        window.addEventListener('resize', this._onEquityResize);
+    }
+
+    cleanup() {
+        if (this._onResize) {
+            window.removeEventListener('resize', this._onResize);
+            this._onResize = null;
+        }
+        if (this._onEquityResize) {
+            window.removeEventListener('resize', this._onEquityResize);
+            this._onEquityResize = null;
+        }
+        if (this.map) {
+            this.map.cleanup();
+            this.map = null;
+        }
+        if (this.equityMap) {
+            this.equityMap.cleanup();
+            this.equityMap = null;
+        }
     }
 
 }

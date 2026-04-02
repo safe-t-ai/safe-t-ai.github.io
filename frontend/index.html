@@ -879,6 +879,47 @@
             gap: var(--space-6);
         }
 
+        .equity-context-section {
+            margin-top: var(--space-10);
+        }
+
+        .section-header {
+            margin-bottom: var(--space-6);
+        }
+
+        .section-header h2 {
+            font-size: var(--font-title2);
+            font-weight: 600;
+            color: var(--color-label);
+            margin-bottom: var(--space-2);
+        }
+
+        .section-intro {
+            font-size: var(--font-subheadline);
+            color: var(--color-label-secondary);
+        }
+
+        .equity-var-card {
+            background: var(--color-fill-tertiary);
+            border-radius: var(--radius-md);
+            padding: var(--space-4) var(--space-5);
+        }
+
+        .equity-var-card strong {
+            display: block;
+            font-size: var(--font-subheadline);
+            font-weight: 600;
+            color: var(--color-label);
+            margin-bottom: var(--space-2);
+        }
+
+        .equity-var-card p {
+            font-size: var(--font-footnote);
+            color: var(--color-label-secondary);
+            line-height: 1.5;
+            margin: 0;
+        }
+
         .overview-stats {
             display: flex;
             flex-direction: column;
@@ -1288,6 +1329,33 @@
                     </div>
                     <div class="overview-right">
                         <div class="overview-stats" id="overview-cards"></div>
+                    </div>
+                </div>
+                <div class="equity-context-section hidden">
+                    <div class="section-header">
+                        <h2>How Durham already measures equity</h2>
+                        <p class="section-intro">Durham Transportation uses these variables in Bike Walk project prioritization. SAFE-T uses the same lens.</p>
+                    </div>
+                    <div class="content-split">
+                        <div class="content-map">
+                            <div class="map-container">
+                                <div class="chart-header">
+                                    <h2 id="equity-map-title"></h2>
+                                    <span class="data-source-badge real"><span class="tooltip"></span></span>
+                                </div>
+                                <p class="chart-description" id="equity-map-desc"></p>
+                                <div id="equity-context-map" class="map"></div>
+                            </div>
+                        </div>
+                        <div class="overview-right">
+                            <div class="view-toggle" id="toggle-equity-view">
+                                <button class="view-toggle-option active" data-value="tdi">TDI</button>
+                                <button class="view-toggle-option" data-value="no_vehicle">Zero-car</button>
+                                <button class="view-toggle-option" data-value="bus_stops">Bus stops</button>
+                                <div class="view-toggle-indicator"></div>
+                            </div>
+                            <div id="equity-var-desc"></div>
+                        </div>
                     </div>
                 </div>
             </div>
