@@ -70,8 +70,8 @@ export class OverviewDashboard {
             tdi: {
                 label: 'Real',
                 badge: 'real',
-                tooltip: 'NCDOT Transportation Disadvantage Index — county-relative ranking across 7 indicators: race, income, vehicle access, disability, elderly, youth, and limited English proficiency. Block group scores averaged to census tract. Source: NCDOT ArcGIS public service.',
-                description: 'County-relative ranking: higher = greater transportation disadvantage compared to other Durham block groups. Durham uses TDI for Bike Walk project prioritization.',
+                tooltip: 'NCDOT Transportation Disadvantage Index — 0–21 composite score. Each of 7 indicators (race, income, vehicle access, disability, elderly, youth, limited English proficiency) scored 1–3 based on how a block group compares to other Durham County block groups. Block group scores averaged to census tract. Source: NCDOT ArcGIS public service.',
+                description: 'Composite score 0–21: higher = greater transportation disadvantage relative to other Durham tracts. Durham uses TDI for Bike Walk project prioritization.',
                 title: 'Transportation Disadvantage Index (NCDOT)',
                 getData: () => this.data.equityContext,
                 field: 'tdi_score_county',
