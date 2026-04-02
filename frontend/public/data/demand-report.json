@@ -68,10 +68,9 @@
     }
   },
   "findings": [
-    "80.9% of potential active transportation demand is suppressed by poor infrastructure",
-    "Q1 (poorest) areas have 82.7% suppression vs 73.5% in Q5",
-    "Naive AI has only 0.25 correlation with potential demand (fails to detect suppressed demand)",
-    "Sophisticated AI achieves 0.82 correlation but still undercounts by 43.9% in Q1",
-    "AI tools measuring only observed demand miss suppressed demand\u2014low-income areas where poor infrastructure collapses actual trips toward zero"
+    "In Durham's poorest tracts, an estimated 425 daily trips per tract are suppressed by missing infrastructure \u2014 the latent demand that 'no one walks or bikes there' arguments overlook.",
+    "Citywide, 80.9% of potential active transportation demand goes unrealized; Q1 (poorest) areas have 82.7% suppression vs 73.5% in Q5.",
+    "Naive AI achieves only 0.25 correlation with potential demand \u2014 it cannot detect demand that infrastructure has already eliminated.",
+    "Sophisticated AI reaches 0.82 correlation but still undercounts by 43.9% in Q1 tracts, where suppression is highest."
   ]
 }
