@@ -83,6 +83,11 @@ def save_notebook(
             print("Warning: get_ipynb returned empty — notebook not saved.")
             return None
 
+        # Colab's get_ipynb response omits top-level format fields required by
+        # the Jupyter spec. Inject defaults if missing so Colab can open the file.
+        notebook_json.setdefault("nbformat", 4)
+        notebook_json.setdefault("nbformat_minor", 5)
+
         repo_path = Path(repo_dir)
         out_path = repo_path / "notebooks" / notebook_name
         with open(out_path, "w") as f:
