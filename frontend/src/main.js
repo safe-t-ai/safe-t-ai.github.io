@@ -15,8 +15,8 @@ const DESCRIPTIONS = {
 
 const SO_WHAT = {
     test1: 'Crowdsourced tools like Strava underrepresent low-income areas — seeding a data gap that compounds through every downstream decision.',
-    test2: 'Trained on reported crashes alone, AI predicts danger far less accurately in low-income tracts — missing 71% of high-risk areas vs 33% in wealthy ones.',
-    test3: 'When safety budgets follow AI predictions, the allocation gap follows the prediction gap — money goes where data is dense, not where need is highest.',
+    test2: 'Trained on reported crashes alone, AI predicts danger far less accurately in low-income tracts — missing the majority of high-risk areas in poor neighborhoods while flagging most in wealthy ones.',
+    test3: 'When safety budgets follow AI predictions, money goes where data is dense — not where need is highest. This test models what that misallocation looks like at scale.',
     test4: 'Without infrastructure, people don\u2019t walk or bike. No trips means no signal. The absence of demand looks like confirmation that nothing should be built.'
 };
 

@@ -71,13 +71,17 @@ export function setChartMeta(id, { badge, label, tooltip, description }) {
  * @param {string} elementId
  * @param {string[]} findings
  * @param {string} [title]
+ * @param {{ type: 'real'|'modeled'|'simulated', label: string, tooltip?: string }} [badge]
  */
-export function renderInterpretation(elementId, findings, title = 'Key Findings') {
+export function renderInterpretation(elementId, findings, title = 'Key Findings', badge) {
     if (!findings || findings.length === 0) return;
 
     document.getElementById(elementId).innerHTML = `
         <div class="interpretation">
-            <h3>${title}</h3>
+            <div class="interpretation-header">
+                <h3>${title}</h3>
+                ${badge ? `<span class="data-source-badge ${badge.type}">${badge.label}<span class="tooltip">${badge.tooltip ?? ''}</span></span>` : ''}
+            </div>
             <ul>
                 ${findings.map(f => `<li>${f}</li>`).join('')}
             </ul>

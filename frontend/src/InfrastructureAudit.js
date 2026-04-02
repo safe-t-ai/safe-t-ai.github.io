@@ -44,7 +44,11 @@ export class InfrastructureAudit {
         renderInterpretation('test3-interpretation', [
             ...findings,
             `AI allocates to ${summary.ai_projects} projects vs ${summary.need_based_projects} need-based projects`
-        ]);
+        ], 'Key Findings', {
+            type: 'modeled',
+            label: 'Modeled',
+            tooltip: 'Danger scores and budget allocation are modeled. Infrastructure gap inputs are real OpenStreetMap per-capita feature density per census tract.'
+        });
     }
 
     renderMetrics() {
@@ -72,7 +76,7 @@ export class InfrastructureAudit {
             },
             {
                 title: 'AI Gini Coefficient',
-                value: ai_allocation.gini_coefficient.toFixed(3),
+                value: ai_allocation.gini_coefficient.toFixed(2),
                 subtext: 'Budget inequality across tracts (0=equal, 1=max)',
                 sentiment: 'value-warning'
             },
@@ -209,7 +213,7 @@ export class InfrastructureAudit {
             badge: 'modeled',
             label: 'Modeled',
             tooltip: '$5M budget allocated across income quintiles. Project types reflect real infrastructure gaps from OpenStreetMap density data.',
-            description: 'AI-driven vs need-based safety budget allocation per income quintile.',
+            description: 'AI allocation closely mirrors need-based in total but distributes dollars nearly equally across quintiles — ignoring the 15× per-capita need differential. Hover a bar to highlight corresponding tracts on the map.',
         });
         const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
@@ -267,15 +271,15 @@ export class InfrastructureAudit {
             badge: 'modeled',
             label: 'Modeled',
             tooltip: 'Equity metrics comparing AI-driven vs need-based allocation. Infrastructure gaps derived from OpenStreetMap feature density per census tract.',
-            description: 'Four normalized equity metrics (0-100) comparing AI-driven and need-based allocation strategies.',
+            description: 'Four equity dimensions normalized to 0–100 for comparison. Each dimension uses its own scale (not a single composite). Equal-weight normalization is a modeling choice — the dimensions are not inherently commensurable.',
         });
         const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
         const { summary } = this.data.report;
 
         const normalize = (val, max) => Math.min((val / max) * 100, 100);
 
-        // Normalize disparate_impact_ratio against the max across both strategies,
-        // so AI (0.97) vs need-based (15.4) renders honestly rather than both clamping to ~100.
+        // Normalize each dimension against the max across both strategies
+        // so neither clips to 100 and relative scale is preserved.
         const maxDir = Math.max(
             ai_allocation.disparate_impact_ratio,
             need_based_allocation.disparate_impact_ratio
@@ -284,6 +288,7 @@ export class InfrastructureAudit {
             ai_allocation.per_capita['Q1 (Poorest)'],
             need_based_allocation.per_capita['Q1 (Poorest)']
         );
+        const maxProjects = Math.max(summary.ai_projects, summary.need_based_projects);
 
         const metrics = ['Equity', 'Q1 Per Capita', 'Budget Equality', 'Project Count'];
 
@@ -332,7 +337,7 @@ export class InfrastructureAudit {
                     normalize(alloc.disparate_impact_ratio, maxDir),
                     normalize(alloc.per_capita['Q1 (Poorest)'], maxQ1PerCap),
                     (1 - alloc.gini_coefficient) * 100,
-                    normalize(projects, 50)
+                    normalize(projects, maxProjects)
                 ],
                 itemStyle: { color, borderRadius: [3, 3, 0, 0] },
                 animationDelay: (idx) => idx * 120

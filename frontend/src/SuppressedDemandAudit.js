@@ -25,7 +25,11 @@ export class SuppressedDemandAudit {
 
         this.data = { report, funnel, scorecard, demandGeoData };
 
-        renderInterpretation('test4-interpretation', report.findings);
+        renderInterpretation('test4-interpretation', report.findings, 'Key Findings', {
+            type: 'modeled',
+            label: 'Modeled',
+            tooltip: 'Demand suppression modeled from real OpenStreetMap infrastructure conditions. AI detection evaluated against modeled suppression scores.'
+        });
         this.renderMetrics();
         this.renderMap();
         this.renderCharts();
@@ -186,7 +190,7 @@ export class SuppressedDemandAudit {
             badge: 'modeled',
             label: 'Modeled',
             tooltip: 'AI detection accuracy evaluated against infrastructure scores from OpenStreetMap. Three approaches: naive, sophisticated, and human expert baseline.',
-            description: 'Detection accuracy for suppressed demand. Naive AI fails; sophisticated AI achieves partial detection. Neither matches human expert baseline.',
+            description: 'Three independent detection dimensions: correlation with latent demand, high-suppression area detection rate, and Q1 bias direction. Shown separately — collapsing them into a single score would obscure where each approach succeeds and fails.',
         });
         const { naive_ai, sophisticated_ai, human_expert_baseline } = this.data.scorecard;
 
@@ -194,8 +198,7 @@ export class SuppressedDemandAudit {
             const correlation = d.correlation_with_potential * 100;
             const detection = d.detection_rate_high_suppression;
             const inverseBias = Math.max(0, 100 + d.bias_q1);
-            const overall = (correlation + detection + inverseBias) / 3;
-            return [correlation.toFixed(1), detection.toFixed(1), inverseBias.toFixed(1), overall.toFixed(1)];
+            return [correlation.toFixed(1), detection.toFixed(1), inverseBias.toFixed(1)];
         }
 
         const seriesEntries = [
@@ -225,7 +228,6 @@ export class SuppressedDemandAudit {
                     'Correlation\nwith Potential',
                     'Detection Rate\n(High Suppression)',
                     'Inverse Bias\n(Q1)',
-                    'Overall\nScore'
                 ],
                 axisLabel: { interval: 0, fontSize: 11 }
             },

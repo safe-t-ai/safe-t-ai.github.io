@@ -28,7 +28,11 @@ export class VolumeEstimationAudit {
 
         this.data = { report, choroplethData, counters };
 
-        renderInterpretation('interpretation', report.interpretation);
+        renderInterpretation('interpretation', report.interpretation, 'Key Findings', {
+            type: 'simulated',
+            label: 'Simulated',
+            tooltip: 'Counter locations, AI predictions, and all bias parameters are simulated from research literature. Real vendor data requires proprietary API access.'
+        });
         this.renderMetrics();
         this.renderMap();
         this.renderCharts();
@@ -55,7 +59,7 @@ export class VolumeEstimationAudit {
             },
             {
                 title: 'R\u00B2',
-                value: overall_accuracy.metrics.r_squared.toFixed(3),
+                value: overall_accuracy.metrics.r_squared.toFixed(2),
                 subtext: overall_accuracy.metrics.r_squared > 0.7
                     ? 'Variance explained — strong model fit'
                     : 'Variance explained — moderate fit (simulated data)',

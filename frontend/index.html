@@ -628,10 +628,18 @@
             box-shadow: var(--shadow-sm);
         }
 
+        .interpretation-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-3);
+            margin-bottom: var(--space-3);
+        }
+
         .interpretation h3 {
             font-size: var(--font-headline);
             font-weight: 600;
-            margin-bottom: var(--space-3);
+            margin-bottom: 0;
             color: var(--color-label);
         }
 
@@ -969,16 +977,7 @@
             letter-spacing: 0.06em;
         }
 
-        .cascade-step-real {
-            font-size: var(--font-caption);
-            font-weight: 600;
-            color: var(--color-success);
-            background: #dcfce7;
-            border-radius: 4px;
-            padding: 1px 6px;
-            letter-spacing: 0;
-            text-transform: none;
-        }
+        .cascade-step-badge { cursor: default; }
 
         .cascade-step-value {
             font-size: var(--font-stat);
@@ -1406,7 +1405,7 @@
                 </div>
                 <div class="overview-banner hidden">
                     <h2>Durham Transportation Equity Audit</h2>
-                    <p class="banner-description">In Durham, Black residents are 32% of the population but 47% of pedestrian and cyclist crash victims — before any AI tool makes a single allocation decision. SAFE-T measures whether AI transportation tools compound this existing disparity, directing safety investment away from communities already at greatest risk. Because vendor tools are proprietary, we demonstrate the audit methodology using research-calibrated simulations layered on real Census, NCDOT, and OpenStreetMap data — a replicable framework any US city can run.</p>
+                    <p class="banner-description">In Durham, Black residents are <span id="banner-black-population-pct">32</span>% of the population but <span id="banner-black-victim-pct">47</span>% of pedestrian and cyclist crash victims — before any AI tool makes a single allocation decision. SAFE-T measures whether AI transportation tools compound this existing disparity, directing safety investment away from communities already at greatest risk. Because vendor tools are proprietary, we demonstrate the audit methodology using research-calibrated simulations layered on real Census, NCDOT, and OpenStreetMap data — a replicable framework any US city can run.</p>
                     <p class="banner-stats"><span id="tract-count"></span> Tracts &middot; Volume Estimation → Crash Prediction → Infrastructure → Demand &middot; <span class="banner-scalability">Replicable for any US city using public data</span></p>
                 </div>
                 <div class="content-split hidden">
@@ -1491,7 +1490,7 @@
                         <div class="methodology-note">
                             <h3>Methodology Basis</h3>
                             <p>Bias parameters are calibrated to findings in peer-reviewed research on AI volume estimation tools: <strong>20–30% undercounting</strong> in low-income areas; <strong>15–25%</strong> in high-minority areas; <strong>10–20%</strong> additional undercount in areas with poor infrastructure. These ranges represent the audit input parameters — applying them to a real city demonstrates the equity impact framework that any government can replicate once they have access to vendor output data.</p>
-                            <p class="methodology-note-refs">Key research: Griswold et al. (2019) on pedestrian count accuracy; Wei &amp; Lovegrove (2013) on demographic bias in travel surveys; FHWA Non-Motorized Transportation Pilot Program evaluation reports.</p>
+                            <p class="methodology-note-refs">Key sources: FHWA Non-Motorized Transportation Pilot Program evaluation reports; Schweizer et al. (2021) on demographic underrepresentation in GPS-based travel surveys; Jestico et al. (2016) on spatial bias in Strava cycling data. Bias magnitudes are simulation assumptions — the direction of each disparity is documented; exact magnitudes vary across cities and tools.</p>
                         </div>
                     </div>
                 </div>
@@ -1652,7 +1651,7 @@
                             <h3>Methodology Basis</h3>
                             <p>Suppressed demand is modeled from real OpenStreetMap per-capita infrastructure scores (sidewalks, crosswalks, bike lanes, bus stops per 1,000 residents per tract). Suppression factor: <em>1 − score²</em> applied to a census-proportional potential demand baseline. Q1 tracts score lower on infrastructure quality, producing higher suppression — consistent with documented elasticity of active transport to infrastructure investment.</p>
                             <p>The three AI detection profiles (Naive, Sophisticated, Human Expert) are parameterized models, not evaluations of specific vendor products. Naive AI correlates with observed demand (which collapses toward zero in suppressed areas); Sophisticated AI partially corrects for infrastructure quality.</p>
-                            <p class="methodology-note-refs">Basis: Handy &amp; Cao (2005) on built environment and travel behavior; NACTO Urban Street Design Guide infrastructure standards; FHWA Active Transportation research program.</p>
+                            <p class="methodology-note-refs">Basis: Ewing &amp; Cervero (2010) meta-analysis on built environment and travel behavior; NACTO Urban Street Design Guide infrastructure standards; FHWA Active Transportation research program.</p>
                         </div>
                     </div>
                 </div>

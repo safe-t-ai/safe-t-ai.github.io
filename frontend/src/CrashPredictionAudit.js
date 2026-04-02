@@ -25,7 +25,11 @@ export class CrashPredictionAudit {
 
         this.data = { report, confusionMatrices, timeSeries, crashGeoData };
 
-        renderInterpretation('test2-interpretation', report.findings);
+        renderInterpretation('test2-interpretation', report.findings, 'Key Findings', {
+            type: 'real',
+            label: 'Real Data',
+            tooltip: 'NCDOT non-motorist crash records 2019–2024 (883 records). Ridge regression trained on 2019–2023, evaluated on 2024.'
+        });
         this.renderBaselineContext();
         this.renderMetrics();
         this.renderMap();
@@ -238,7 +242,7 @@ export class CrashPredictionAudit {
                     const quintile = quintiles[params.data[0]];
                     const metric = metrics[params.data[1]];
                     const value = params.data[2];
-                    return `${quintile}<br/>${metric}: ${value.toFixed(3)}`;
+                    return `${quintile}<br/>${metric}: ${value.toFixed(2)}`;
                 }
             },
             grid: {
@@ -299,8 +303,8 @@ export class CrashPredictionAudit {
         const { years, by_quintile } = this.data.timeSeries;
 
         const quintileSeries = [
-            { key: 'Q1 (Poorest)', label: 'Q1', color: COLORS.error },
-            { key: 'Q5 (Richest)', label: 'Q5', color: COLORS.success }
+            { key: 'Q1 (Poorest)', label: 'Q1', color: '#0891b2' },
+            { key: 'Q5 (Richest)', label: 'Q5', color: '#7c3aed' }
         ];
 
         const series = quintileSeries.flatMap(({ key, label, color }) => [
@@ -310,7 +314,6 @@ export class CrashPredictionAudit {
                 data: by_quintile[key].actual_crashes,
                 lineStyle: { color, width: 3 },
                 itemStyle: { color },
-                smooth: true
             },
             {
                 name: `${label} Predicted`,
@@ -318,7 +321,6 @@ export class CrashPredictionAudit {
                 data: by_quintile[key].ai_predicted_crashes,
                 lineStyle: { color, type: 'dashed', width: 2 },
                 itemStyle: { color },
-                smooth: true
             }
         ]);
 

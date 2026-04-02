@@ -145,6 +145,13 @@ interface CrashQuintileStats {
     error_pct: number;
 }
 
+interface RacialBaseline {
+    black_population_pct: number;
+    black_victim_pct: number;
+    rate_ratio_black_vs_white: number;
+    source: string;
+}
+
 interface CrashReport {
     _provenance: Provenance;
     summary: {
@@ -157,6 +164,7 @@ interface CrashReport {
     };
     error_by_quintile: Record<string, CrashQuintileStats>;
     findings: string[];
+    racial_baseline?: RacialBaseline;
 }
 
 interface ConfusionMatrixMetrics {

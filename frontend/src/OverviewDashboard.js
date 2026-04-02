@@ -28,6 +28,14 @@ export class OverviewDashboard {
         const tractCountEl = document.getElementById('tract-count');
         if (tractCountEl) tractCountEl.textContent = String(choroplethData.features.length);
 
+        const rb = crashReport.racial_baseline;
+        if (rb) {
+            const popEl = document.getElementById('banner-black-population-pct');
+            const victimEl = document.getElementById('banner-black-victim-pct');
+            if (popEl) popEl.textContent = rb.black_population_pct.toFixed(0);
+            if (victimEl) victimEl.textContent = rb.black_victim_pct.toFixed(0);
+        }
+
         this.renderMethodology();
         this.renderMap();
         this.renderTestCards();
@@ -242,8 +250,9 @@ export class OverviewDashboard {
                 label: 'Volume Estimation',
                 value: `${Math.abs(volumeReport.by_income.equity_gap.gap).toFixed(1)}pp`,
                 finding: 'AI undercounts pedestrians in low-income areas — the data gap that starts the chain',
-                connector: 'trained on undercounted data',
-                real: false,
+                connector: 'if trained on undercounted data',
+                badge: 'simulated',
+                badgeLabel: 'Simulated',
             },
             {
                 test: 'test2',
@@ -252,7 +261,8 @@ export class OverviewDashboard {
                 value: `${q1Recall.toFixed(0)}% → ${q5Recall.toFixed(0)}%`,
                 finding: 'Q1 vs Q5 recall — AI misses danger in poor areas far more than wealthy areas',
                 connector: 'safety budget follows the model',
-                real: true,
+                badge: 'real',
+                badgeLabel: 'Real data',
             },
             {
                 test: 'test3',
@@ -261,7 +271,8 @@ export class OverviewDashboard {
                 value: `${needRatio}×`,
                 finding: 'Q1 has far more per-capita need; AI allocates budgets nearly equally',
                 connector: 'without infrastructure, people stay home',
-                real: false,
+                badge: 'modeled',
+                badgeLabel: 'Modeled',
             },
             {
                 test: 'test4',
@@ -270,7 +281,8 @@ export class OverviewDashboard {
                 value: `${demandReport.summary.suppression_rate.toFixed(0)}%`,
                 finding: 'No trips → no signal → "no demand" — the false reading that closes the loop',
                 connector: null,
-                real: false,
+                badge: 'modeled',
+                badgeLabel: 'Modeled',
             },
         ];
 
@@ -287,7 +299,7 @@ export class OverviewDashboard {
                             <div class="cascade-step-body">
                                 <div class="cascade-step-top">
                                     <span class="cascade-step-label">${s.label}</span>
-                                    ${s.real ? '<span class="cascade-step-real">Real data</span>' : ''}
+                                    <span class="cascade-step-badge data-source-badge ${s.badge}">${s.badgeLabel}</span>
                                 </div>
                                 <div class="cascade-step-value">${s.value}</div>
                                 <div class="cascade-step-finding">${s.finding}</div>
