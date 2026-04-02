@@ -141,6 +141,24 @@ def publish_artifacts(
             "Cannot publish — files not found: " + ", ".join(missing)
         )
 
+    # Heal any notebooks that were written with the get_ipynb wrapper structure
+    # ({ipynb: <notebook>, nbformat, nbformat_minor}) instead of the notebook itself.
+    import json as _json
+    for rel in rel_paths:
+        if not rel.endswith(".ipynb"):
+            continue
+        nb_path = repo_path / rel
+        with open(nb_path) as f:
+            nb = _json.load(f)
+        if "ipynb" in nb and "cells" not in nb:
+            nb = nb["ipynb"]
+            nb.setdefault("nbformat", 4)
+            nb.setdefault("nbformat_minor", 5)
+            with open(nb_path, "w") as f:
+                _json.dump(nb, f, indent=1)
+                f.write("\n")
+            print(f"Fixed notebook wrapper structure: {rel}")
+
     repo_url = f"https://x-access-token:{token}@github.com/safe-t-ai/safe-t-ai.github.io.git"
 
     subprocess.run(["git", "config", "user.email", "colab-bot@safe-t-ai"], check=True, cwd=repo_path)
