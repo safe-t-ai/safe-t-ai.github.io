@@ -61,6 +61,42 @@ def prepare_notebook(
     return repo_path
 
 
+def save_notebook(
+    notebook_name: str,
+    repo_dir: str | Path = DEFAULT_REPO_DIR,
+) -> str | None:
+    """Capture the current Colab notebook and write it to the repo.
+
+    Uses Colab's internal get_ipynb API to snapshot the running notebook,
+    including any cell edits made in this session. Call this before
+    publish_artifacts and include the returned path in the paths list.
+
+    Returns the relative path (e.g. 'notebooks/01_fetch_data.ipynb') on
+    success, or None if the snapshot fails (non-fatal — publish continues).
+    """
+    try:
+        from google.colab import _message
+        import json
+
+        notebook_json = _message.blocking_request("get_ipynb", request="", timeout_sec=30)
+        if not notebook_json:
+            print("Warning: get_ipynb returned empty — notebook not saved.")
+            return None
+
+        repo_path = Path(repo_dir)
+        out_path = repo_path / "notebooks" / notebook_name
+        with open(out_path, "w") as f:
+            json.dump(notebook_json, f, indent=1)
+
+        rel_path = f"notebooks/{notebook_name}"
+        print(f"Notebook snapshot saved to {rel_path}")
+        return rel_path
+
+    except Exception as e:
+        print(f"Warning: could not save notebook — {e}")
+        return None
+
+
 def publish_artifacts(
     paths: Iterable[str | Path],
     message: str,
