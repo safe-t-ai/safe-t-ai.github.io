@@ -214,7 +214,7 @@ export class CrashPredictionAudit {
             badge: 'real',
             label: 'Real Data',
             tooltip: 'Ridge regression trained on real NCDOT non-motorist crash data (883 records, 2019–2024; training on 2019–2023, evaluated on 2024). Census demographics as features.',
-            description: 'Binary classification (above/below within-quintile median) evaluated per income group. Lower scores in poorer quintiles indicate the model struggles to rank tracts within those areas.',
+            description: 'Binary classification (above/below within-quintile median) evaluated per income group. Q3/Q4 show recall = 1.0 but precision of 0.60/0.36 — the model over-predicts danger in mid-income areas while missing 71% of dangerous tracts in Q1.',
         });
         const { by_quintile } = this.data.confusionMatrices;
 

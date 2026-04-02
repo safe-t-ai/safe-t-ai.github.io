@@ -51,9 +51,11 @@ export class InfrastructureAudit {
         const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
 
         const q1AI = ai_allocation.by_quintile['Q1 (Poorest)'];
+        const q5AI = ai_allocation.by_quintile['Q5 (Richest)'];
         const q1Need = need_based_allocation.by_quintile['Q1 (Poorest)'];
         const q1Gap = q1Need - q1AI;
         const needRatio = (need_based_allocation.per_capita['Q1 (Poorest)'] / need_based_allocation.per_capita['Q5 (Richest)']);
+        const aiAbsoluteRatio = q5AI / q1AI;
 
         renderMetrics('test3-metrics', [
             {
@@ -75,9 +77,9 @@ export class InfrastructureAudit {
                 sentiment: 'value-warning'
             },
             {
-                title: 'AI Q1 Allocation',
-                value: `$${(q1AI / 1000).toFixed(0)}k`,
-                subtext: `vs $${(q1Need / 1000).toFixed(0)}k under need-based — AI ignores differential danger`,
+                title: 'AI Absolute: Q5 vs Q1',
+                value: `$${(q5AI / 1000).toFixed(0)}k vs $${(q1AI / 1000).toFixed(0)}k`,
+                subtext: `AI sends ${aiAbsoluteRatio.toFixed(1)}× more dollars to the wealthiest areas than the poorest`,
                 sentiment: 'value-danger'
             }
         ]);
