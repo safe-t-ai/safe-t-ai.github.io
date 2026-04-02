@@ -2,7 +2,7 @@
   "_provenance": {
     "data_type": "real",
     "source": "OpenStreetMap via osmnx",
-    "queried_at": "2026-04-02T16:31:58.857493+00:00",
+    "queried_at": "2026-04-02T16:40:11.458343+00:00",
     "features_queried": [
       "crossings",
       "bike_infra",
