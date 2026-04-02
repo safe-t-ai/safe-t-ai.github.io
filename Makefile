@@ -36,13 +36,8 @@ dev: ## Start frontend dev server (data served from frontend/public/data/)
 
 ##@ Data
 
-data: ## Pull all pre-built data from the data branch
-	git fetch origin data
-	mkdir -p backend/data/raw backend/data/simulated frontend/public/data
-	git archive origin/data -- raw/ | tar -xf - --strip-components=1 -C backend/data/raw/
-	git archive origin/data -- simulated/ | tar -xf - --strip-components=1 -C backend/data/simulated/
-	git archive origin/data -- frontend/ | tar -xf - --strip-components=1 -C frontend/public/data/
-	@echo "✓ Data restored from data branch"
+data: ## Data lives in frontend/public/data/ on main — no separate pull needed
+	@echo "✓ Data is committed to main in frontend/public/data/"
 
 run-notebooks: ## Execute all pipeline notebooks locally (requires Jupyter)
 	jupyter nbconvert --to notebook --execute notebooks/01_fetch_data.ipynb --output notebooks/01_fetch_data.ipynb
@@ -59,8 +54,8 @@ build: ## Build frontend for production
 preview: build ## Preview production build locally
 	cd frontend && npm run preview
 
-deploy: build ## Deploy to GitHub Pages
-	cd frontend && npm run deploy
+deploy: ## Deploy to GitHub Pages (push main — Actions workflow handles the build)
+	git push origin main
 
 ##@ Testing & Quality
 
