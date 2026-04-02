@@ -880,6 +880,14 @@
             gap: var(--space-6);
         }
 
+        /* ── Cascade Section ── */
+        .cascade-section {
+            margin-top: var(--space-10);
+            padding-top: var(--space-8);
+            border-top: 1px solid var(--color-separator);
+            max-width: 520px;
+        }
+
         /* ── Equity Context Section ── */
         .equity-context-section {
             margin-top: var(--space-10);
@@ -1466,13 +1474,13 @@
                         </div>
                     </div>
                     <div class="overview-right">
-                        <div class="overview-stats" id="overview-cards"></div>
+                        <!-- methodology key appended here by renderMethodology() -->
                     </div>
                 </div>
                 <div class="equity-context-section hidden">
                     <div class="equity-section-title">
-                        <h2>How Durham already measures equity</h2>
-                        <p>Durham Transportation uses these variables in Bike Walk project prioritization. SAFE-T uses the same lens.</p>
+                        <h2>Durham's equity lens</h2>
+                        <p>These are the variables Durham Transportation uses for Bike Walk project prioritization — the same frame SAFE-T audits through.</p>
                     </div>
                     <div class="content-split">
                         <div class="content-map">
@@ -1495,6 +1503,9 @@
                             <div id="equity-var-desc"></div>
                         </div>
                     </div>
+                </div>
+                <div class="cascade-section hidden">
+                    <div class="overview-stats" id="overview-cards"></div>
                 </div>
             </div>
             <!-- End Overview Content -->

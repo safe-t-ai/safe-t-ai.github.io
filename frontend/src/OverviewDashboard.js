@@ -185,6 +185,8 @@ export class OverviewDashboard {
             </div>
         `;
 
+        document.querySelector('.cascade-section')?.classList.remove('hidden');
+
         container.addEventListener('click', (e) => {
             const btn = /** @type {HTMLElement} */ (e.target).closest('[data-test]');
             if (!btn) return;
