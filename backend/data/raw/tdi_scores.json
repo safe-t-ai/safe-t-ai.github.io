@@ -1,0 +1,350 @@
+{
+  "_provenance": {
+    "data_type": "real",
+    "source": "NCDOT Transportation Disadvantage Index",
+    "source_url": "https://services.arcgis.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/Transportation_Disadvantage_Index_Data_2/FeatureServer/0",
+    "note": "Block group scores aggregated to census tract by mean. Score_County = percentile relative to Durham County peers. Higher score = greater transportation disadvantage."
+  },
+  "tracts": [
+    {
+      "tract_id": "37063000101",
+      "tdi_score_county": 12.75,
+      "tdi_score_state": 13.25
+    },
+    {
+      "tract_id": "37063000102",
+      "tdi_score_county": 13.0,
+      "tdi_score_state": 12.5
+    },
+    {
+      "tract_id": "37063000200",
+      "tdi_score_county": 12.666666666666666,
+      "tdi_score_state": 13.333333333333334
+    },
+    {
+      "tract_id": "37063000301",
+      "tdi_score_county": 11.166666666666666,
+      "tdi_score_state": 11.333333333333334
+    },
+    {
+      "tract_id": "37063000302",
+      "tdi_score_county": 10.5,
+      "tdi_score_state": 12.333333333333334
+    },
+    {
+      "tract_id": "37063000401",
+      "tdi_score_county": 8.666666666666666,
+      "tdi_score_state": 9.833333333333334
+    },
+    {
+      "tract_id": "37063000402",
+      "tdi_score_county": 10.5,
+      "tdi_score_state": 11.0
+    },
+    {
+      "tract_id": "37063000500",
+      "tdi_score_county": 12.875,
+      "tdi_score_state": 13.375
+    },
+    {
+      "tract_id": "37063000600",
+      "tdi_score_county": 12.5,
+      "tdi_score_state": 13.0
+    },
+    {
+      "tract_id": "37063000700",
+      "tdi_score_county": 10.833333333333334,
+      "tdi_score_state": 10.5
+    },
+    {
+      "tract_id": "37063000900",
+      "tdi_score_county": 16.75,
+      "tdi_score_state": 17.0
+    },
+    {
+      "tract_id": "37063001001",
+      "tdi_score_county": 17.125,
+      "tdi_score_state": 16.5
+    },
+    {
+      "tract_id": "37063001002",
+      "tdi_score_county": 18.3,
+      "tdi_score_state": 17.9
+    },
+    {
+      "tract_id": "37063001100",
+      "tdi_score_county": 17.0,
+      "tdi_score_state": 17.166666666666668
+    },
+    {
+      "tract_id": "37063001301",
+      "tdi_score_county": 16.5,
+      "tdi_score_state": 16.5
+    },
+    {
+      "tract_id": "37063001303",
+      "tdi_score_county": 13.0,
+      "tdi_score_state": 13.0
+    },
+    {
+      "tract_id": "37063001304",
+      "tdi_score_county": 17.0,
+      "tdi_score_state": 18.0
+    },
+    {
+      "tract_id": "37063001400",
+      "tdi_score_county": 15.0,
+      "tdi_score_state": 15.25
+    },
+    {
+      "tract_id": "37063001501",
+      "tdi_score_county": 13.0,
+      "tdi_score_state": 13.0
+    },
+    {
+      "tract_id": "37063001503",
+      "tdi_score_county": 6.5,
+      "tdi_score_state": 6.5
+    },
+    {
+      "tract_id": "37063001504",
+      "tdi_score_county": 15.5,
+      "tdi_score_state": 16.0
+    },
+    {
+      "tract_id": "37063001505",
+      "tdi_score_county": 14.333333333333334,
+      "tdi_score_state": 14.0
+    },
+    {
+      "tract_id": "37063001601",
+      "tdi_score_county": 10.5,
+      "tdi_score_state": 10.2
+    },
+    {
+      "tract_id": "37063001603",
+      "tdi_score_county": 8.666666666666666,
+      "tdi_score_state": 8.916666666666666
+    },
+    {
+      "tract_id": "37063001604",
+      "tdi_score_county": 7.928571428571429,
+      "tdi_score_state": 8.0
+    },
+    {
+      "tract_id": "37063001705",
+      "tdi_score_county": 11.1,
+      "tdi_score_state": 12.3
+    },
+    {
+      "tract_id": "37063001706",
+      "tdi_score_county": 10.5,
+      "tdi_score_state": 11.0
+    },
+    {
+      "tract_id": "37063001708",
+      "tdi_score_county": 14.875,
+      "tdi_score_state": 15.0
+    },
+    {
+      "tract_id": "37063001709",
+      "tdi_score_county": 15.928571428571429,
+      "tdi_score_state": 16.214285714285715
+    },
+    {
+      "tract_id": "37063001710",
+      "tdi_score_county": 13.5,
+      "tdi_score_state": 13.833333333333334
+    },
+    {
+      "tract_id": "37063001711",
+      "tdi_score_county": 13.666666666666666,
+      "tdi_score_state": 14.0
+    },
+    {
+      "tract_id": "37063001712",
+      "tdi_score_county": 8.5,
+      "tdi_score_state": 8.75
+    },
+    {
+      "tract_id": "37063001713",
+      "tdi_score_county": 7.375,
+      "tdi_score_state": 6.875
+    },
+    {
+      "tract_id": "37063001801",
+      "tdi_score_county": 13.571428571428571,
+      "tdi_score_state": 13.571428571428571
+    },
+    {
+      "tract_id": "37063001802",
+      "tdi_score_county": 17.125,
+      "tdi_score_state": 16.625
+    },
+    {
+      "tract_id": "37063001806",
+      "tdi_score_county": 10.6,
+      "tdi_score_state": 10.6
+    },
+    {
+      "tract_id": "37063001808",
+      "tdi_score_county": 10.875,
+      "tdi_score_state": 10.875
+    },
+    {
+      "tract_id": "37063001809",
+      "tdi_score_county": 11.2,
+      "tdi_score_state": 11.6
+    },
+    {
+      "tract_id": "37063001810",
+      "tdi_score_county": 14.0,
+      "tdi_score_state": 15.0
+    },
+    {
+      "tract_id": "37063001811",
+      "tdi_score_county": 11.25,
+      "tdi_score_state": 11.333333333333334
+    },
+    {
+      "tract_id": "37063001900",
+      "tdi_score_county": 8.625,
+      "tdi_score_state": 8.0
+    },
+    {
+      "tract_id": "37063002007",
+      "tdi_score_county": 10.2,
+      "tdi_score_state": 10.6
+    },
+    {
+      "tract_id": "37063002008",
+      "tdi_score_county": 7.0,
+      "tdi_score_state": 8.166666666666666
+    },
+    {
+      "tract_id": "37063002009",
+      "tdi_score_county": 15.0,
+      "tdi_score_state": 15.166666666666666
+    },
+    {
+      "tract_id": "37063002013",
+      "tdi_score_county": 9.875,
+      "tdi_score_state": 10.125
+    },
+    {
+      "tract_id": "37063002015",
+      "tdi_score_county": 10.875,
+      "tdi_score_state": 11.875
+    },
+    {
+      "tract_id": "37063002019",
+      "tdi_score_county": 8.0,
+      "tdi_score_state": 8.333333333333334
+    },
+    {
+      "tract_id": "37063002020",
+      "tdi_score_county": 9.75,
+      "tdi_score_state": 10.0
+    },
+    {
+      "tract_id": "37063002021",
+      "tdi_score_county": 11.0,
+      "tdi_score_state": 11.166666666666666
+    },
+    {
+      "tract_id": "37063002022",
+      "tdi_score_county": 10.333333333333334,
+      "tdi_score_state": 11.166666666666666
+    },
+    {
+      "tract_id": "37063002023",
+      "tdi_score_county": 9.666666666666666,
+      "tdi_score_state": 9.666666666666666
+    },
+    {
+      "tract_id": "37063002024",
+      "tdi_score_county": 8.833333333333334,
+      "tdi_score_state": 8.666666666666666
+    },
+    {
+      "tract_id": "37063002025",
+      "tdi_score_county": 10.75,
+      "tdi_score_state": 10.875
+    },
+    {
+      "tract_id": "37063002026",
+      "tdi_score_county": 15.666666666666666,
+      "tdi_score_state": 15.0
+    },
+    {
+      "tract_id": "37063002029",
+      "tdi_score_county": 10.5,
+      "tdi_score_state": 10.833333333333334
+    },
+    {
+      "tract_id": "37063002030",
+      "tdi_score_county": 9.5,
+      "tdi_score_state": 10.25
+    },
+    {
+      "tract_id": "37063002031",
+      "tdi_score_county": 13.5,
+      "tdi_score_state": 14.5
+    },
+    {
+      "tract_id": "37063002032",
+      "tdi_score_county": 13.666666666666666,
+      "tdi_score_state": 13.0
+    },
+    {
+      "tract_id": "37063002033",
+      "tdi_score_county": 9.166666666666666,
+      "tdi_score_state": 8.333333333333334
+    },
+    {
+      "tract_id": "37063002034",
+      "tdi_score_county": 10.833333333333334,
+      "tdi_score_state": 11.166666666666666
+    },
+    {
+      "tract_id": "37063002035",
+      "tdi_score_county": 10.875,
+      "tdi_score_state": 11.0
+    },
+    {
+      "tract_id": "37063002036",
+      "tdi_score_county": 11.666666666666666,
+      "tdi_score_state": 12.166666666666666
+    },
+    {
+      "tract_id": "37063002037",
+      "tdi_score_county": 9.5,
+      "tdi_score_state": 10.25
+    },
+    {
+      "tract_id": "37063002038",
+      "tdi_score_county": 9.0,
+      "tdi_score_state": 9.666666666666666
+    },
+    {
+      "tract_id": "37063002100",
+      "tdi_score_county": 8.785714285714286,
+      "tdi_score_state": 8.642857142857142
+    },
+    {
+      "tract_id": "37063002200",
+      "tdi_score_county": 10.25,
+      "tdi_score_state": 11.5
+    },
+    {
+      "tract_id": "37063002300",
+      "tdi_score_county": 16.5,
+      "tdi_score_state": 16.5
+    },
+    {
+      "tract_id": "37063980100",
+      "tdi_score_county": 0.0,
+      "tdi_score_state": 0.0
+    }
+  ]
+}

@@ -1,0 +1,345 @@
+{
+  "_provenance": {
+    "data_type": "real",
+    "source": "GoDurham GTFS static feed",
+    "source_url": "https://godurham.rideralerts.com/InfoPoint/GTFS-Zip.ashx",
+    "note": "Stop count and per-1000-resident density only. Boardings not in public GTFS \u2014 request from Durham Area Transit Authority separately for weighted analysis. GoDurham serves Durham city routes; GoTriangle regional routes excluded."
+  },
+  "tracts": [
+    {
+      "tract_id": "37063000600",
+      "stop_count": 35,
+      "stops_per_1k": 6.92
+    },
+    {
+      "tract_id": "37063000700",
+      "stop_count": 19,
+      "stops_per_1k": 4.68
+    },
+    {
+      "tract_id": "37063000900",
+      "stop_count": 15,
+      "stops_per_1k": 7.96
+    },
+    {
+      "tract_id": "37063001001",
+      "stop_count": 24,
+      "stops_per_1k": 6.71
+    },
+    {
+      "tract_id": "37063000402",
+      "stop_count": 14,
+      "stops_per_1k": 5.26
+    },
+    {
+      "tract_id": "37063000500",
+      "stop_count": 17,
+      "stops_per_1k": 4.31
+    },
+    {
+      "tract_id": "37063002025",
+      "stop_count": 12,
+      "stops_per_1k": 1.7
+    },
+    {
+      "tract_id": "37063001400",
+      "stop_count": 27,
+      "stops_per_1k": 10.31
+    },
+    {
+      "tract_id": "37063001501",
+      "stop_count": 16,
+      "stops_per_1k": 4.8
+    },
+    {
+      "tract_id": "37063001304",
+      "stop_count": 23,
+      "stops_per_1k": 10.33
+    },
+    {
+      "tract_id": "37063001706",
+      "stop_count": 8,
+      "stops_per_1k": 1.52
+    },
+    {
+      "tract_id": "37063001708",
+      "stop_count": 5,
+      "stops_per_1k": 1.06
+    },
+    {
+      "tract_id": "37063002008",
+      "stop_count": 1,
+      "stops_per_1k": 0.26
+    },
+    {
+      "tract_id": "37063002013",
+      "stop_count": 0,
+      "stops_per_1k": 0.0
+    },
+    {
+      "tract_id": "37063002015",
+      "stop_count": 26,
+      "stops_per_1k": 5.24
+    },
+    {
+      "tract_id": "37063000301",
+      "stop_count": 11,
+      "stops_per_1k": 3.96
+    },
+    {
+      "tract_id": "37063002029",
+      "stop_count": 2,
+      "stops_per_1k": 0.49
+    },
+    {
+      "tract_id": "37063001811",
+      "stop_count": 3,
+      "stops_per_1k": 0.48
+    },
+    {
+      "tract_id": "37063001504",
+      "stop_count": 15,
+      "stops_per_1k": 5.67
+    },
+    {
+      "tract_id": "37063002034",
+      "stop_count": 7,
+      "stops_per_1k": 1.09
+    },
+    {
+      "tract_id": "37063002036",
+      "stop_count": 13,
+      "stops_per_1k": 3.59
+    },
+    {
+      "tract_id": "37063001712",
+      "stop_count": 4,
+      "stops_per_1k": 0.74
+    },
+    {
+      "tract_id": "37063001505",
+      "stop_count": 7,
+      "stops_per_1k": 1.69
+    },
+    {
+      "tract_id": "37063001809",
+      "stop_count": 13,
+      "stops_per_1k": 1.64
+    },
+    {
+      "tract_id": "37063002019",
+      "stop_count": 0,
+      "stops_per_1k": 0.0
+    },
+    {
+      "tract_id": "37063002020",
+      "stop_count": 0,
+      "stops_per_1k": 0.0
+    },
+    {
+      "tract_id": "37063001806",
+      "stop_count": 4,
+      "stops_per_1k": 0.53
+    },
+    {
+      "tract_id": "37063002024",
+      "stop_count": 1,
+      "stops_per_1k": 0.16
+    },
+    {
+      "tract_id": "37063001301",
+      "stop_count": 12,
+      "stops_per_1k": 7.05
+    },
+    {
+      "tract_id": "37063002300",
+      "stop_count": 18,
+      "stops_per_1k": 6.61
+    },
+    {
+      "tract_id": "37063000102",
+      "stop_count": 15,
+      "stops_per_1k": 3.94
+    },
+    {
+      "tract_id": "37063002033",
+      "stop_count": 0,
+      "stops_per_1k": 0.0
+    },
+    {
+      "tract_id": "37063002031",
+      "stop_count": 10,
+      "stops_per_1k": 3.58
+    },
+    {
+      "tract_id": "37063002032",
+      "stop_count": 10,
+      "stops_per_1k": 3.85
+    },
+    {
+      "tract_id": "37063001713",
+      "stop_count": 4,
+      "stops_per_1k": 1.16
+    },
+    {
+      "tract_id": "37063002035",
+      "stop_count": 6,
+      "stops_per_1k": 0.91
+    },
+    {
+      "tract_id": "37063002030",
+      "stop_count": 0,
+      "stops_per_1k": 0.0
+    },
+    {
+      "tract_id": "37063001810",
+      "stop_count": 3,
+      "stops_per_1k": 0.63
+    },
+    {
+      "tract_id": "37063002200",
+      "stop_count": 23,
+      "stops_per_1k": 7.57
+    },
+    {
+      "tract_id": "37063002026",
+      "stop_count": 27,
+      "stops_per_1k": 2.97
+    },
+    {
+      "tract_id": "37063002021",
+      "stop_count": 9,
+      "stops_per_1k": 1.85
+    },
+    {
+      "tract_id": "37063002022",
+      "stop_count": 6,
+      "stops_per_1k": 1.23
+    },
+    {
+      "tract_id": "37063002023",
+      "stop_count": 4,
+      "stops_per_1k": 1.51
+    },
+    {
+      "tract_id": "37063001808",
+      "stop_count": 0,
+      "stops_per_1k": 0.0
+    },
+    {
+      "tract_id": "37063001002",
+      "stop_count": 28,
+      "stops_per_1k": 5.57
+    },
+    {
+      "tract_id": "37063001100",
+      "stop_count": 21,
+      "stops_per_1k": 6.75
+    },
+    {
+      "tract_id": "37063001303",
+      "stop_count": 29,
+      "stops_per_1k": 6.64
+    },
+    {
+      "tract_id": "37063000200",
+      "stop_count": 17,
+      "stops_per_1k": 5.08
+    },
+    {
+      "tract_id": "37063000302",
+      "stop_count": 12,
+      "stops_per_1k": 3.27
+    },
+    {
+      "tract_id": "37063000401",
+      "stop_count": 12,
+      "stops_per_1k": 4.69
+    },
+    {
+      "tract_id": "37063002037",
+      "stop_count": 0,
+      "stops_per_1k": 0.0
+    },
+    {
+      "tract_id": "37063002038",
+      "stop_count": 12,
+      "stops_per_1k": 1.74
+    },
+    {
+      "tract_id": "37063001710",
+      "stop_count": 15,
+      "stops_per_1k": 3.27
+    },
+    {
+      "tract_id": "37063001711",
+      "stop_count": 21,
+      "stops_per_1k": 4.4
+    },
+    {
+      "tract_id": "37063001801",
+      "stop_count": 14,
+      "stops_per_1k": 1.53
+    },
+    {
+      "tract_id": "37063000101",
+      "stop_count": 35,
+      "stops_per_1k": 9.39
+    },
+    {
+      "tract_id": "37063002007",
+      "stop_count": 0,
+      "stops_per_1k": 0.0
+    },
+    {
+      "tract_id": "37063002009",
+      "stop_count": 40,
+      "stops_per_1k": 7.3
+    },
+    {
+      "tract_id": "37063001900",
+      "stop_count": 0,
+      "stops_per_1k": 0.0
+    },
+    {
+      "tract_id": "37063001709",
+      "stop_count": 46,
+      "stops_per_1k": 5.34
+    },
+    {
+      "tract_id": "37063001601",
+      "stop_count": 2,
+      "stops_per_1k": 0.37
+    },
+    {
+      "tract_id": "37063001603",
+      "stop_count": 11,
+      "stops_per_1k": 1.48
+    },
+    {
+      "tract_id": "37063001604",
+      "stop_count": 0,
+      "stops_per_1k": 0.0
+    },
+    {
+      "tract_id": "37063001705",
+      "stop_count": 24,
+      "stops_per_1k": 4.43
+    },
+    {
+      "tract_id": "37063001802",
+      "stop_count": 19,
+      "stops_per_1k": 2.62
+    },
+    {
+      "tract_id": "37063002100",
+      "stop_count": 0,
+      "stops_per_1k": 0.0
+    },
+    {
+      "tract_id": "37063001503",
+      "stop_count": 3,
+      "stops_per_1k": 1.63
+    }
+  ]
+}
