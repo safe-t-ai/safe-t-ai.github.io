@@ -83,19 +83,19 @@ export class CrashPredictionAudit {
             {
                 title: 'Q1 Recall',
                 value: (q1_recall * 100).toFixed(0) + '%',
-                subtext: 'High-risk tracts AI correctly flags in poorest areas',
+                subtext: 'High-risk tracts detectable from data in poorest areas',
                 sentiment: 'value-danger'
             },
             {
                 title: 'Q5 Recall',
                 value: (q5_recall * 100).toFixed(0) + '%',
-                subtext: 'High-risk tracts AI correctly flags in wealthiest areas',
+                subtext: 'High-risk tracts detectable from data in wealthiest areas',
                 sentiment: 'value-success'
             },
             {
-                title: 'Recall Gap',
+                title: 'Detection Gap',
                 value: ((q5_recall - q1_recall) * 100).toFixed(0) + ' pts',
-                subtext: `AI misses ${(100 - q1_recall * 100).toFixed(0)}% of dangerous tracts in poor areas vs ${(100 - q5_recall * 100).toFixed(0)}% in wealthy`,
+                subtext: `${(100 - q1_recall * 100).toFixed(0)}% of Q1 high-risk tracts go undetected vs ${(100 - q5_recall * 100).toFixed(0)}% in Q5`,
                 sentiment: 'value-danger'
             },
             {
