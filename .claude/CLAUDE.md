@@ -18,10 +18,9 @@ SAFE-T demonstrates four audit methodologies using Durham, NC as a case study.
 
 **Google.org AI for Government Innovation Challenge**
 - URL: https://www.google.org/impact-challenges/ai-government-innovation/
-- Deadline: April 3, 2026
+- Submitted: April 3, 2026
 - Award: $1M–$3M + Google.org Accelerator (AI strategy, Cloud Credits)
-- Requires: documented government buy-in, feasibility, scalability across governments
-- Eligible: nonprofits, social enterprises, academic institutions with government partners
+- Status: submitted; awaiting review
 
 ## Framework Vision
 

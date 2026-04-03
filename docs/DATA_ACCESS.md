@@ -10,7 +10,7 @@ Demographics and tract boundaries for Durham County.
 - **Geometry endpoint:** Census TIGER/Line via ArcGIS REST
 - **Auth:** Free API key required (`CENSUS_API_KEY` env var, stored as GitHub secret) from https://api.census.gov/data/key_signup.html
 - **Variables:** Total population, median household income, race/ethnicity
-- **Script:** `scripts/fetch_durham_data.py`
+- **Notebook:** `notebooks/01_fetch_data.ipynb`
 
 ### NCDOT Non-Motorist Crash Map (ArcGIS Feature Service)
 
@@ -25,7 +25,7 @@ Geocoded police-reported crashes involving pedestrians, bicyclists, and other no
 - **Key fields:** `CrashID`, `CrashDate`, `CrashYear`, `Latitude`, `Longitude`, `CrashSevr`, `NM_Type`, `NM_Inj`, `NM_Age`, `NM_Sex`, `NM_Race`, `CrashType`, `County`, `SpeedLimit`, `LightCond`, `Weather`, `RdClass` (65 fields total)
 - **Provides:** Individual crash point locations with severity, demographics, road/environmental conditions
 - **Limitation:** Non-motorist crashes only (pedestrian, bicycle, etc.), not all crash types. Covers the most safety-critical subset for active transportation auditing.
-- **Script:** `scripts/fetch_ncdot_nonmotorist.py`
+- **Notebook:** `notebooks/01_fetch_data.ipynb`
 
 ## Needed for Production
 
@@ -66,7 +66,7 @@ Pedestrian and cyclist infrastructure features (crossings, cycleways, traffic si
 - **License:** ODbL (open)
 - **Provides:** Per-tract infrastructure feature counts and densities, composite infrastructure quality score
 - **Used by:** Test 3 (Infrastructure Audit) project type selection, Test 4 (Suppressed Demand) infrastructure quality scores
-- **Script:** `scripts/fetch_osm_infrastructure.py`
+- **Notebook:** `notebooks/01_fetch_data.ipynb`
 
 ## Potential Additions
 

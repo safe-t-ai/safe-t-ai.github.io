@@ -119,7 +119,7 @@ Measures whether a crash prediction model trained on real NCDOT data produces sy
 | **Recall** | 29% | 67% | **38 points** |
 | Accuracy | 64% | 69% | 5 points |
 
-AI misses 71% of genuinely dangerous tracts in the poorest areas vs 33% in the wealthiest. Safety investment directed by this model flows predominantly to areas the model correctly identifies — meaning low-income neighborhoods are systematically under-served.
+71% of high-risk Q1 tracts go undetected vs 33% in Q5. Safety investment directed by this model flows predominantly to areas the model correctly identifies — meaning low-income neighborhoods are systematically under-served.
 
 **Pre-AI baseline (before model runs):** Black residents are 32.1% of Durham's population (ACS 5-year) but ~47% of non-motorist crash victims with known race (NCDOT 2019–2024, 883 records). Rate ratio: ~1.6× higher than their population share. SAFE-T measures whether AI compounds this existing disparity.
 
@@ -140,7 +140,7 @@ AI misses 71% of genuinely dangerous tracts in the poorest areas vs 33% in the w
 
 ## Test 4: Suppressed Demand Analysis
 
-**Status:** Backend complete, frontend in development
+**Status:** Complete
 
 Detects whether AI systems capture only observed behavior and miss latent demand in underserved areas where poor infrastructure suppresses usage.
 
@@ -165,7 +165,7 @@ Infrastructure quality scores derived from real OpenStreetMap pedestrian/cyclist
 3. Simulate AI detection accuracy
 4. Compare AI allocations to true need
 
-### Planned Visualizations
+### Visualizations
 
 1. Geographic suppressed demand map
 2. Demand funnel (latent → suppressed → observed → detected)
@@ -173,16 +173,16 @@ Infrastructure quality scores derived from real OpenStreetMap pedestrian/cyclist
 4. Detection scorecard by area type
 5. Network flow diagram
 
-### Expected Findings
+### Findings
 
-- 40-60% suppression in low-income areas
-- AI detects only 30-50% of latent demand
-- Correlation with infrastructure quality: r > 0.7
-- Resource allocation 2-3x worse than true need
+- Citywide, 80.9% of potential active transportation demand goes unrealized; Q1 suppression is 82.7% vs 73.5% in Q5
+- A naive detection model achieves only 0.25 correlation with potential demand — it cannot detect demand that infrastructure has already eliminated
+- A more sophisticated detection model reaches 0.82 correlation but still undercounts by 43.9% in Q1 tracts
+- In Q1 tracts, an estimated 425 daily trips per tract are suppressed by missing infrastructure
 
 ### Implementation Status
 
 - ✅ Backend model (`backend/models/demand_analyzer.py`)
-- ✅ Data simulation (`scripts/analyze_suppressed_demand.py`)
-- ⏳ Static data export
-- ⏳ Frontend visualizations
+- ✅ Data simulation (`notebooks/05_test4_suppressed_demand.ipynb`)
+- ✅ Static data export (`frontend/public/data/demand-report.json`)
+- ✅ Frontend visualizations (`frontend/src/SuppressedDemandAudit.js`)
