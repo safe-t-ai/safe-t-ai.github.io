@@ -31,7 +31,7 @@ export class VolumeEstimationAudit {
         renderInterpretation('interpretation', report.interpretation, 'Key Findings', {
             type: 'simulated',
             label: 'Simulated',
-            tooltip: 'Counter locations, AI predictions, and all bias parameters are simulated from research literature. Real vendor data requires proprietary API access.'
+            tooltip: 'Counter locations, AI predictions, and all bias parameters are simulated from research literature. Bias parameters (20–30% undercount in low-income/minority areas) from Williams & Behrendt (2025). Real vendor data requires proprietary API access.'
         });
         this.renderMetrics();
         this.renderMap();
@@ -78,7 +78,7 @@ export class VolumeEstimationAudit {
         setChartMeta('map', {
             badge: 'simulated',
             label: 'Simulated',
-            tooltip: 'Simulated counter locations using bias patterns from research literature on AI volume estimation tools. Real vendor counter data requires proprietary API access.',
+            tooltip: 'Simulated counter locations using bias patterns from Williams & Behrendt (2025): 20–30% undercount in low-income/minority areas. Real vendor counter data requires proprietary API access.',
             description: 'AI volume prediction error across Durham census tracts. Darker red indicates higher prediction errors, concentrated in low-income areas.',
         });
         this.map = new DurhamMap('map').initialize();
@@ -151,7 +151,7 @@ export class VolumeEstimationAudit {
         setChartMeta('chart-income', {
             badge: 'simulated',
             label: 'Simulated',
-            tooltip: 'Real Census demographics with simulated volume predictions. Bias model based on demographic accuracy disparities documented in peer-reviewed research on AI volume estimation.',
+            tooltip: 'Real Census demographics with simulated volume predictions. Bias parameters from Williams & Behrendt (2025): 20–30% undercount in low-income/minority areas documented for Strava Metro and StreetLight Data.',
             description: 'Prediction accuracy across income quintiles (Q1=poorest, Q5=richest). Shows mean absolute error in predicted vs actual pedestrian/cyclist counts.',
         });
         const { by_income } = this.data.report;
@@ -184,7 +184,7 @@ export class VolumeEstimationAudit {
         setChartMeta('chart-race', {
             badge: 'simulated',
             label: 'Simulated',
-            tooltip: 'Racial composition from US Census ACS. Volume predictions simulated with demographic-correlated bias patterns from research literature.',
+            tooltip: 'Racial composition from US Census ACS. Volume predictions simulated with bias patterns from Williams & Behrendt (2025): documented undercount in minority areas for crowdsourced mobility data.',
             description: 'Prediction errors grouped by census tract racial composition. Areas with higher minority percentages show systematically worse accuracy.',
         });
         const { by_race } = this.data.report;
@@ -247,7 +247,7 @@ export class VolumeEstimationAudit {
         setChartMeta('chart-histogram', {
             badge: 'simulated',
             label: 'Simulated',
-            tooltip: 'Simulated prediction errors across all counter locations. Error model calibrated to demographic accuracy gaps documented in research literature.',
+            tooltip: 'Simulated prediction errors across all counter locations. Error model calibrated to the 20–30% undercount in low-income/minority areas documented in Williams & Behrendt (2025).',
             description: 'Each dot is one counter location. Dots left of zero indicate underprediction by the AI model.',
         });
         const { scatter_data } = this.data.report;
