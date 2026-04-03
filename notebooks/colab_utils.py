@@ -16,19 +16,11 @@ def _browser_github_auth() -> str:
     """Authenticate via the safe-t-ai GitHub OAuth flow.
 
     Displays a 'Sign in with GitHub' button in the cell output. When clicked,
-    runs the same connectGitHub flow used by the team page and returns the
-    token to Python via a Colab kernel callback.
+    runs the same connectGitHub flow used by the team page. Uses eval_js to
+    suspend Python cleanly until the Promise resolves with the token.
     """
-    import time
     from IPython.display import display, HTML
     from google.colab import output
-
-    _token: list[str] = []
-
-    def _receive(token: str) -> None:
-        _token.append(token)
-
-    output.register_callback("_safet_receive_token", _receive)
 
     display(HTML("""
     <style>
@@ -65,39 +57,38 @@ def _browser_github_auth() -> str:
       Sign in with GitHub
     </button>
     <div id="safet-auth-status"></div>
-    <script type="module">
-      import { connectGitHub } from 'https://neevs.io/auth/lib.js';
+    """))
+
+    # eval_js suspends Python and waits for the Promise to resolve —
+    # no polling loop needed, and the kernel stays idle for the callback.
+    token = output.eval_js("""
+    new Promise(async (resolve, reject) => {
+      const { connectGitHub } = await import('https://neevs.io/auth/lib.js');
       const btn = document.getElementById('safet-auth-btn');
       const status = document.getElementById('safet-auth-status');
       btn.addEventListener('click', async () => {
         btn.disabled = true;
-        btn.querySelector('span') && (btn.querySelector('span').textContent = 'Authenticating…');
-        status.textContent = 'Waiting for GitHub authorization…';
+        status.textContent = 'Waiting for GitHub authorization\u2026';
         try {
           const { token } = await connectGitHub('repo', 'safe-t-ai');
           btn.style.background = '#2da44e';
-          btn.innerHTML = '✓ Authorized';
+          btn.innerHTML = '\u2713 Authorized';
           status.textContent = '';
-          google.colab.kernel.invokeFunction('_safet_receive_token', [token], {});
+          resolve(token);
         } catch (e) {
           btn.disabled = false;
           btn.style.background = '';
-          status.textContent = 'Authorization failed — try again.';
-          console.error(e);
+          status.textContent = 'Authorization failed \u2014 try again.';
+          reject(e);
         }
       });
-    </script>
-    """))
+    })
+    """, timeout_sec=300)
 
-    print("Click 'Sign in with GitHub' above to authenticate.")
-    deadline = time.time() + 120
-    while not _token and time.time() < deadline:
-        time.sleep(0.5)
-
-    if not _token:
+    if not token:
         raise RuntimeError("GitHub authentication timed out — run the cell again.")
 
-    return _token[0]
+    return token
 
 
 def _resolve_github_token() -> str:
