@@ -255,7 +255,11 @@
       "pct_minority": 55.7
     }
   ],
-  "interpretation": [],
+  "interpretation": [
+    "Simulated AI undercounts pedestrians in Q1 (lowest-income) tracts by 43% on average \u2014 a 51 percentage point gap vs the highest-income quintile",
+    "The same pattern holds by race: high-minority tracts show 35% undercounting vs 15% overcounting in low-minority areas",
+    "This 51pp income gap and 50pp race gap represent the audit methodology's input parameters \u2014 calibrated to ranges documented in research on crowdsourced mobility data bias"
+  ],
   "_provenance": {
     "data_type": "mixed",
     "real": [

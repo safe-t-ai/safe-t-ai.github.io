@@ -221,23 +221,17 @@ class VolumeEstimationAuditor:
         income_bias = report['by_income']['equity_gap']
         race_bias = report['by_race']['equity_gap']
 
-        interpretation = []
-
-        if income_bias and income_bias['gap_pct'] > 20:
-            interpretation.append(
-                f"⚠️ Significant income bias detected: "
-                f"{income_bias['worst_group']} areas undercounted by "
-                f"{abs(income_bias['worst_group_mean']):.1f}% on average, "
-                f"while {income_bias['best_group']} areas overcounted by "
-                f"{income_bias['best_group_mean']:.1f}%"
-            )
-
-        if race_bias and race_bias['gap_pct'] > 15:
-            interpretation.append(
-                f"⚠️ Significant racial bias detected: "
-                f"{race_bias['worst_group']} areas have "
-                f"{abs(race_bias['gap_pct']):.1f}% worse accuracy"
-            )
+        interpretation = [
+            f"Simulated AI undercounts pedestrians in Q{income_bias['worst_group']} (lowest-income) tracts by "
+            f"{abs(income_bias['worst_group_mean']):.0f}% on average — "
+            f"a {abs(income_bias['gap']):.0f} percentage point gap vs the highest-income quintile",
+            f"The same pattern holds by race: high-minority tracts show "
+            f"{abs(race_bias['worst_group_mean']):.0f}% undercounting vs "
+            f"{race_bias['best_group_mean']:.0f}% overcounting in low-minority areas",
+            f"This {abs(income_bias['gap']):.0f}pp income gap and {abs(race_bias['gap']):.0f}pp race gap "
+            f"represent the audit methodology's input parameters — calibrated to ranges documented in "
+            f"research on crowdsourced mobility data bias",
+        ]
 
         report['interpretation'] = interpretation
 

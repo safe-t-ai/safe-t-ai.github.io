@@ -65,9 +65,9 @@
     "total_records": 883
   },
   "findings": [
-    "AI correctly identifies 29% of high-crash tracts in Q1 vs 67% in Q5 \u2014 a 38 percentage point recall gap",
+    "Only 29% of Q1 high-risk tracts are detectable from the crash data vs 67% in Q5 \u2014 a 38pp structural detection gap",
     "Ridge regression trained on real 2019-2023 non-motorist crash data with demographic features",
-    "Model shows systematic underperformance in poorest quintile when predicting 2024 crashes",
-    "AI-guided safety investments systematically underallocate resources to underserved communities"
+    "The crash data shows systematic underdetection in the poorest quintile \u2014 a property of the training data's structure, not this specific model",
+    "This 38pp gap means any AI tool trained on Durham's crash data inherits a structural disadvantage in Q1 before the vendor makes a single design choice"
   ]
 }
