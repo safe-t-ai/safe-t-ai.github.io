@@ -26,7 +26,7 @@ SAFE-T provides four audit tests — using Census demographics, NCDOT crash reco
 Durham census demographics (ACS) + NCDOT crash records + OpenStreetMap infrastructure
   → four equity audits:
       1. Volume Estimation   — do AI tools undercount pedestrians/cyclists in low-income areas?
-      2. Crash Prediction    — does AI model error vary systematically by income quintile?
+      2. Crash Data Audit    — does crash data structurally hide risk in low-income tracts before AI even runs?
       3. Infrastructure      — does AI-driven budget allocation account for differential need across income groups?
       4. Suppressed Demand   — does AI miss latent demand masked by poor infrastructure?
   → static JSON published to GitHub Pages → interactive dashboard
