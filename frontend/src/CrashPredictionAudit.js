@@ -28,7 +28,7 @@ export class CrashPredictionAudit {
         renderInterpretation('test2-interpretation', report.findings, 'Key Findings', {
             type: 'real',
             label: 'Real Data',
-            tooltip: 'NCDOT non-motorist crash records 2019–2024 (883 records). Ridge regression trained on 2019–2023, evaluated on 2024.'
+            tooltip: 'NCDOT non-motorist crash records 2019–2024 (883 records). A Ridge regression is used as a probe — the finding is about structural patterns in the data, not this specific model.'
         });
         this.renderBaselineContext();
         this.renderMetrics();
@@ -112,7 +112,7 @@ export class CrashPredictionAudit {
             badge: 'real',
             label: 'Real Data',
             tooltip: 'NCDOT non-motorist crash locations (pedestrian/bicycle), geocoded to census tracts via spatial join.',
-            description: 'Actual vs predicted crash counts by census tract. Toggle between views to compare.',
+            description: 'Actual crash distribution vs what a model trained on this data predicts. Where they diverge most is where the data\'s structural patterns are weakest — typically Q1 tracts.',
         });
         this.map = new DurhamMap('map-crashes').initialize();
         this.updateCrashLayer();
@@ -218,7 +218,7 @@ export class CrashPredictionAudit {
             badge: 'real',
             label: 'Real Data',
             tooltip: 'Ridge regression trained on real NCDOT non-motorist crash data (883 records, 2019–2024; training on 2019–2023, evaluated on 2024). Census demographics as features.',
-            description: 'Binary classification (above/below within-quintile median) evaluated per income group. Q3/Q4 show recall = 1.0 but precision of 0.60/0.36 — the model over-predicts danger in mid-income areas while missing 71% of dangerous tracts in Q1.',
+            description: 'Classification metrics when a model is trained on real Durham crash data. The Q1/Q5 recall gap is a property of the data\'s structure — Q3/Q4 recall = 1.0 with low precision shows the data over-signals danger in mid-income areas while under-signaling it in Q1.',
         });
         const { by_quintile } = this.data.confusionMatrices;
 
@@ -298,7 +298,7 @@ export class CrashPredictionAudit {
             badge: 'real',
             label: 'Real Data',
             tooltip: 'Non-motorist crash trends from NCDOT ArcGIS Feature Service, aggregated by census tract.',
-            description: 'Actual vs predicted crashes over time. Shows persistent over/underprediction patterns by income level.',
+            description: 'Actual crash counts vs what a model trained on this data predicts, by year. The persistent gap in Q1 reflects the data\'s structural under-representation of danger in low-income tracts.',
         });
         const { years, by_quintile } = this.data.timeSeries;
 
@@ -362,7 +362,7 @@ export class CrashPredictionAudit {
             badge: 'real',
             label: 'Real Data',
             tooltip: 'Mean absolute error of Ridge regression predictions on real NCDOT non-motorist crash data, grouped by neighborhood income quintile.',
-            description: 'Relative prediction error by income level. Compares mean absolute error as a percentage of actual crash count, per income quintile.',
+            description: 'Prediction error by income quintile. The gap is evidence of structural patterns in the training data — Q1 crash patterns don\'t produce strong enough signal for any model to reliably identify high-risk tracts.',
         });
         const { error_by_quintile } = this.data.report;
 

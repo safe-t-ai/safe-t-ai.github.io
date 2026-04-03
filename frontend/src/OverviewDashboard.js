@@ -251,14 +251,16 @@ export class OverviewDashboard {
                 value: `${Math.abs(volumeReport.by_income.equity_gap.gap).toFixed(1)}pp`,
                 finding: 'AI undercounts pedestrians in low-income areas — the data gap that starts the chain',
                 connector: 'if trained on undercounted data',
+                badge: 'simulated', badgeLabel: 'Simulated',
             },
             {
                 test: 'test2',
                 num: 2,
-                label: 'Crash Prediction',
+                label: 'Crash Data',
                 value: `${q1Recall.toFixed(0)}% → ${q5Recall.toFixed(0)}%`,
-                finding: 'Crash models trained on real Durham data miss danger in poor areas far more than wealthy areas',
-                connector: 'safety budget follows the model',
+                finding: 'The crash data itself has structural patterns that make Q1 danger harder to detect — 38pp worse recall in the poorest tracts',
+                connector: 'predictions trained on this data shape safety budgets',
+                badge: 'real', badgeLabel: 'Real data',
             },
             {
                 test: 'test3',
@@ -267,6 +269,7 @@ export class OverviewDashboard {
                 value: `${needRatio}×`,
                 finding: 'Q1 has far more per-capita need; AI allocates budgets nearly equally',
                 connector: 'without infrastructure, people stay home',
+                badge: 'modeled', badgeLabel: 'Modeled',
             },
             {
                 test: 'test4',
@@ -275,6 +278,7 @@ export class OverviewDashboard {
                 value: `${demandReport.summary.suppression_rate.toFixed(0)}%`,
                 finding: 'No trips → no signal → "no demand" — the false reading that closes the loop',
                 connector: null,
+                badge: 'modeled', badgeLabel: 'Modeled',
             },
         ];
 
@@ -291,6 +295,7 @@ export class OverviewDashboard {
                             <div class="cascade-step-body">
                                 <div class="cascade-step-top">
                                     <span class="cascade-step-label">${s.label}</span>
+                                    <span class="cascade-step-badge data-source-badge ${s.badge}">${s.badgeLabel}</span>
                                 </div>
                                 <div class="cascade-step-value">${s.value}</div>
                                 <div class="cascade-step-finding">${s.finding}</div>
