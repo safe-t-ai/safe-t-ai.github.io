@@ -16,7 +16,7 @@ AI-powered transportation tools increasingly drive safety budgets, crash predict
 
 In Durham, NC, Black residents are 32.1% of the population but ~47% of non-motorist crash victims (NCDOT, 2019–2024). On real NCDOT crash data, a standard prediction model flags 67% of high-risk tracts in the wealthiest income quintile but only 29% in the poorest — a 38-point recall gap that directs safety investment away from the areas that need it most.
 
-Strava Metro and StreetLight Data, the tools cities use to measure pedestrian and cyclist volumes, undercount by 20–30% in low-income and minority areas (Williams & Behrendt, 2025). AI trained on undercounted inputs inherits and amplifies that gap.
+Strava Metro and StreetLight Data, the tools cities use to measure pedestrian and cyclist volumes, are built on crowdsourced and mobile-device data that skews toward higher-income, majority-white users — Roy et al. (2019) document this demographic skew in Strava data, and Williams & Behrendt (2025) discuss the resulting equity concerns for transport planning. AI trained on that skewed input inherits and can amplify the gap; SAFE-T models this with illustrative bias parameters (not empirically measured magnitudes) informed by that direction.
 
 SAFE-T provides four audit tests — using Census demographics, NCDOT crash records, and OpenStreetMap infrastructure — that measure how income and race correlate with AI accuracy, resource allocation, and demand visibility. The framework runs on public data any city already has.
 

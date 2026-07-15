@@ -1597,7 +1597,7 @@
                             <h3>Methodology Basis</h3>
                             <p>Infrastructure gaps are derived from real OpenStreetMap feature density per census tract (sidewalk coverage, crosswalk count, bike lane km, signal density — normalized per 1,000 residents). Danger scores weight these gaps against census demographics to estimate crash risk.</p>
                             <p>The AI allocation model and need-based allocation model are parameterized simulations — not evaluations of a specific vendor product. The AI model applies a 0.6 income bias weight (calibrated to documented patterns in AI transportation tools) alongside a 0.4 danger weight, simulating how volume-prediction bias propagates into budget decisions. The need-based model allocates purely by danger score.</p>
-                            <p class="methodology-note-refs">Basis: real OSM infrastructure data + Census ACS demographics; simulated AI allocation bias (strength=0.6) calibrated to Strava Metro / StreetLight Data undercounting research.</p>
+                            <p class="methodology-note-refs">Basis: real OSM infrastructure data + Census ACS demographics; simulated AI allocation bias (strength=0.6) — an illustrative parameter informed by the demographic skew Roy et al. (2019) document in Strava data, not a measured value for any specific vendor tool.</p>
                         </div>
                     </div>
                 </div>

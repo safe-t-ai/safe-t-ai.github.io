@@ -36,7 +36,7 @@ Real pedestrian/cyclist volume data from GPS traces.
 - **URL:** https://metro.strava.com/
 - **Auth:** Institutional license required
 - **Would provide:** Observed active transportation volumes per road segment
-- **Current substitute:** Simulated with demographic-correlated bias patterns matching Strava's documented 20-30% undercounting in low-income/minority areas
+- **Current substitute:** Simulated with demographic-correlated bias patterns; direction informed by Roy et al. (2019) on demographic skew in Strava data, magnitude is an illustrative assumption, not a measured figure
 
 ### StreetLight Data
 
@@ -45,7 +45,7 @@ Multi-modal traffic volume estimates from mobile device data.
 - **URL:** https://www.streetlightdata.com/
 - **Auth:** Institutional license required
 - **Would provide:** Pedestrian, cyclist, and vehicle volume estimates by location
-- **Current substitute:** Same simulation as Strava Metro (both exhibit similar demographic bias patterns)
+- **Current substitute:** Same simulation as Strava Metro (assumed to exhibit similar demographic bias patterns — not independently documented for StreetLight Data specifically)
 
 ### NCDOT TEAAS
 

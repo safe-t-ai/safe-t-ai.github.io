@@ -102,7 +102,7 @@ Per-capita values are pipeline-dependent (vary with census vintage and tract pop
 Simulation calibrated against research literature:
 
 1. **Income-safety correlation**: Vision Zero studies show 2-5x higher pedestrian fatality rates in low-income areas
-2. **AI bias patterns**: Matches Strava Metro documentation showing 20-30% undercounting in low-income/minority areas
+2. **AI bias patterns**: Bias direction (not magnitude) informed by Roy et al. (2019) on demographic skew in Strava Metro data; the 0.6 bias-strength parameter is an illustrative assumption, not a measured value
 3. **Infrastructure costs**: Based on Durham's actual Vision Zero Action Plan budget estimates
 
 ## Limitations
