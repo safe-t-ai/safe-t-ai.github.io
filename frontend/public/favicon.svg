@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" rx="28" fill="#0e7490"/>
+  <!-- A plan of four city tracts cut by two streets and a diagonal avenue, one tract lit: the neighborhood the data has to see. -->
+  <defs><clipPath id="plate"><rect x="22" y="22" width="84" height="84" rx="6"/></clipPath></defs>
+  <g clip-path="url(#plate)">
+    <rect x="22" y="22" width="84" height="84" fill="#f2f2f7"/>
+    <polygon points="106,62 106,106 62,106" fill="#c2410c"/>
+    <path d="M55.5 22V106M22 53.5H106M112 51L53 110" stroke="#0f172a" stroke-width="7"/>
+  </g>
+</svg>

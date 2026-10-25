@@ -1,100 +1,38 @@
-# Data Sources
+# Data sources
 
-## Currently Used
+`notebooks/01_fetch_data.ipynb` fetches all five. Only the Census API needs a key.
 
-### US Census Bureau ACS (API)
+## US Census Bureau ACS
 
-Demographics and tract boundaries for Durham County.
+- **Demographics:** `https://api.census.gov/data/{CENSUS_VINTAGE}/acs/acs5`, 5-year estimates (vintage in `backend/config.py`). Population, median household income, race and ethnicity, household vehicle availability.
+- **Tract boundaries:** TIGERweb ArcGIS REST service (`TIGER_VINTAGE`, `TIGER_TRACTS_LAYER` in `backend/config.py`).
+- **Key:** free from https://api.census.gov/data/key_signup.html, stored as the `CENSUS_API_KEY` Colab secret.
 
-- **Demographics endpoint:** `https://api.census.gov/data/2022/acs/acs5`
-- **Geometry endpoint:** Census TIGER/Line via ArcGIS REST
-- **Auth:** Free API key required (`CENSUS_API_KEY` env var, stored as GitHub secret) from https://api.census.gov/data/key_signup.html
-- **Variables:** Total population, median household income, race/ethnicity
-- **Notebook:** `notebooks/01_fetch_data.ipynb`
+## NCDOT Non-Motorist Crashes
 
-### NCDOT Non-Motorist Crash Map (ArcGIS Feature Service)
+Geocoded police-reported crashes involving pedestrians, cyclists and other non-motorists (scooter, skateboard and wheelchair users), statewide, 2007–2024. Tests 2 and 3 use Durham County, 2019–2024.
 
-Geocoded police-reported crashes involving pedestrians, bicyclists, and other non-motorists across North Carolina, January 2007 through December 2024.
+- **Feature service:** `NCDOT_NONMOTORIST_SERVICE` in `backend/config.py`
+- **Auth:** none
 
-- **Feature service:** `https://services.arcgis.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT_NonMotoristCrashes/FeatureServer/0`
-- **Shapefile download:** `https://ncdot.maps.arcgis.com/home/item.html?id=d00e97d23146472cb5da78fc3dbc0274`
-- **Web map:** `https://www.arcgis.com/home/item.html?id=b4fcdc266d054a1ca075b60715f88aef`
-- **Auth:** None (public)
-- **Durham records:** ~2,665 crashes
-- **Max records per query:** 2,000 (paginate with `resultOffset`)
-- **Key fields:** `CrashID`, `CrashDate`, `CrashYear`, `Latitude`, `Longitude`, `CrashSevr`, `NM_Type`, `NM_Inj`, `NM_Age`, `NM_Sex`, `NM_Race`, `CrashType`, `County`, `SpeedLimit`, `LightCond`, `Weather`, `RdClass` (65 fields total)
-- **Provides:** Individual crash point locations with severity, demographics, road/environmental conditions
-- **Limitation:** Non-motorist crashes only (pedestrian, bicycle, etc.), not all crash types. Covers the most safety-critical subset for active transportation auditing.
-- **Notebook:** `notebooks/01_fetch_data.ipynb`
+## OpenStreetMap
 
-## Needed for Production
+Crossings, cycleways and shared paths, traffic signals, traffic calming and footways within `DURHAM_BOUNDS`, counted per tract and per 1,000 residents and combined into an infrastructure score. Used by Test 3 (project type for each tract's largest gap) and Test 4 (infrastructure scores).
 
-### Strava Metro
+- **Endpoint:** Overpass API through osmnx (`OVERPASS_API` in `backend/config.py`, with the overpass.kumi.systems mirror as fallback)
+- **Auth:** none
+- **License:** ODbL
 
-Real pedestrian/cyclist volume data from GPS traces.
+## NCDOT Transportation Disadvantage Index
 
-- **URL:** https://metro.strava.com/
-- **Auth:** Institutional license required
-- **Would provide:** Observed active transportation volumes per road segment
-- **Current substitute:** Simulated with demographic-correlated bias patterns; direction informed by Roy et al. (2019) on demographic skew in Strava data, magnitude is an illustrative assumption, not a measured figure
+Block group TDI scores and disability share, averaged to tracts. Shown on the overview map; no test uses them.
 
-### StreetLight Data
+- **Feature service:** `NCDOT_TDI_SERVICE` in `backend/config.py`
+- **Auth:** none
 
-Multi-modal traffic volume estimates from mobile device data.
+## GoDurham GTFS
 
-- **URL:** https://www.streetlightdata.com/
-- **Auth:** Institutional license required
-- **Would provide:** Pedestrian, cyclist, and vehicle volume estimates by location
-- **Current substitute:** Same simulation as Strava Metro (assumed to exhibit similar demographic bias patterns — not independently documented for StreetLight Data specifically)
+Bus stop locations, counted per tract. Boardings are not in the public feed. Shown on the overview map; no test uses them.
 
-### NCDOT TEAAS
-
-Complete NC crash database with detailed records.
-
-- **Access:** Free for government, municipal, and research entities, but requires completing a two-part training program (online modules + instructor-led class) before account provisioning
-- **Download:** https://dmvcrashweb.dot.state.nc.us/teaas/
-- **Info:** https://connect.ncdot.gov/resources/safety/Pages/TEAAS-Crash-Data-System.aspx
-- **Would provide:** Individual crash records with road-level location data (all reportable NC crashes since 1990)
-- **Current substitute:** Non-motorist subset available via NCDOT ArcGIS Feature Service (see above). TEAAS would add all crash types.
-
-### OpenStreetMap (Infrastructure Density)
-
-Pedestrian and cyclist infrastructure features (crossings, cycleways, traffic signals, speed calming, footways) within Durham County bounds.
-
-- **Endpoint:** Overpass API (`https://overpass-api.de/api/interpreter`)
-- **Auth:** None (public)
-- **License:** ODbL (open)
-- **Provides:** Per-tract infrastructure feature counts and densities, composite infrastructure quality score
-- **Used by:** Test 3 (Infrastructure Audit) project type selection, Test 4 (Suppressed Demand) infrastructure quality scores
-- **Notebook:** `notebooks/01_fetch_data.ipynb`
-
-## Potential Additions
-
-### Durham Vision Zero Dashboard (Crash Validation)
-
-Interactive ArcGIS dashboard showing fatal and serious injury crashes in Durham from 2016 to present, maintained by the city.
-
-- **Dashboard:** https://www.arcgis.com/apps/dashboards/fd720475a8de48ef82f801dc8d6d6677
-- **Program page:** https://www.durhamnc.gov/2995/Vision-Zero
-- **Auth:** None (public, view-only)
-- **Provides:** Crash locations along the High Injury Network, temporal trends, severity breakdowns. Verified stats: ~23 fatalities/year, a pedestrian crash every 3 days on average.
-- **Limitation:** View-only ArcGIS dashboard with no bulk data export. Useful for manual validation of Test 2 crash patterns, not for pipeline integration.
-
-### GoDurham GTFS (Transit Routes)
-
-Transit route and schedule data for Durham's bus system. The Durham Open Data Portal does not include transit data; this is the actual source.
-
-- **URL:** https://godurhamtransit.org/developer-resources
-- **Auth:** None (public)
-- **Formats:** GTFS and GTFS-RT
-- **Useful for:** Enriching equity analysis by mapping transit access gaps against income and race demographics. Areas with poor transit access may correlate with suppressed active transportation demand.
-
-### DVRPC Bike/Ped Count Program (Methodology Reference)
-
-Philadelphia-region bike/ped counting program with fully open data and a documented Eco-Counter integration pipeline.
-
-- **Data portal:** https://www.dvrpc.org/traffic/bikepedtravelmonitoring/
-- **Open data:** https://dvrpc-dvrpcgis.opendata.arcgis.com/
-- **GitHub pipeline:** https://github.com/dvrpc/eco-counter-import
-- **Formats:** CSV, Shapefile, GeoJSON
-- **Useful for:** Not Durham-specific, but serves as a reference for how to structure real count data integration if Durham publishes Eco-Counter data in the future. Their pipeline architecture could inform Test 1 (Volume Estimation) ground truth methodology.
+- **Feed:** `GTFS_GODURHAM_URL` in `backend/config.py` (developer page: https://godurhamtransit.org/developer-resources)
+- **Auth:** none

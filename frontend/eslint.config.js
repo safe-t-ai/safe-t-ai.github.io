@@ -14,6 +14,11 @@ export default [
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         CustomEvent: 'readonly',
+        location: 'readonly',
+        history: 'readonly',
+        localStorage: 'readonly',
+        performance: 'readonly',
+        requestAnimationFrame: 'readonly',
         L: 'readonly',
         echarts: 'readonly',
       },
@@ -26,6 +31,6 @@ export default [
     },
   },
   {
-    ignores: ['dist/**', 'node_modules/**'],
+    ignores: ['dist/**', 'node_modules/**', '.vite/**'],
   },
 ];

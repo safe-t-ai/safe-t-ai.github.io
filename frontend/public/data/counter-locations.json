@@ -7,7 +7,7 @@
     "daily_volume": 53,
     "median_income": 78237,
     "pct_minority": 42.9,
-    "type": "real"
+    "type": "simulated"
   },
   {
     "counter_id": "CTR002",
@@ -17,7 +17,7 @@
     "daily_volume": 38,
     "median_income": 85368,
     "pct_minority": 34.7,
-    "type": "real"
+    "type": "simulated"
   },
   {
     "counter_id": "CTR003",
@@ -27,7 +27,7 @@
     "daily_volume": 22,
     "median_income": 70326,
     "pct_minority": 71.2,
-    "type": "real"
+    "type": "simulated"
   },
   {
     "counter_id": "CTR004",

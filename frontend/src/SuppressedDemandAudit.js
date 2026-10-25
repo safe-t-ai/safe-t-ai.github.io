@@ -25,10 +25,10 @@ export class SuppressedDemandAudit {
 
         this.data = { report, funnel, scorecard, demandGeoData };
 
-        renderInterpretation('test4-interpretation', report.findings, 'Key Findings', {
+        renderInterpretation('test4-interpretation', report.findings, 'Findings', {
             type: 'modeled',
-            label: 'Modeled',
-            tooltip: 'Demand suppression modeled from real OpenStreetMap infrastructure conditions. AI detection evaluated against modeled suppression scores.'
+            label: 'Partly simulated',
+            tooltip: 'Infrastructure scores are real (OpenStreetMap). Potential demand, suppression and both detectors are modeled from them.'
         });
         this.renderMetrics();
         this.renderMap();
@@ -42,28 +42,28 @@ export class SuppressedDemandAudit {
 
         renderMetrics('test4-metrics', [
             {
-                title: 'Daily Trips Suppressed',
-                value: summary.total_suppressed_demand.toLocaleString() + ' trips/day',
-                subtext: `${summary.suppression_rate.toFixed(1)}% of potential demand prevented by missing infrastructure`,
-                sentiment: 'value-danger'
+                title: 'Suppressed trips a day (modeled)',
+                value: `≈${(Math.round(summary.total_suppressed_demand / 1000) * 1000).toLocaleString()}`,
+                subtext: `${summary.suppression_rate.toFixed(0)}% of modeled potential demand`,
+                sentiment: ''
             },
             {
-                title: 'High-Suppression Areas',
+                title: 'High-suppression tracts',
                 value: summary.high_suppression_tracts.toString(),
                 subtext: `Tracts with >${threshold}% suppression`,
-                sentiment: 'value-warning'
+                sentiment: ''
             },
             {
-                title: 'Naive AI Correlation',
+                title: 'Naive detector',
                 value: summary.naive_ai_correlation.toFixed(2),
-                subtext: 'With potential demand (Pearson r)',
-                sentiment: 'value-danger'
+                subtext: 'Correlation with potential demand (r)',
+                sentiment: ''
             },
             {
-                title: 'Sophisticated AI Correlation',
+                title: 'Adjusted detector',
                 value: summary.sophisticated_ai_correlation.toFixed(2),
-                subtext: 'With potential demand (Pearson r)',
-                sentiment: 'value-warning'
+                subtext: 'Correlation with potential demand (r)',
+                sentiment: ''
             }
         ]);
     }
@@ -71,9 +71,9 @@ export class SuppressedDemandAudit {
     renderMap() {
         setChartMeta('map-demand', {
             badge: 'modeled',
-            label: 'Modeled',
+            label: 'Partly simulated',
             tooltip: 'Infrastructure quality scores derived from OpenStreetMap per-capita feature density per census tract. Demand suppression modeled from these real infrastructure conditions.',
-            description: 'Suppressed, potential, and actual cycling/walking demand across Durham. High suppression (red) indicates latent demand AI tools miss — the trips that "no one walks there" arguments dismiss.',
+            description: 'Modeled trips a day by tract. Suppressed is potential minus actual: the trips "no one walks there" arguments leave out.',
         });
         this.map = new DurhamMap('map-demand').initialize();
 
@@ -102,7 +102,7 @@ export class SuppressedDemandAudit {
             .filter(v => v != null && v > 0)
             .sort((a, b) => a - b);
         const q = (p) => Math.round(vals[Math.min(Math.floor(vals.length * p), vals.length - 1)]);
-        const breaks = [q(0.125), q(0.25), q(0.375), q(0.5), q(0.625), q(0.75), q(0.875)];
+        const breaks = [q(1 / 7), q(2 / 7), q(3 / 7), q(4 / 7), q(5 / 7), q(6 / 7), Infinity];
 
         if (this.map.choroplethLayer) {
             this.map.map.removeLayer(this.map.choroplethLayer);
@@ -127,12 +127,10 @@ export class SuppressedDemandAudit {
         const fmt = v => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v);
         this.map.addLegend({
             title: `${title} (trips/day)`,
-            colorScale: [
-                { color: colors[0], label: `<${fmt(breaks[1])}` },
-                { color: colors[2], label: `${fmt(breaks[1])}–${fmt(breaks[3])}` },
-                { color: colors[4], label: `${fmt(breaks[3])}–${fmt(breaks[5])}` },
-                { color: colors[6], label: `>${fmt(breaks[5])}` }
-            ]
+            colorScale: colors.map((color, i) => ({
+                color,
+                label: i === 0 ? `≤ ${fmt(breaks[0])}` : i === colors.length - 1 ? `> ${fmt(breaks[i - 1])}` : `${fmt(breaks[i - 1])}–${fmt(breaks[i])}`,
+            }))
         });
     }
 
@@ -144,9 +142,9 @@ export class SuppressedDemandAudit {
     renderSuppressionByQuintile() {
         setChartMeta('chart-funnel', {
             badge: 'modeled',
-            label: 'Modeled',
+            label: 'Partly simulated',
             tooltip: 'Suppression rate per income quintile. Infrastructure scores derived from OpenStreetMap feature density; suppression modeled from infrastructure quality.',
-            description: 'Demand suppression by income quintile. Q1 (poorest) areas have the highest suppression — AI tools see only a fraction of latent demand there.',
+            description: 'Share of modeled potential trips suppressed, by income fifth.',
         });
         const byQuintile = this.data.report.by_quintile;
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
@@ -188,11 +186,11 @@ export class SuppressedDemandAudit {
     renderDetectionScorecard() {
         setChartMeta('chart-scorecard', {
             badge: 'modeled',
-            label: 'Modeled',
-            tooltip: 'AI detection accuracy evaluated against infrastructure scores from OpenStreetMap. Three approaches: naive, sophisticated, and human expert baseline.',
-            description: 'Three independent detection dimensions: correlation with latent demand, high-suppression area detection rate, and Q1 bias direction. Shown separately — collapsing them into a single score would obscure where each approach succeeds and fails.',
+            label: 'Partly simulated',
+            tooltip: 'Both detectors are modeled from OpenStreetMap infrastructure scores.',
+            description: 'How well each detector recovers modeled potential demand, on three separate measures.',
         });
-        const { naive_ai, sophisticated_ai, human_expert_baseline } = this.data.scorecard;
+        const { naive_ai, sophisticated_ai } = this.data.scorecard;
 
         function scorecardData(d) {
             const correlation = d.correlation_with_potential * 100;
@@ -202,9 +200,8 @@ export class SuppressedDemandAudit {
         }
 
         const seriesEntries = [
-            { name: 'Naive AI', data: naive_ai, color: '#c2410c' },
-            { name: 'Sophisticated AI', data: sophisticated_ai, color: '#d97706' },
-            { name: 'Human Expert', data: human_expert_baseline, color: COLORS.success },
+            { name: 'Naive', data: naive_ai, color: '#c2410c' },
+            { name: 'Adjusted', data: sophisticated_ai, color: '#0e7490' },
         ];
 
         const option = {
@@ -224,16 +221,11 @@ export class SuppressedDemandAudit {
             },
             xAxis: {
                 type: 'category',
-                data: [
-                    'Correlation\nwith Potential',
-                    'Detection Rate\n(High Suppression)',
-                    'Inverse Bias\n(Q1)',
-                ],
+                data: ['Correlation × 100', 'High-suppression\ntracts found (%)', '100 − Q1\nundercount (%)'],
                 axisLabel: { interval: 0, fontSize: 11 }
             },
             yAxis: {
                 type: 'value',
-                name: 'Score (0-100)',
                 max: 100
             },
             series: seriesEntries.map(s => ({
@@ -241,6 +233,7 @@ export class SuppressedDemandAudit {
                 type: 'bar',
                 data: scorecardData(s.data),
                 itemStyle: { color: s.color, borderRadius: [3, 3, 0, 0] },
+                label: { show: true, position: 'top', fontSize: 11, formatter: (/** @type {any} */ p) => Math.round(p.value) },
                 animationDelay: (idx) => idx * 120
             }))
         };

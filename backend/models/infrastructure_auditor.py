@@ -11,8 +11,8 @@ import pandas as pd
 import geopandas as gpd
 from typing import Dict, List
 from config import (
-    INFRASTRUCTURE_PROJECT_TYPES, INFRASTRUCTURE_DEFAULT_BUDGET,
-    DANGER_SCORE_CONFIG, DEFAULT_RANDOM_SEED, QUINTILE_LABELS,
+    INFRASTRUCTURE_PROJECT_TYPES, INFRASTRUCTURE_DEFAULT_BUDGET, INFRASTRUCTURE_AI_INCOME_WEIGHT,
+    DEFAULT_RANDOM_SEED, QUINTILE_LABELS,
 )
 from utils.demographic_analysis import calculate_gini_coefficient
 
@@ -34,7 +34,7 @@ class InfrastructureRecommendationAuditor:
         """
         if infrastructure_df is None:
             raise ValueError(
-                "infrastructure_df is required. Run fetch_osm_infrastructure.py first."
+                "infrastructure_df is required. Run notebooks/01_fetch_data.ipynb first."
             )
         self.census_gdf = census_gdf.copy()
         self.infrastructure_df = infrastructure_df
@@ -43,53 +43,19 @@ class InfrastructureRecommendationAuditor:
         self.ai_recommendations = None
         self.need_based_recommendations = None
 
-    def simulate_danger_scores(self, seed: int = DEFAULT_RANDOM_SEED) -> pd.DataFrame:
-        """
-        Simulate crash/danger scores by census tract.
+    def load_danger_scores(self, crash_csv_path) -> pd.DataFrame:
+        """Danger score: real NCDOT pedestrian and cyclist crashes per 1,000 residents per year."""
+        from models.crash_predictor import CrashPredictionAuditor
 
-        Pattern: Higher danger in low-income areas (matches real-world data).
-
-        Returns:
-            DataFrame with danger scores by tract
-        """
-        np.random.seed(seed)
-
-        danger_data = []
-        for idx, tract in self.census_gdf.iterrows():
-            tract_id = tract['tract_id']
-            median_income = tract['median_income']
-            population = tract['total_population']
-
-            # Base danger score (crashes per 10k residents per year)
-            base_danger = DANGER_SCORE_CONFIG['base_danger']
-
-            # Income effect: Lower income = higher danger (inverse relationship)
-            # Normalized income: 0 (lowest) to 1 (highest)
-            income_range = self.census_gdf['median_income'].max() - self.census_gdf['median_income'].min()
-            norm_income = (median_income - self.census_gdf['median_income'].min()) / income_range
-            multiplier_range = DANGER_SCORE_CONFIG['income_multiplier_max'] - DANGER_SCORE_CONFIG['income_multiplier_min']
-            income_multiplier = DANGER_SCORE_CONFIG['income_multiplier_min'] + (1.0 - norm_income) * multiplier_range
-
-            # Population effect: Higher population = slightly higher danger
-            pop_multiplier = 1.0 + (population / 10000) * 0.1
-
-            # Random variation (±20%)
-            noise = np.random.uniform(0.8, 1.2)
-
-            danger_score = base_danger * income_multiplier * pop_multiplier * noise
-
-            # Estimate annual crashes
-            annual_crashes = (danger_score * population / 10000)
-
-            danger_data.append({
-                'tract_id': tract_id,
-                'danger_score': round(danger_score, 2),
-                'annual_crashes': round(annual_crashes, 1),
-                'median_income': median_income,
-                'population': population
-            })
-
-        self.danger_scores = pd.DataFrame(danger_data)
+        crash_df = CrashPredictionAuditor(self.census_gdf).load_real_crash_data(crash_csv_path)
+        per_tract = crash_df.groupby('tract_id').agg(
+            annual_crashes=('crash_count', 'mean'),
+            population=('total_population', 'first'),
+            median_income=('median_income', 'first'),
+        ).reset_index()
+        per_tract['danger_score'] = (per_tract['annual_crashes'] / per_tract['population'] * 1_000).round(3)
+        per_tract['annual_crashes'] = per_tract['annual_crashes'].round(1)
+        self.danger_scores = per_tract
         return self.danger_scores
 
     # Map OSM density columns to project types
@@ -111,13 +77,12 @@ class InfrastructureRecommendationAuditor:
         return self.DENSITY_TO_PROJECT[weakest]
 
     def _merge_danger_data(self, seed: int) -> pd.DataFrame:
-        """Merge danger scores with census data, computing scores if needed."""
         if self.danger_scores is None:
-            self.simulate_danger_scores(seed)
+            raise ValueError("Call load_danger_scores() first.")
         danger_subset = self.danger_scores[['tract_id', 'danger_score', 'annual_crashes']]
         return self.census_gdf.merge(danger_subset, on='tract_id')
 
-    def simulate_ai_recommendations(self, bias_strength: float = 0.6, seed: int = DEFAULT_RANDOM_SEED) -> pd.DataFrame:
+    def simulate_ai_recommendations(self, bias_strength: float = INFRASTRUCTURE_AI_INCOME_WEIGHT, seed: int = DEFAULT_RANDOM_SEED) -> pd.DataFrame:
         """
         Simulate biased AI infrastructure recommendations.
 

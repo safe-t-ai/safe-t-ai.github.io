@@ -13,7 +13,7 @@ def load_infrastructure_data() -> pd.DataFrame:
     if not infra_path.exists():
         raise FileNotFoundError(
             f"Infrastructure data not found at {infra_path}. "
-            "Run fetch_osm_infrastructure.py first."
+            "Run notebooks/01_fetch_data.ipynb first."
         )
 
     with open(infra_path) as f:

@@ -138,13 +138,6 @@ interface CounterLocation {
 // Test 2 — Crash Prediction
 // ---------------------------------------------------------------------------
 
-interface CrashQuintileStats {
-    actual_crashes: number;
-    ai_predicted_crashes: number;
-    mae: number;
-    error_pct: number;
-}
-
 interface RacialBaseline {
     black_population_pct: number;
     black_victim_pct: number;
@@ -152,53 +145,47 @@ interface RacialBaseline {
     source: string;
 }
 
+interface CrashDetection {
+    flagged: number;
+    high_risk: number;
+    recall: number;
+    ci_low: number;
+    ci_high: number;
+}
+
 interface CrashReport {
     _provenance: Provenance;
     summary: {
-        total_crashes_all_years: number;
-        crashes_2023_actual: number;
-        crashes_2023_predicted: number;
+        total_crashes: number;
         years_analyzed: number[];
+        backtest_years: number[];
         tracts_analyzed: number;
-        data_source: string;
+        high_risk_quantile: number;
     };
-    error_by_quintile: Record<string, CrashQuintileStats>;
+    rate_per_1k_by_quintile: Record<string, number>;
+    rate_ratio_q1_q5: number;
+    detection_by_quintile: Record<string, CrashDetection>;
+    detection_by_quintile_median_cut: Record<string, CrashDetection>;
+    q1_vs_rest_p_value: number;
     findings: string[];
-    racial_baseline?: RacialBaseline;
-}
-
-interface ConfusionMatrixMetrics {
-    confusion_matrix: number[][];
-    precision: number;
-    recall: number;
-    f1_score: number;
-    accuracy: number;
-    count?: number;
-}
-
-interface ConfusionMatrices {
-    overall: ConfusionMatrixMetrics;
-    by_quintile: Record<string, ConfusionMatrixMetrics>;
+    racial_baseline: RacialBaseline;
 }
 
 interface CrashTimeSeries {
     years: number[];
     by_quintile: Record<string, {
         actual_crashes: number[];
-        ai_predicted_crashes: number[];
+        predicted_crashes: (number | null)[];
     }>;
-    overall: {
-        actual_crashes: number[];
-        ai_predicted_crashes: number[];
-    };
 }
 
 interface CrashGeoProperties {
     tract_id: string;
     actual_crashes: number;
-    ai_predicted_crashes: number;
-    prediction_error: number;
-    prediction_error_pct: number;
+    predicted_crashes: number;
+    high_risk: boolean;
+    flagged: boolean;
+    rate_per_1k: number;
     median_income: number;
     income_quintile: string;
 }
@@ -322,7 +309,6 @@ interface ScorecardMetrics {
 interface DetectionScorecard {
     naive_ai: ScorecardMetrics;
     sophisticated_ai: ScorecardMetrics;
-    human_expert_baseline: ScorecardMetrics;
 }
 
 interface DemandGeoProperties {
@@ -360,7 +346,7 @@ interface MetricCard {
     title: string;
     value: string;
     subtext: string;
-    sentiment: string;
+    sentiment?: string;
 }
 
 interface PopupField {

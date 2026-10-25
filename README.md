@@ -4,85 +4,59 @@
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-blue.svg?style=classic)](LICENSE-CODE)
 [![Python](https://img.shields.io/badge/python-3.9+-blue?logo=python&style=classic)](https://www.python.org/)
 
-> Auditing framework for evaluating equity and fairness in AI-driven transportation safety systems.
+SAFE-T checks whether the data and tools behind street-safety spending can see risk in every neighborhood, using Durham, NC. It runs on Census demographics, North Carolina DOT crash records and OpenStreetMap; another city would use its own state's crash records.
 
-**[Live Demo](https://safe-t-ai.github.io/)**
+**[Live site](https://safe-t-ai.github.io/)**
 
----
+## Tests
 
-## What it does
+Results are reported by census tract income quintile.
 
-AI-powered transportation tools increasingly drive safety budgets, crash predictions, and infrastructure priorities — but the equity properties of these tools go unmeasured before deployment.
+| Tab | Question | Data |
+|-----|----------|------|
+| 1 Foot traffic | Do pedestrian and cyclist volume estimates undercount poorer tracts? | Simulated. The gaps come from assumed bias parameters in `backend/config.py`, whose direction follows Roy et al. (2019) on demographic skew in Strava data. It measures no vendor tool. |
+| 2 Crash history | Does ranking tracts by past crashes, the method behind high-injury networks, miss high-risk tracts in poorer neighborhoods? | Real NCDOT pedestrian and cyclist crashes, 2019–2024. |
+| 3 Budget allocation | Does an allocation tool send safety money where crashes happen? | Danger scores are real (NCDOT crashes per 1,000 residents per year). The allocation tool is simulated (0.6 weight on income, 0.4 on danger, plus a boost that grows with income) and compared with allocation by danger alone. |
+| 4 Suppressed demand | Does a demand model miss trips that missing infrastructure suppresses? | Infrastructure scores from OpenStreetMap. Demand and detection models are simulated |
 
-In Durham, NC, Black residents are 32.1% of the population but ~47% of non-motorist crash victims (NCDOT, 2019–2024). On real NCDOT crash data, a standard prediction model flags 67% of high-risk tracts in the wealthiest income quintile but only 29% in the poorest — a 38-point recall gap that directs safety investment away from the areas that need it most.
+Test 2 is the only measured result. Tests 1, 3 and 4 demonstrate the protocol on simulated tools and say nothing about Durham; they run on a vendor's outputs once a city shares them.
 
-Strava Metro and StreetLight Data, the tools cities use to measure pedestrian and cyclist volumes, are built on crowdsourced and mobile-device data that skews toward higher-income, majority-white users — Roy et al. (2019) document this demographic skew in Strava data, and Williams & Behrendt (2025) discuss the resulting equity concerns for transport planning. AI trained on that skewed input inherits and can amplify the gap; SAFE-T models this with illustrative bias parameters (not empirically measured magnitudes) informed by that direction.
+### Test 2 result
 
-SAFE-T provides four audit tests — using Census demographics, NCDOT crash records, and OpenStreetMap infrastructure — that measure how income and race correlate with AI accuracy, resource allocation, and demand visibility. The framework runs on public data any city already has.
+The poorest fifth of tracts has 3.2 times the pedestrian and cyclist crash rate of the richest (0.83 vs 0.26 crashes per 1,000 residents a year, 2019–2024). Scooter, skateboard and "other" non-motorist records are excluded; wheelchair users count as pedestrians.
 
-## How it works
-
-```
-Durham census demographics (ACS) + NCDOT crash records + OpenStreetMap infrastructure
-  → four equity audits:
-      1. Volume Estimation   — do AI tools undercount pedestrians/cyclists in low-income areas?
-      2. Crash Data Audit    — does crash data structurally hide risk in low-income tracts before AI even runs?
-      3. Infrastructure      — does AI-driven budget allocation account for differential need across income groups?
-      4. Suppressed Demand   — does AI miss latent demand masked by poor infrastructure?
-  → static JSON published to GitHub Pages → interactive dashboard
-```
+For each year 2021–2024, every tract's crashes are predicted as the mean of all earlier years. A tract-year is high-risk when its count is above the citywide 2/3 quantile for that year, and flagged when its prediction is above the same quantile of predictions. Crash history flagged 13 of 18 high-risk tract-years in the poorest fifth and 4 of 7 in the richest. At this cut no difference is detectable between the poorest fifth and the other four fifths (Fisher exact p = 0.77).
 
 ## Notebooks
 
-Run in order. Each notebook publishes its artifacts back to this repo automatically.
+Run in order in Colab. Each notebook commits its outputs back to this repo.
 
-| Notebook | What it does | Runtime | |
-|----------|-------------|---------|---|
-| [`01_fetch_data.ipynb`](notebooks/01_fetch_data.ipynb) | Fetch Census, NCDOT crashes, OSM infrastructure | CPU, ~10 min | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/safe-t-ai/safe-t-ai.github.io/blob/main/notebooks/01_fetch_data.ipynb) |
-| [`02_test1_volume_estimation.ipynb`](notebooks/02_test1_volume_estimation.ipynb) | Volume estimation bias simulation + Test 1 data | CPU, ~5 min | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/safe-t-ai/safe-t-ai.github.io/blob/main/notebooks/02_test1_volume_estimation.ipynb) |
-| [`03_test2_crash_data_audit.ipynb`](notebooks/03_test2_crash_data_audit.ipynb) | Crash data structural audit on real NCDOT data + Test 2 data | CPU, ~5 min | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/safe-t-ai/safe-t-ai.github.io/blob/main/notebooks/03_test2_crash_data_audit.ipynb) |
-| [`04_test3_infrastructure.ipynb`](notebooks/04_test3_infrastructure.ipynb) | Infrastructure allocation simulation + Test 3 data | CPU, ~5 min | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/safe-t-ai/safe-t-ai.github.io/blob/main/notebooks/04_test3_infrastructure.ipynb) |
-| [`05_test4_suppressed_demand.ipynb`](notebooks/05_test4_suppressed_demand.ipynb) | Suppressed demand analysis + Test 4 data + manifest | CPU, ~5 min | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/safe-t-ai/safe-t-ai.github.io/blob/main/notebooks/05_test4_suppressed_demand.ipynb) |
+| Notebook | Produces | |
+|----------|----------|---|
+| [`01_fetch_data.ipynb`](notebooks/01_fetch_data.ipynb) | Census tracts, NCDOT crashes, OSM infrastructure, NCDOT Transportation Disadvantage Index, GoDurham stops, overview map data | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/safe-t-ai/safe-t-ai.github.io/blob/main/notebooks/01_fetch_data.ipynb) |
+| [`02_test1_volume_estimation.ipynb`](notebooks/02_test1_volume_estimation.ipynb) | Test 1 data | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/safe-t-ai/safe-t-ai.github.io/blob/main/notebooks/02_test1_volume_estimation.ipynb) |
+| [`03_test2_crash_prediction.ipynb`](notebooks/03_test2_crash_prediction.ipynb) | Test 2 data | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/safe-t-ai/safe-t-ai.github.io/blob/main/notebooks/03_test2_crash_prediction.ipynb) |
+| [`04_test3_infrastructure.ipynb`](notebooks/04_test3_infrastructure.ipynb) | Test 3 data | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/safe-t-ai/safe-t-ai.github.io/blob/main/notebooks/04_test3_infrastructure.ipynb) |
+| [`05_test4_suppressed_demand.ipynb`](notebooks/05_test4_suppressed_demand.ipynb) | Test 4 data, `data-manifest.json` and `metadata.json` | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/safe-t-ai/safe-t-ai.github.io/blob/main/notebooks/05_test4_suppressed_demand.ipynb) |
 
-## Repo structure
+To publish without signing in each run, add a `GITHUB_TOKEN_SAFET` Colab secret: a [fine-grained personal access token](https://github.com/settings/tokens?type=beta) with resource owner `safe-t-ai` and **Contents: Read and Write**. Add it under the key icon → **Secrets** in Colab and enable notebook access. Without it, the last cell shows a **Sign in & Publish** button that authorizes through GitHub. Notebook 01 also needs `CENSUS_API_KEY` ([free key](https://api.census.gov/data/key_signup.html)).
 
-```
-safe-t-ai.github.io/
-├── backend/
-│   ├── models/        # Analysis models (4 tests)
-│   ├── tests/         # Pytest suite
-│   ├── utils/         # Demographic & geospatial analysis
-│   └── config.py      # Centralized configuration
-├── frontend/
-│   ├── src/           # Test implementations + visualizations
-│   └── public/        # Static site files
-└── notebooks/         # Colab-ready data pipeline (replaces scripts)
-```
+Data sources and access are listed in [docs/DATA_ACCESS.md](docs/DATA_ACCESS.md).
 
-## Setup
+## Local development
+
+The site reads committed JSON in `frontend/public/data/`.
 
 ```bash
-pip install -r backend/requirements.txt
-cd frontend && npm install
+make setup   # Python venv (uv), npm install, pre-commit hooks
+make dev     # Vite dev server
+make test    # pytest
+make help    # all targets
 ```
-
-Colab notebooks are self-contained. Open any notebook via the badge above and run all cells.
-
-## Colab setup
-
-The notebooks share setup via `notebooks/colab_utils.py`. Notebooks that publish artifacts require a `GITHUB_TOKEN_SAFET` Colab secret. Notebook 01 additionally requires `CENSUS_API_KEY`.
-
-**Setting up the GitHub token (one-time):**
-
-Create a [fine-grained personal access token](https://github.com/settings/tokens?type=beta) with **Contents: Read and Write** permission. Set **Resource Owner** to `safe-t-ai` (the org). Then add it to Colab: open the key icon in the left sidebar → **Secrets** → **Add new secret**, name it `GITHUB_TOKEN_SAFET`, paste the token, and enable notebook access.
-
-<img src="docs/assets/colab-secrets.png" width="420" alt="Colab Secrets panel showing GITHUB_TOKEN_SAFET" />
-
-For Census data (notebook 01), get a free API key at [api.census.gov/data/key_signup.html](https://api.census.gov/data/key_signup.html) and add it as `CENSUS_API_KEY`.
 
 ## Team
 
-[Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/) · [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/) · [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/) · [Jonas Neves](https://www.linkedin.com/in/jonasnvs/)
+[Lindsay Gross](https://www.linkedin.com/in/lindsay-gross1/) · [Jonas Neves](https://www.linkedin.com/in/jonasnvs/) · [Arnav Mahale](https://www.linkedin.com/in/arnavmahale/) · [Shreya Mendi](https://www.linkedin.com/in/shreya-mendi/)
 
 Built for the **SCAI Hackathon** at Duke University. Submitted to the [Google.org AI for Government Innovation Challenge](https://www.google.org/impact-challenges/ai-government-innovation/) (April 2026).
 

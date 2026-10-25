@@ -1,23 +1,43 @@
 /**
- * SAFE-T: Safety Algorithm Fairness Evaluation for Transportation
- * Thin orchestrator — all test modules lazy-loaded
+ * SAFE-T dashboard: tab orchestration. Test modules are lazy-loaded.
  */
 
 import { resizeVisibleCharts } from './services/chartConfig.js';
 
-const DESCRIPTIONS = {
-    overview: '',
-    test1: 'Audit methodology for AI volume estimation: do these tools count pedestrians and cyclists equitably across income levels?',
-    test2: 'Does the NCDOT crash data contain structural patterns that would bias any downstream AI model? Real data, real answer.',
-    test3: 'When AI allocates safety budgets, does it account for where danger is actually highest?',
-    test4: 'When poor infrastructure suppresses usage, can AI tools detect the hidden demand?'
-};
-
-const SO_WHAT = {
-    test1: 'Crowdsourced tools like Strava underrepresent low-income areas — seeding a data gap that compounds through every downstream decision.',
-    test2: 'The NCDOT crash data has structural patterns by income quintile — Q1 high-risk tracts are systematically harder to identify from the data alone. Any AI tool trained on it inherits this 38-point recall gap before the vendor makes a single design choice.',
-    test3: 'When safety budgets follow AI predictions, money goes where data is dense — not where need is highest. This test models what that misallocation looks like at scale.',
-    test4: 'Without infrastructure, people don\u2019t walk or bike. No trips means no signal. The absence of demand looks like confirmation that nothing should be built.'
+/** @type {Record<string, { num: number, title: string, badge: 'real'|'modeled'|'simulated', badgeLabel: string, question: string, note: string }>} */
+const PAGES = {
+    test1: {
+        num: 1,
+        title: 'Foot traffic',
+        badge: 'simulated',
+        badgeLabel: 'Simulated',
+        question: 'Do volume tools undercount walkers and cyclists in poorer tracts?',
+        note: 'The undercount here is an assumed input, not a measurement. The page shows how the audit reads a vendor’s counts once a city shares them.',
+    },
+    test2: {
+        num: 2,
+        title: 'Crash history',
+        badge: 'real',
+        badgeLabel: 'Real data',
+        question: 'Does ranking tracts by past crashes miss high-risk tracts in poorer neighborhoods?',
+        note: 'NCDOT crash records and Census data. Each year is predicted only from the years before it, and every tract is judged against the same citywide cut.',
+    },
+    test3: {
+        num: 3,
+        title: 'Budget allocation',
+        badge: 'modeled',
+        badgeLabel: 'Partly simulated',
+        question: 'Does a planning tool send safety money where crashes happen?',
+        note: 'Need is measured: real crash rates per tract and OpenStreetMap infrastructure gaps. The planning tool is simulated, weighted toward higher-income tracts, to show what the audit catches.',
+    },
+    test4: {
+        num: 4,
+        title: 'Suppressed demand',
+        badge: 'modeled',
+        badgeLabel: 'Partly simulated',
+        question: 'How many walking and cycling trips does missing infrastructure suppress?',
+        note: 'Infrastructure gaps are real (OpenStreetMap). Potential demand and the detection models are simulated.',
+    },
 };
 
 // Literal paths required for Vite code splitting
@@ -40,19 +60,19 @@ class App {
         await this.modules.overview.initialize();
 
         document.getElementById('overview-skeleton')?.remove();
-        document.querySelector('#overview-content .overview-banner')?.classList.remove('hidden');
-        document.querySelector('#overview-content .content-split')?.classList.remove('hidden');
+        document.querySelectorAll('#overview-content .hidden').forEach(el => el.classList.remove('hidden'));
+        this.modules.overview.map?.invalidateSize();
 
         this.setupNavigation();
+        const initial = location.hash.slice(1);
+        if (PAGES[initial]) this.switchTest(initial, { focus: false });
     }
 
     setupNavigation() {
         const tabs = /** @type {HTMLElement[]} */ ([...document.querySelectorAll('.tab')]);
-        const tabIds = tabs.map(t => t.dataset.test);
-
-        // Gradient fade for scrollable tabs
         const tabsContainer = /** @type {HTMLElement} */ (document.querySelector('.tabs'));
         const tabsBarInner = /** @type {HTMLElement} */ (document.querySelector('.tabs-bar-inner'));
+
         const checkOverflow = () => {
             const hasOverflow = tabsContainer.scrollWidth > tabsContainer.clientWidth;
             const atEnd = tabsContainer.scrollLeft + tabsContainer.clientWidth >= tabsContainer.scrollWidth - 4;
@@ -62,53 +82,56 @@ class App {
         window.addEventListener('resize', checkOverflow);
         checkOverflow();
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                this.switchTest(/** @type {HTMLElement} */ (e.currentTarget).dataset.test);
-            });
+        tabs.forEach(tab => tab.addEventListener('click', () => this.switchTest(tab.dataset.test)));
+
+        // WAI-ARIA tabs pattern: arrows, Home and End move between tabs while the tablist has focus
+        tabsContainer.addEventListener('keydown', e => {
+            const idx = tabs.findIndex(t => t.dataset.test === this.currentTest);
+            const next = { ArrowRight: idx + 1, ArrowLeft: idx - 1, Home: 0, End: tabs.length - 1 }[e.key];
+            if (next == null || !tabs[next]) return;
+            e.preventDefault();
+            this.switchTest(tabs[next].dataset.test);
         });
 
-        window.addEventListener('navigate-test', (/** @type {CustomEvent} */ e) => {
-            this.switchTest(e.detail);
+        // Escape hides an open badge tooltip until the pointer or focus leaves it (WCAG 1.4.13)
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape') return;
+            document.querySelectorAll('.data-source-badge:hover, .data-source-badge:focus-visible')
+                .forEach(b => b.classList.add('tooltip-dismissed'));
         });
+        const reset = (/** @type {Event} */ e) => /** @type {HTMLElement} */ (e.target).closest?.('.data-source-badge')?.classList.remove('tooltip-dismissed');
+        document.addEventListener('mouseout', reset);
+        document.addEventListener('focusout', reset);
 
-        document.addEventListener('keydown', (e) => {
-            const target = /** @type {HTMLElement} */ (e.target);
-            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
-            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-
-            const idx = tabIds.indexOf(this.currentTest);
-            const next = e.key === 'ArrowRight'
-                ? tabIds[idx + 1]
-                : tabIds[idx - 1];
-            if (next) this.switchTest(next);
-        });
+        window.addEventListener('navigate-test', (/** @type {CustomEvent} */ e) => this.switchTest(e.detail));
+        window.addEventListener('hashchange', () => this.switchTest(location.hash.slice(1) || 'overview', { focus: false }));
     }
 
-    async switchTest(testId) {
-        if (testId === this.currentTest) return;
+    /**
+     * @param {string} testId
+     * @param {{ focus?: boolean }} [opts]
+     */
+    async switchTest(testId, { focus = true } = {}) {
+        if (testId === this.currentTest || !(testId === 'overview' || PAGES[testId])) return;
+        this.currentTest = testId;
 
         document.querySelectorAll('.tab').forEach(tab => {
             const el = /** @type {HTMLElement} */ (tab);
             const isActive = el.dataset.test === testId;
             el.classList.toggle('active', isActive);
             el.setAttribute('aria-selected', String(isActive));
+            el.tabIndex = isActive ? 0 : -1;
+            if (isActive && focus && document.activeElement?.classList.contains('tab')) el.focus();
         });
 
         document.querySelectorAll('.test-content').forEach(content => {
-            const el = /** @type {HTMLElement} */ (content);
-            el.classList.toggle('active', el.id === `${testId}-content`);
+            content.classList.toggle('active', content.id === `${testId}-content`);
         });
 
-        const descEl = document.getElementById('test-description');
-        const desc = DESCRIPTIONS[testId];
-        if (desc) {
-            const testNum = testId.replace('test', '');
-            const soWhat = SO_WHAT[testId];
-            descEl.innerHTML = `<div class="test-subtitle-inner"><span>${desc}</span><span class="test-position">${testNum} / 4</span></div>${soWhat ? `<p class="test-so-what">${soWhat}</p>` : ''}`;
-        } else {
-            descEl.textContent = '';
-        }
+        history.replaceState(null, '', testId === 'overview' ? location.pathname : `#${testId}`);
+        this.renderPageHead(testId);
+        document.querySelector(`.tab[data-test="${testId}"]`)?.scrollIntoView({ block: 'nearest', inline: 'center' });
+        if (window.scrollY > 200) window.scrollTo({ top: 0 });
 
         if (LOADERS[testId] && !this.modules[testId]) {
             const container = document.getElementById(`${testId}-content`);
@@ -119,32 +142,47 @@ class App {
             skeleton.remove();
         }
 
-        // Scroll active tab into view
-        const activeTab = document.querySelector(`.tab[data-test="${testId}"]`);
-        activeTab?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-
-        this.currentTest = testId;
-        // Wait for layout to settle before resizing — rAF fires after paint,
-        // preventing gray Leaflet tiles from a premature invalidateSize call.
+        // rAF fires after layout, so Leaflet measures the now-visible container
         requestAnimationFrame(() => {
             resizeVisibleCharts();
             this.modules[testId]?.map?.invalidateSize();
         });
     }
 
+    /** @param {string} testId */
+    renderPageHead(testId) {
+        const el = document.getElementById('test-description');
+        const p = PAGES[testId];
+        if (!p) {
+            el.innerHTML = '';
+            return;
+        }
+        el.innerHTML = `
+            <div class="page-head-inner">
+                <p class="page-kicker">
+                    <span>Test ${p.num} of 4 · ${p.title}</span>
+                    <span class="data-source-badge ${p.badge}">${p.badgeLabel}</span>
+                </p>
+                <h2 class="page-question">${p.question}</h2>
+                <p class="page-note">${p.note}</p>
+            </div>
+        `;
+    }
+
+    /** @param {HTMLElement} container */
     showSkeleton(container) {
         const el = document.createElement('div');
         el.className = 'skeleton-loading-overlay';
+        el.setAttribute('aria-hidden', 'true');
         el.innerHTML = `
             <div class="skeleton-metrics">
                 <div class="skeleton skeleton-metric"></div>
                 <div class="skeleton skeleton-metric"></div>
                 <div class="skeleton skeleton-metric"></div>
             </div>
-            <div class="skeleton skeleton-map"></div>
-            <div class="skeleton-group">
-                <div class="skeleton skeleton-chart"></div>
-                <div class="skeleton skeleton-chart"></div>
+            <div class="skeleton-overview-split">
+                <div class="skeleton skeleton-overview-map"></div>
+                <div class="skeleton skeleton-overview-right"></div>
             </div>
         `;
         container.prepend(el);
@@ -152,5 +190,4 @@ class App {
     }
 }
 
-const app = new App();
-app.initialize();
+new App().initialize();

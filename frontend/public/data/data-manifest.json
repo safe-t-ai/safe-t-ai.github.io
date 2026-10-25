@@ -18,7 +18,6 @@
       "files": [
         "crash-report.json",
         "crash-time-series.json",
-        "confusion-matrices.json",
         "crash-geo-data.json"
       ]
     },
@@ -35,9 +34,9 @@
     },
     "infrastructure_recommendations": {
       "type": "mixed",
-      "real_source": "OpenStreetMap infrastructure density per tract",
+      "real_source": "NCDOT crash rates per tract; OpenStreetMap infrastructure density per tract",
       "fetched_at": null,
-      "rationale": "Project selection uses real OSM infrastructure gaps; danger scores and allocation logic are simulated",
+      "rationale": "Danger scores are real NCDOT crash rates and project types follow real OSM gaps; the allocation tool is simulated",
       "files": [
         "infrastructure-report.json",
         "danger-scores.json",
@@ -83,7 +82,6 @@
       4500000,
       5500000
     ],
-    "confusion_matrix_min_f1_spread": 0.05,
     "osm_crossings_total": [
       500,
       10000

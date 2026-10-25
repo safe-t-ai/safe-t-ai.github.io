@@ -11,6 +11,8 @@ export class DurhamMap {
     legendControl;
     /** @type {any[] | undefined} */
     markers;
+    /** @type {boolean} */
+    _fitted = false;
 
     /**
      * @param {string} containerId
@@ -29,10 +31,13 @@ export class DurhamMap {
 
     /** @returns {this} */
     initialize() {
-        this.map = L.map(this.containerId).setView(
+        // Wheel zoom only after the user clicks into the map, so page scroll is never captured
+        this.map = L.map(this.containerId, { scrollWheelZoom: false }).setView(
             /** @type {[number, number]} */ (this.options.center),
             this.options.zoom
         );
+        this.map.on('click focus', () => this.map.scrollWheelZoom.enable());
+        this.map.on('mouseout blur', () => this.map.scrollWheelZoom.disable());
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
@@ -142,7 +147,7 @@ export class DurhamMap {
     addLegend(options = {}) {
         const {
             position = 'bottomright',
-            title = 'AI Prediction Error',
+            title = 'Simulated count error',
             colorScale = this.getDefaultColorScale(),
             footer = null
         } = options;
@@ -250,8 +255,13 @@ export class DurhamMap {
 
     /** @returns {this} */
     invalidateSize() {
-        if (this.map) {
-            this.map.invalidateSize();
+        if (!this.map) return this;
+        this.map.invalidateSize();
+        // Fit once, the first time the map is visible with data on it
+        const visible = this.map.getContainer().offsetParent !== null;
+        if (!this._fitted && visible && this.choroplethLayer) {
+            this.map.fitBounds(this.choroplethLayer.getBounds(), { padding: [8, 8] });
+            this._fitted = true;
         }
         return this;
     }

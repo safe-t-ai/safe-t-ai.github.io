@@ -3,10 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAFE-T: Safety Algorithm Fairness Evaluation for Transportation</title>
+    <title>SAFE-T · Durham street-safety data audit</title>
+    <meta name="description" content="Audits whether the data and tools behind Durham, NC street-safety spending can see risk in every neighborhood.">
     <meta name="theme-color" content="#0f172a">
-    <link rel="icon" type="image/png" href="/logo.png">
-    <link rel="apple-touch-icon" href="/logo.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://safe-t-ai.github.io/">
+    <meta property="og:title" content="SAFE-T · Durham street-safety data audit">
+    <meta property="og:description" content="Durham's poorest neighborhoods have 3.2× the pedestrian and cyclist crash rate of its richest. SAFE-T checks whether the data behind safety spending can see that.">
+    <meta property="og:image" content="https://safe-t-ai.github.io/og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" as="script">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -25,7 +34,7 @@
 
             /* Colors — Labels */
             --color-label: #1a202c;
-            --color-label-secondary: #718096;
+            --color-label-secondary: #5b6474;
             --color-label-tertiary: #4a5568;
             --color-tint-label: #134e4a;
 
@@ -96,83 +105,38 @@
         .header {
             background: var(--color-dark);
             color: white;
-            padding: 1.75rem var(--space-8) var(--space-6);
+            padding: var(--space-4) var(--space-8);
         }
 
         .header-inner {
             max-width: var(--max-width);
             margin: 0 auto;
-        }
-
-        .header-top {
             display: flex;
             align-items: center;
-            gap: var(--space-4);
+            gap: var(--space-3);
         }
 
         .header-logo {
-            width: 44px;
-            height: 44px;
+            width: 36px;
+            height: 36px;
             border-radius: var(--radius-md);
             flex-shrink: 0;
         }
 
         .header-text h1 {
-            font-size: var(--font-title1);
-            font-weight: 600;
+            font-size: var(--font-headline);
+            font-weight: 700;
+            letter-spacing: 0.02em;
             line-height: 1.2;
         }
 
-        .header-sep {
-            font-weight: 400;
-            opacity: 0.4;
-            margin: 0 0.1em;
-        }
-
-        .header-meta {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: var(--space-2);
-            margin-top: var(--space-1);
+        .header-tagline {
             font-size: var(--font-footnote);
             color: var(--color-on-dark-secondary);
+            line-height: 1.4;
         }
-
-        .header-meta span { white-space: nowrap; }
 
         .header-text { flex: 1; min-width: 0; }
-
-        .toolbar-team-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            padding: 0 0.5rem;
-            margin-left: auto;
-            flex-shrink: 0;
-            background: none;
-            border: none;
-            border-radius: var(--radius-md);
-            color: var(--color-label-secondary);
-            text-decoration: none;
-            font-size: var(--font-footnote);
-            font-weight: 400;
-            white-space: nowrap;
-            min-height: 44px;
-            min-width: 44px;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
-            opacity: 0.55;
-            transition: opacity 0.15s var(--ease-spring), color 0.15s var(--ease-spring);
-        }
-        .toolbar-team-btn:hover { opacity: 1; color: var(--color-label-primary); }
-        .toolbar-team-btn:active { opacity: 0.7; }
-        .toolbar-team-btn:focus-visible {
-            outline: 2px solid var(--color-accent);
-            outline-offset: 2px;
-            opacity: 1;
-        }
-        .toolbar-team-btn svg { fill: currentColor; flex-shrink: 0; }
 
         /* ── Tabs ── */
         .tabs-bar {
@@ -221,81 +185,43 @@
         }
 
         .tab {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
             background: transparent;
             color: var(--color-label-secondary);
             border: none;
-            border-bottom: 2px solid transparent;
-            padding: var(--space-3) 1.25rem;
+            padding: var(--space-3) var(--space-4);
             margin-bottom: -2px;
             font-size: var(--font-subhead);
             font-weight: 500;
             font-family: inherit;
             cursor: pointer;
-            transition: color 0.2s var(--ease-spring), border-bottom-color 0.2s var(--ease-spring);
+            transition: color 0.2s var(--ease-spring);
             white-space: nowrap;
-            min-height: 44px;
+            min-height: 48px;
         }
+
+        .tab::after {
+            content: '';
+            position: absolute;
+            left: var(--space-3);
+            right: var(--space-3);
+            bottom: 0;
+            height: 2px;
+            border-radius: 2px;
+            background: var(--color-accent);
+            transform: scaleX(0);
+            transition: transform 0.3s var(--ease-spring);
+        }
+
+        .tab.active::after { transform: scaleX(1); }
 
         .tab:hover {
             color: var(--color-label);
         }
 
-        .tab.active {
-            color: var(--color-accent-active);
-            border-bottom-color: var(--color-accent);
-        }
-
-        .test-subtitle {
-            font-size: var(--font-headline);
-            font-weight: 500;
-            letter-spacing: -0.01em;
-            line-height: 1.3;
-            color: white;
-            background: linear-gradient(135deg, var(--color-accent) 0%, #0e4a5c 40%, var(--color-dark) 100%);
-            padding: 1.15rem var(--space-6);
-            border-radius: var(--radius-md);
-            margin-bottom: 1.75rem;
-            box-shadow: var(--shadow-sm);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .test-subtitle::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--color-accent), transparent 60%);
-        }
-
-        .test-subtitle:empty {
-            display: none;
-        }
-
-        .test-subtitle-inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: var(--space-4);
-        }
-
-        .test-position {
-            font-size: var(--font-caption);
-            font-weight: 500;
-            opacity: 0.6;
-            white-space: nowrap;
-            letter-spacing: 0.04em;
-        }
-
-        .test-so-what {
-            font-size: var(--font-footnote);
-            color: var(--color-on-dark-secondary);
-            margin-top: var(--space-2);
-            line-height: 1.4;
-            font-weight: 400;
-        }
+        .tab.active { color: var(--color-accent-active); }
 
         /* ── Layout ── */
         .test-content { display: none; }
@@ -356,11 +282,6 @@
             gap: var(--space-8);
         }
 
-        .skeleton-overview-banner {
-            height: 120px;
-            margin-bottom: var(--space-6);
-        }
-
         .skeleton-overview-split {
             display: grid;
             grid-template-columns: 55fr 45fr;
@@ -376,14 +297,6 @@
             flex-direction: column;
             gap: var(--space-4);
         }
-
-        .skeleton-overview-card-hero { height: 160px; }
-        .skeleton-overview-card-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0;
-        }
-        .skeleton-overview-card-sm { height: 100px; }
 
         .container {
             max-width: var(--max-width);
@@ -527,6 +440,9 @@
             border-radius: 8px;
         }
 
+        /* Muted basemap so the data layer carries the colour */
+        .leaflet-tile-pane { filter: grayscale(1) contrast(0.9) brightness(1.06); }
+
         /* ── Leaflet popup overrides ── */
         .leaflet-popup-content-wrapper {
             border-radius: var(--radius-md);
@@ -542,81 +458,6 @@
         }
 
         /* ── Baseline context callout (Test 2) ── */
-        .baseline-callout {
-            background: var(--color-surface);
-            border-left: 3px solid var(--color-warning);
-            border-radius: var(--radius-lg);
-            padding: var(--space-6);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: var(--space-4);
-        }
-
-        .baseline-callout-header {
-            margin-bottom: var(--space-4);
-        }
-
-        .baseline-title {
-            font-size: var(--font-title3);
-            font-weight: 600;
-            color: var(--color-label);
-            margin: 0 0 var(--space-1) 0;
-        }
-
-        .baseline-source {
-            font-size: var(--font-caption);
-            color: var(--color-label-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .baseline-stats {
-            display: flex;
-            align-items: center;
-            gap: var(--space-6);
-            flex-wrap: wrap;
-            margin-bottom: var(--space-4);
-        }
-
-        .baseline-stat {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: var(--space-1);
-            text-align: center;
-            min-width: 72px;
-        }
-
-        .baseline-number {
-            font-size: var(--font-metric);
-            font-weight: 700;
-            color: var(--color-label);
-            line-height: 1;
-        }
-
-        .baseline-number.baseline-danger { color: var(--color-danger); }
-
-        .baseline-label {
-            font-size: var(--font-footnote);
-            color: var(--color-label-secondary);
-            line-height: 1.4;
-        }
-
-        .baseline-divider {
-            font-size: var(--font-subhead);
-            color: var(--color-label-tertiary);
-            font-weight: 400;
-            flex-shrink: 0;
-            padding-bottom: 1.4rem;
-        }
-
-        .baseline-context {
-            font-size: var(--font-footnote);
-            color: var(--color-label-secondary);
-            margin: 0;
-            padding-top: var(--space-4);
-            border-top: 1px solid var(--color-separator);
-            line-height: 1.47;
-        }
 
         /* ── Key Findings ── */
         .interpretation {
@@ -758,8 +599,7 @@
         .data-source-badge .icon { font-size: var(--font-footnote); }
 
         .data-source-badge .tooltip {
-            visibility: hidden;
-            pointer-events: none;
+            display: none;
             position: absolute;
             bottom: 100%;
             left: 50%;
@@ -787,100 +627,19 @@
             border-top-color: var(--color-dark);
         }
 
-        .data-source-badge:hover .tooltip { visibility: visible; }
+        .data-source-badge:hover .tooltip,
+        .data-source-badge:focus-visible .tooltip { display: block; }
+        .data-source-badge.tooltip-dismissed .tooltip { display: none; }
+        /* Bridge the gap so the pointer can move onto the tooltip (WCAG 1.4.13) */
+        .data-source-badge .tooltip::before { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: var(--space-2); }
+        .data-source-badge:not([tabindex]) { cursor: default; }
+        .interpretation-header .tooltip,
+        .protocol-head .tooltip { left: auto; right: 0; transform: none; }
+        .interpretation-header .tooltip::after,
+        .protocol-head .tooltip::after { left: auto; right: 16px; transform: none; }
+        .data-source-badge:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
         /* ── Overview Dashboard ── */
-        .overview-banner {
-            background: linear-gradient(135deg, var(--color-accent) 0%, #0e4a5c 40%, var(--color-dark) 100%);
-            color: white;
-            padding: 1.75rem var(--space-8);
-            border-radius: var(--radius-xl);
-            margin-bottom: var(--space-6);
-        }
-
-        .overview-banner h2 {
-            font-size: var(--font-title3);
-            font-weight: 700;
-            margin-bottom: 0.4rem;
-            color: white;
-            line-height: 1.2;
-        }
-
-        .overview-banner .banner-description {
-            font-size: var(--font-subhead);
-            line-height: 1.35;
-            color: var(--color-on-dark);
-            margin-bottom: var(--space-3);
-        }
-
-        .overview-banner .banner-stats {
-            font-size: var(--font-footnote);
-            color: var(--color-on-dark-secondary);
-        }
-
-        .banner-scalability {
-            color: var(--color-accent);
-            font-weight: 500;
-        }
-
-        .overview-stats + .methodology-key {
-            border-top: 1px solid var(--color-separator);
-            padding-top: var(--space-6);
-        }
-
-        .methodology-key {
-            background: var(--color-surface);
-            border-radius: var(--radius-lg);
-            padding: var(--space-4) var(--space-6);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: var(--space-4);
-        }
-
-        .methodology-key h3 {
-            font-size: var(--font-caption);
-            font-weight: 600;
-            color: var(--color-label-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: var(--space-3);
-        }
-
-        .methodology-legend {
-            display: flex;
-            gap: var(--space-6);
-            margin-bottom: var(--space-3);
-        }
-
-        .methodology-item {
-            display: flex;
-            align-items: baseline;
-            gap: var(--space-2);
-            font-size: var(--font-footnote);
-            color: var(--color-label);
-        }
-
-        .methodology-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            position: relative;
-            top: 1px;
-        }
-
-        .methodology-dot.real { background: #059669; }
-        .methodology-dot.modeled { background: #2563eb; }
-        .methodology-dot.simulated { background: #d97706; }
-
-        .methodology-item .methodology-desc {
-            color: var(--color-label-secondary);
-        }
-
-        .methodology-vocab {
-            font-size: var(--font-footnote);
-            color: var(--color-label-secondary);
-            line-height: 1.45;
-        }
 
         .overview-right {
             display: flex;
@@ -889,52 +648,6 @@
         }
 
         /* ── Cascade Cards ── */
-        .cascade-header {
-            margin-bottom: var(--space-4);
-        }
-
-        .cascade-title {
-            font-size: var(--font-subhead);
-            font-weight: 600;
-            color: var(--color-label);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .cascade-steps {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-1);
-        }
-
-        .cascade-step {
-            background: var(--color-surface);
-            border-radius: var(--radius-md);
-            padding: var(--space-5) var(--space-5);
-            box-shadow: var(--shadow-sm);
-            cursor: pointer;
-            text-align: left;
-            font-family: inherit;
-            border: 1px solid transparent;
-            width: 100%;
-            transition: box-shadow 0.15s var(--ease-spring), border-color 0.15s;
-        }
-
-        .cascade-step:hover {
-            box-shadow: var(--shadow-md);
-            border-color: var(--color-separator);
-        }
-
-        .cascade-step:focus-visible {
-            outline: 2px solid var(--color-accent);
-            outline-offset: 2px;
-        }
-
-        .cascade-step-inner {
-            display: flex;
-            gap: var(--space-3);
-            align-items: flex-start;
-        }
 
         .step-num {
             flex-shrink: 0;
@@ -952,159 +665,12 @@
             transition: background 0.15s, color 0.15s;
         }
 
-        .cascade-step:hover .step-num {
-            background: var(--color-accent);
-            color: #fff;
-        }
-
-        .cascade-step-body {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .cascade-step-top {
-            display: flex;
-            align-items: baseline;
-            gap: var(--space-2);
-            margin-bottom: var(--space-1);
-        }
-
-        .cascade-step-label {
-            font-size: var(--font-caption);
-            font-weight: 600;
-            color: var(--color-label-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-
-        .cascade-step-value {
-            font-size: var(--font-stat);
-            font-weight: 700;
-            color: var(--color-label);
-            line-height: 1;
-            letter-spacing: -0.02em;
-            margin-bottom: var(--space-1);
-        }
-
-        .cascade-step-finding {
-            font-size: var(--font-footnote);
-            color: var(--color-label-secondary);
-            line-height: 1.45;
-        }
-
-        .cascade-connector {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            padding: var(--space-1) 0 var(--space-1) calc(26px + var(--space-3));
-            font-size: var(--font-footnote);
-            color: var(--color-label-tertiary);
-            font-style: italic;
-        }
-
-        .cascade-connector::before {
-            content: '↓';
-            font-style: normal;
-            font-weight: 600;
-            color: var(--color-label-secondary);
-            flex-shrink: 0;
-        }
-
-        .overview-stats {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-4);
-        }
-
-        .stat-hero {
-            background: var(--color-surface);
-            border-radius: var(--radius-lg);
-            padding: var(--space-6) var(--space-6) var(--space-8);
-            box-shadow: var(--shadow-sm);
-            cursor: pointer;
-            text-align: left;
-            font-family: inherit;
-            border: none;
-            width: 100%;
-            transition: box-shadow 0.2s var(--ease-spring);
-        }
-
-        .stat-hero:hover {
-            box-shadow: var(--shadow-md);
-        }
-
-        .stat-label {
-            font-size: var(--font-caption);
-            font-weight: 600;
-            color: var(--color-label-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .stat-hero .stat-value {
-            font-size: 2.75rem;
-            font-weight: 700;
-            color: var(--color-label);
-            line-height: 1;
-            letter-spacing: -0.03em;
-            margin: var(--space-3) 0 var(--space-2);
-        }
-
-        .stat-hero .stat-desc {
-            font-size: var(--font-subhead);
-            color: var(--color-label-secondary);
-            line-height: 1.4;
-        }
-
-        .stat-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            background: var(--color-surface);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            overflow: hidden;
-        }
-
-        .stat-secondary {
-            padding: var(--space-4);
-            cursor: pointer;
-            text-align: left;
-            font-family: inherit;
-            background: none;
-            border: none;
-            transition: background 0.15s var(--ease-spring);
-        }
-
-        .stat-secondary + .stat-secondary {
-            border-left: 1px solid var(--color-separator);
-        }
-
-        .stat-secondary:hover {
-            background: var(--color-surface-grouped);
-        }
-
-        .stat-secondary .stat-label {
-            margin-bottom: var(--space-1);
-        }
-
-        .stat-secondary .stat-value {
-            font-size: var(--font-title1);
-            font-weight: 700;
-            color: var(--color-label);
-            line-height: 1.2;
-        }
-
-        .stat-secondary .stat-desc {
-            font-size: var(--font-caption);
-            color: var(--color-label-tertiary);
-            line-height: 1.3;
-            margin-top: var(--space-1);
-        }
-
         /* ── Segmented Control ── */
         .view-toggle {
             display: inline-flex;
+            max-width: 100%;
+            overflow-x: auto;
+            scrollbar-width: none;
             position: relative;
             background: var(--color-fill-tertiary);
             border-radius: 8px;
@@ -1126,7 +692,7 @@
             border-radius: 5px;
             transition: color 0.15s var(--ease-spring);
             white-space: nowrap;
-            min-height: 32px;
+            min-height: 44px;
         }
 
         .view-toggle-option.active {
@@ -1147,16 +713,15 @@
 
         /* ── Accessibility ── */
         .tab:focus-visible,
-        .stat-hero:focus-visible,
-        .stat-secondary:focus-visible,
+        .link-button:focus-visible,
+        .protocol-item:focus-visible,
+        .footer-inner a:focus-visible,
         .view-toggle-option:focus-visible {
             outline: 2px solid var(--color-accent);
             outline-offset: 2px;
         }
 
         .tab:focus:not(:focus-visible),
-        .stat-hero:focus:not(:focus-visible),
-        .stat-secondary:focus:not(:focus-visible),
         .view-toggle-option:focus:not(:focus-visible) {
             outline: none;
         }
@@ -1211,10 +776,9 @@
             color: white;
         }
 
-        .footer-team .separator {
-            margin: 0 0.4rem;
-            opacity: 0.3;
-        }
+        .footer-team { list-style: none; }
+        .footer-team li { white-space: nowrap; }
+        .footer-team li + li::before { content: '·'; margin: 0 0.5rem; opacity: 0.4; }
 
         .footer-links {
             display: flex;
@@ -1238,6 +802,231 @@
         .footer-links svg {
             fill: currentColor;
         }
+
+        /* ── Skip link ── */
+        .skip-link {
+            position: absolute;
+            left: var(--space-4);
+            top: -100px;
+            z-index: 2000;
+            padding: var(--space-2) var(--space-4);
+            background: var(--color-surface);
+            color: var(--color-label);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-md);
+        }
+        .skip-link:focus { top: var(--space-2); }
+
+        .tab-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            margin-right: var(--space-2);
+            border-radius: 50%;
+            background: var(--color-fill-tertiary);
+            color: var(--color-label-secondary);
+            font-size: var(--font-caption);
+            font-weight: 600;
+            transition: background 0.2s var(--ease-spring), color 0.2s var(--ease-spring);
+        }
+        .tab.active .tab-num { background: var(--color-accent-active); color: #fff; }
+
+        /* ── Test page head ── */
+        .page-head:empty { display: none; }
+        .page-head { margin-bottom: var(--space-6); }
+        .page-head-inner { max-width: 860px; animation: fadeInUp 0.3s var(--ease-spring) both; }
+        .page-kicker {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+            font-size: var(--font-caption);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--color-label-secondary);
+            margin-bottom: var(--space-2);
+        }
+        .page-question {
+            font-size: var(--font-title1);
+            font-weight: 650;
+            line-height: 1.25;
+            letter-spacing: -0.015em;
+            margin-bottom: var(--space-2);
+        }
+        .page-note {
+            font-size: var(--font-subhead);
+            color: var(--color-label-tertiary);
+            line-height: 1.47;
+        }
+
+        /* ── Overview hero ── */
+        .hero {
+            background: radial-gradient(120% 140% at 0% 0%, #134e5e 0%, var(--color-dark) 60%);
+            color: #fff;
+            border-radius: var(--radius-xl);
+            padding: var(--space-8) 2.5rem;
+            margin-bottom: var(--space-6);
+            box-shadow: var(--shadow-md);
+            animation: fadeInUp 0.4s var(--ease-spring) both;
+        }
+        .hero-eyebrow {
+            font-size: var(--font-caption);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #7dd3c0;
+            margin-bottom: var(--space-3);
+        }
+        .hero-title {
+            font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+            font-weight: 650;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            max-width: 900px;
+            margin-bottom: var(--space-6);
+        }
+        .hero-ratio { color: #fdba74; white-space: nowrap; }
+        .hero-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 300px;
+            gap: var(--space-8);
+            align-items: end;
+            margin-bottom: var(--space-6);
+        }
+        .hero-grid .hero-title { margin-bottom: 0; }
+        .hero-chart figcaption {
+            font-size: var(--font-caption);
+            color: var(--color-on-dark-secondary);
+            margin-top: var(--space-2);
+        }
+        .hero-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+        .hero-bar { transform-box: fill-box; transform-origin: bottom; animation: barGrow 0.7s var(--ease-spring) both; }
+        .hero-bar-label { font-size: 11px; fill: rgba(255, 255, 255, 0.85); font-variant-numeric: tabular-nums; }
+        .hero-axis-label { font-size: 11px; fill: rgba(255, 255, 255, 0.6); }
+        @keyframes barGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--space-4) var(--space-8);
+            padding-top: var(--space-5);
+            border-top: 1px solid rgba(255, 255, 255, 0.14);
+        }
+        .hero-stat dt {
+            font-size: var(--font-caption);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--color-on-dark-secondary);
+            margin-bottom: var(--space-1);
+        }
+        .hero-stat dd { font-size: var(--font-subhead); color: var(--color-on-dark); }
+
+        /* ── Overview cards ── */
+        .overview-right { display: flex; flex-direction: column; gap: var(--space-6); }
+        .finding-card,
+        .protocol {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-sm);
+        }
+        .finding-card { border-top: 3px solid #059669; }
+        .card-kicker {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            font-size: var(--font-caption);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--color-label-secondary);
+            margin-bottom: var(--space-3);
+        }
+        .finding-card h3 { font-size: var(--font-headline); font-weight: 600; line-height: 1.35; margin-bottom: var(--space-3); }
+        .finding-answer { font-size: var(--font-subhead); line-height: 1.47; margin-bottom: var(--space-2); }
+        .finding-answer strong { color: #047857; }
+        .finding-note { font-size: var(--font-footnote); color: var(--color-label-tertiary); line-height: 1.47; margin-bottom: var(--space-4); }
+        .link-button {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            min-height: 44px;
+            padding: 0 var(--space-4);
+            border: 1px solid var(--color-separator);
+            border-radius: var(--radius-md);
+            background: var(--color-surface);
+            color: var(--color-accent-active);
+            font: inherit;
+            font-size: var(--font-footnote);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s var(--ease-spring), border-color 0.15s var(--ease-spring);
+        }
+        .link-button span,
+        .protocol-arrow { display: inline-block; transition: transform 0.2s var(--ease-spring); }
+        .link-button:hover { background: var(--color-surface-tinted); border-color: #99f6e4; }
+        .link-button:hover span,
+        .protocol-item:hover .protocol-arrow { transform: translateX(3px); }
+
+        .protocol-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-2); }
+        .protocol-head h3 { font-size: var(--font-headline); font-weight: 600; }
+        .protocol-note { font-size: var(--font-footnote); color: var(--color-label-tertiary); line-height: 1.47; margin-bottom: var(--space-4); }
+        .protocol-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+        .protocol-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-3);
+            width: 100%;
+            padding: var(--space-4);
+            border: 1px solid var(--color-separator);
+            border-radius: var(--radius-md);
+            background: var(--color-surface);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+            transition: border-color 0.15s var(--ease-spring), box-shadow 0.2s var(--ease-spring), transform 0.2s var(--ease-spring);
+        }
+        .protocol-item:hover { border-color: #cbd5e1; box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+        .protocol-item:active { transform: translateY(0); }
+        .step-num {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #fef3c7;
+            color: #78350f;
+            font-size: var(--font-caption);
+            font-weight: 700;
+        }
+        .protocol-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .protocol-title { font-size: var(--font-subhead); font-weight: 600; color: var(--color-label); }
+        .protocol-question { font-size: var(--font-footnote); color: var(--color-label-tertiary); line-height: 1.4; }
+        .protocol-needs { font-size: var(--font-caption); color: var(--color-label-secondary); line-height: 1.4; margin-top: 2px; }
+        .protocol-arrow { color: var(--color-label-secondary); align-self: center; }
+
+        .skeleton-hero { height: 220px; margin-bottom: var(--space-6); }
+        .skeleton-overview-right { height: 500px; }
+
+        /* ── Staggered entrance ── */
+        .test-content.active .metric-card,
+        .test-content.active .chart-container,
+        .test-content.active .map-container,
+        .test-content.active .interpretation,
+        .test-content.active .methodology-note,
+        .overview-right > * {
+            animation: fadeInUp 0.4s var(--ease-spring) both;
+        }
+        .metric-card:nth-child(2), .overview-right > :nth-child(2) { animation-delay: 60ms; }
+        .metric-card:nth-child(3), .chart-grid > :nth-child(2) { animation-delay: 120ms; }
+        .metric-card:nth-child(4), .chart-grid > :nth-child(3) { animation-delay: 180ms; }
+        .chart-grid > :nth-child(n+4) { animation-delay: 240ms; }
 
         /* ── Utility ── */
         .chart-container > div[id^="chart-"] { width: 100% !important; }
@@ -1272,13 +1061,13 @@
             }
 
             .skeleton-overview-split { grid-template-columns: 1fr; }
-            .skeleton-overview-card-row { grid-template-columns: 1fr; }
-
-            .methodology-legend { flex-direction: column; gap: var(--space-2); }
-            .methodology-key { padding: var(--space-4); }
-
-            .stat-hero { padding: var(--space-4); }
-            .stat-hero .stat-value { font-size: 2.25rem; }
+            .hero { padding: var(--space-6) var(--space-5); border-radius: var(--radius-lg); }
+            .hero-stats { gap: var(--space-3); }
+            .hero-grid { grid-template-columns: 1fr; gap: var(--space-5); }
+            .hero-chart { max-width: 320px; }
+            .page-question { font-size: var(--font-title3); }
+            .header-tagline { font-size: var(--font-caption); }
+            .finding-card, .protocol { padding: var(--space-5); }
 
             .header { padding: 1.25rem var(--space-4) var(--space-4); }
             .header-text h1 { font-size: var(--font-title3); }
@@ -1291,9 +1080,6 @@
                 min-height: 44px;
             }
             .container { padding: var(--space-4); }
-            .test-subtitle { font-size: 1rem; padding: var(--space-4) 1.25rem; }
-            .overview-banner { padding: 1.25rem; }
-            .overview-banner h2 { font-size: var(--font-headline); }
             .metrics-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-4); }
             .metric-card { padding: var(--space-4); }
             .metric-card .value { font-size: var(--font-title1); }
@@ -1314,7 +1100,12 @@
 
             .chart-header { flex-direction: column; align-items: flex-start; gap: var(--space-2); }
             .chart-description { font-size: var(--font-footnote); }
-            .data-source-badge .tooltip { width: 220px; font-size: var(--font-caption); }
+            .data-source-badge .tooltip { width: min(240px, calc(100vw - 32px)); left: 0; transform: none; font-size: var(--font-caption); }
+            .data-source-badge .tooltip::after { left: 16px; transform: none; }
+            .legend { max-width: 150px; padding: var(--space-2) var(--space-3); line-height: 1.3; }
+            .legend-item { margin: 2px 0; }
+            .legend-color { width: 12px; height: 12px; }
+            .legend-footer { display: none; }
             .legend { font-size: var(--font-caption); padding: var(--space-3); }
             .legend h4 { font-size: var(--font-caption); }
 
@@ -1333,107 +1124,95 @@
         /* ── Responsive: Mobile ── */
         @media (max-width: 480px) {
             .header-text h1 { font-size: var(--font-headline); }
-            .header-meta { font-size: var(--font-caption); }
-            .header-meta span:nth-child(n+4) { display: none; }
-            .toolbar-team-btn .btn-label { display: none; }
             .tab { font-size: var(--font-caption); padding: var(--space-2) var(--space-3); min-height: 44px; }
             .container { padding: var(--space-3); }
             .metrics-grid { grid-template-columns: 1fr; }
             .chart { height: 280px; }
             .map { height: 300px; }
             .metric-card .value { font-size: var(--font-title3); }
-            .stat-hero .stat-value { font-size: 2rem; }
-            .stat-row { grid-template-columns: 1fr; }
-            .stat-secondary + .stat-secondary { border-left: none; border-top: 1px solid var(--color-separator); }
         }
     </style>
 </head>
 <body>
-    <div class="header">
+    <a class="skip-link" href="#app">Skip to content</a>
+    <header class="header">
         <div class="header-inner">
-            <div class="header-top">
-                <img src="/logo.png" alt="SAFE-T" class="header-logo" fetchpriority="high">
-                <div class="header-text">
-                    <h1>SAFE-T <span class="header-sep">/</span> Safety Algorithm Fairness Evaluation for Transportation</h1>
-                    <div class="header-meta">
-                        <span>Durham, NC</span>
-                        <span>&middot;</span>
-                        <span>Census Tract Level</span>
-                        <span>&middot;</span>
-                        <span>AI Equity Auditing Framework</span>
-                    </div>
-                </div>
+            <img src="/favicon.svg" alt="" class="header-logo" width="36" height="36" fetchpriority="high">
+            <div class="header-text">
+                <h1>SAFE-T</h1>
+                <p class="header-tagline">Can the data behind street-safety spending see risk in every neighborhood? A Durham, NC audit.</p>
             </div>
         </div>
-    </div>
+    </header>
 
-    <div class="tabs-bar">
+    <nav class="tabs-bar" aria-label="Sections">
         <div class="tabs-bar-inner">
-            <div class="tabs" role="tablist" aria-label="Equity audit tests">
-                <button class="tab active" data-test="overview" role="tab" aria-selected="true" aria-controls="overview-content">Overview</button>
-                <button class="tab" data-test="test1" role="tab" aria-selected="false" aria-controls="test1-content">Volume Estimation</button>
-                <button class="tab" data-test="test2" role="tab" aria-selected="false" aria-controls="test2-content">Crash Data</button>
-                <button class="tab" data-test="test3" role="tab" aria-selected="false" aria-controls="test3-content">Infrastructure</button>
-                <button class="tab" data-test="test4" role="tab" aria-selected="false" aria-controls="test4-content">Suppressed Demand</button>
+            <div class="tabs" role="tablist" aria-label="Audit tests">
+                <button class="tab active" id="tab-overview" data-test="overview" role="tab" aria-selected="true" aria-controls="overview-content">Overview</button>
+                <button class="tab" id="tab-test1" data-test="test1" role="tab" aria-selected="false" aria-controls="test1-content" tabindex="-1"><span class="tab-num">1</span>Foot traffic</button>
+                <button class="tab" id="tab-test2" data-test="test2" role="tab" aria-selected="false" aria-controls="test2-content" tabindex="-1"><span class="tab-num">2</span>Crash history</button>
+                <button class="tab" id="tab-test3" data-test="test3" role="tab" aria-selected="false" aria-controls="test3-content" tabindex="-1"><span class="tab-num">3</span>Budget allocation</button>
+                <button class="tab" id="tab-test4" data-test="test4" role="tab" aria-selected="false" aria-controls="test4-content" tabindex="-1"><span class="tab-num">4</span>Suppressed demand</button>
             </div>
-            <a href="/team/" class="toolbar-team-btn">
-                <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zm-5.5 6a5.5 5.5 0 0111 0H2.5z"/></svg>
-                <span class="btn-label">Team</span>
-            </a>
         </div>
-    </div>
+    </nav>
 
-    <div class="container">
-        <div class="test-subtitle" id="test-description"></div>
+    <main class="container">
+        <div class="page-head" id="test-description"></div>
         <div id="app">
             <!-- Overview Content -->
-            <div id="overview-content" class="test-content active" role="tabpanel" aria-label="Overview">
-                <div id="overview-skeleton" class="skeleton-loading-overlay">
-                    <div class="skeleton skeleton-overview-banner"></div>
+            <div id="overview-content" class="test-content active" role="tabpanel" aria-labelledby="tab-overview">
+                <div id="overview-skeleton" class="skeleton-loading-overlay" aria-hidden="true">
+                    <div class="skeleton skeleton-hero"></div>
                     <div class="skeleton-overview-split">
                         <div class="skeleton skeleton-overview-map"></div>
-                        <div class="skeleton-overview-right">
-                            <div class="skeleton skeleton-overview-card-hero"></div>
-                            <div class="skeleton-overview-card-row">
-                                <div class="skeleton skeleton-overview-card-sm"></div>
-                                <div class="skeleton skeleton-overview-card-sm"></div>
-                                <div class="skeleton skeleton-overview-card-sm"></div>
-                            </div>
-                        </div>
+                        <div class="skeleton skeleton-overview-right"></div>
                     </div>
                 </div>
-                <div class="overview-banner hidden">
-                    <h2>Durham Transportation Equity Audit</h2>
-                    <p class="banner-description">In Durham, Black residents are <span id="banner-black-population-pct">32</span>% of the population but <span id="banner-black-victim-pct">47</span>% of pedestrian and cyclist crash victims — before any AI tool makes a single allocation decision. SAFE-T measures whether AI transportation tools compound this existing disparity, directing safety investment away from communities already at greatest risk. Because vendor tools are proprietary, we demonstrate the audit methodology using research-calibrated simulations layered on real Census, NCDOT, and OpenStreetMap data — a replicable framework any US city can run.</p>
-                    <p class="banner-stats"><span id="tract-count"></span> Tracts &middot; Volume Estimation → Crash Prediction → Infrastructure → Demand &middot; <span class="banner-scalability">Replicable for any US city using public data</span></p>
-                </div>
+                <section class="hero hidden" aria-labelledby="hero-title">
+                    <p class="hero-eyebrow">Measured · NCDOT pedestrian and cyclist crashes, <span id="hero-years"></span></p>
+                    <div class="hero-grid">
+                    <h2 class="hero-title" id="hero-title">Durham's poorest neighborhoods have <span class="hero-ratio" id="hero-ratio"></span> the pedestrian and cyclist crash rate of its richest.</h2>
+                    <figure class="hero-chart" id="hero-chart">
+                        <figcaption>Crashes per 1,000 residents a year, by income fifth</figcaption>
+                    </figure>
+                    </div>
+                    <dl class="hero-stats">
+                        <div class="hero-stat">
+                            <dt>Black share of victims</dt>
+                            <dd><span id="hero-black-victims"></span> · <span id="hero-black-pop"></span> of residents</dd>
+                        </div>
+                        <div class="hero-stat">
+                            <dt>Records</dt>
+                            <dd><span id="hero-crashes"></span> crashes · <span id="hero-tracts"></span> census tracts</dd>
+                        </div>
+                    </dl>
+                </section>
                 <div class="content-split hidden">
                     <div class="content-map">
                         <div class="map-container">
                             <div class="chart-header">
-                                <h2 id="overview-map-title">Durham Income Distribution by Census Tract</h2>
+                                <h2 id="overview-map-title">Median household income</h2>
                                 <span class="data-source-badge real"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div class="view-toggle" id="toggle-overview-map">
-                                <button class="view-toggle-option active" data-value="income">Income</button>
-                                <button class="view-toggle-option" data-value="tdi">TDI</button>
-                                <button class="view-toggle-option" data-value="no_vehicle">Zero-car</button>
-                                <button class="view-toggle-option" data-value="bus_stops">Bus stops</button>
+                            <div class="view-toggle" id="toggle-overview-map" role="group" aria-label="Map layer">
+                                <button class="view-toggle-option active" data-value="income" aria-pressed="true">Income</button>
+                                <button class="view-toggle-option" data-value="crash_rate" aria-pressed="false">Crash rate</button>
+                                <button class="view-toggle-option" data-value="tdi" aria-pressed="false">Disadvantage index</button>
+                                <button class="view-toggle-option" data-value="no_vehicle" aria-pressed="false">Zero-car</button>
+                                <button class="view-toggle-option" data-value="bus_stops" aria-pressed="false">Bus stops</button>
                                 <div class="view-toggle-indicator"></div>
                             </div>
-                            <div id="overview-map" class="map"></div>
+                            <div id="overview-map" class="map" role="region" aria-label="Map of Durham census tracts"></div>
                         </div>
                     </div>
-                    <div class="overview-right">
-                        <div class="overview-stats" id="overview-cards"></div>
-                    </div>
+                    <div class="overview-right" id="overview-cards"></div>
                 </div>
             </div>
             <!-- End Overview Content -->
-
             <!-- Test 1 Content -->
-            <div id="test1-content" class="test-content" role="tabpanel" aria-label="Volume Estimation">
+            <div id="test1-content" class="test-content" role="tabpanel" aria-labelledby="tab-test1">
                 <div class="metrics-grid" id="metrics"></div>
 
                 <div class="content-split">
@@ -1444,7 +1223,7 @@
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div id="map" class="map"></div>
+                            <div id="map" class="map" role="region" aria-label="Map of simulated count error by census tract"></div>
                         </div>
                     </div>
 
@@ -1455,7 +1234,7 @@
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div id="chart-income" class="chart"></div>
+                            <div id="chart-income" class="chart" role="img" aria-label="Bar chart of simulated count error by income quintile"></div>
                         </div>
 
                         <div class="chart-container">
@@ -1464,7 +1243,7 @@
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div id="chart-race" class="chart"></div>
+                            <div id="chart-race" class="chart" role="img" aria-label="Bar chart of simulated count error by minority share"></div>
                         </div>
 
                         <div class="chart-container">
@@ -1473,7 +1252,7 @@
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div id="chart-scatter" class="chart"></div>
+                            <div id="chart-scatter" class="chart" role="img" aria-label="Scatter plot of simulated tool estimates against true counts"></div>
                         </div>
 
                         <div class="chart-container">
@@ -1482,14 +1261,14 @@
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div id="chart-histogram" class="chart"></div>
+                            <div id="chart-histogram" class="chart" role="img" aria-label="Dot plot of count error per counter by income quintile"></div>
                         </div>
 
                         <div id="interpretation"></div>
                         <div class="methodology-note">
-                            <h3>Methodology Basis</h3>
-                            <p>Bias parameters are calibrated to findings in peer-reviewed research on AI volume estimation tools: <strong>20–30% undercounting</strong> in low-income areas; <strong>15–25%</strong> in high-minority areas; <strong>10–20%</strong> additional undercount in areas with poor infrastructure. These ranges represent the audit input parameters — applying them to a real city demonstrates the equity impact framework that any government can replicate once they have access to vendor output data.</p>
-                            <p class="methodology-note-refs">Key sources: FHWA Non-Motorized Transportation Pilot Program evaluation reports; Schweizer et al. (2021) on demographic underrepresentation in GPS-based travel surveys; Jestico et al. (2016) on spatial bias in Strava cycling data. Bias magnitudes are simulation assumptions — the direction of each disparity is documented; exact magnitudes vary across cities and tools.</p>
+                            <h3>Method</h3>
+                            <p>Fifteen counter sites are placed across the income fifths with synthetic true volumes. The simulated tool undercounts by 25% in low-income tracts and 20% in high-minority tracts, and overcounts by 8% in high-income tracts. A tract that is both low-income and high-minority gets both undercounts, 0.75 × 0.80 = 0.60, which is why the poorest fifth shows about −40%.</p>
+                            <p>Those sizes are assumptions. The direction follows Roy et al. (2019), who found Strava counts rise about 12% for each 10-point rise in a tract's white population share. Replace the simulated estimates with a vendor's tract-level output and real counter data to measure the actual gap.</p>
                         </div>
                     </div>
                 </div>
@@ -1497,53 +1276,53 @@
             <!-- End Test 1 Content -->
 
             <!-- Test 2 Content -->
-            <div id="test2-content" class="test-content" role="tabpanel" aria-label="Crash Data">
-                <div id="test2-baseline"></div>
+            <div id="test2-content" class="test-content" role="tabpanel" aria-labelledby="tab-test2">
                 <div class="metrics-grid" id="test2-metrics"></div>
 
                 <div class="content-split">
                     <div class="content-map">
                         <div class="map-container">
                             <div class="chart-header">
-                                <h2>Crash Distribution Map</h2>
+                                <h2>Where crashes happen</h2>
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div class="view-toggle" id="toggle-crash-view">
-                                <button class="view-toggle-option active" data-value="actual">Actual</button>
-                                <button class="view-toggle-option" data-value="predicted">AI Predicted</button>
+                            <div class="view-toggle" id="toggle-crash-view" role="group" aria-label="Map layer">
+                                <button class="view-toggle-option active" data-value="rate" aria-pressed="true">Rate per 1,000</button>
+                                <button class="view-toggle-option" data-value="actual" aria-pressed="false">Latest year</button>
+                                <button class="view-toggle-option" data-value="predicted" aria-pressed="false">Predicted</button>
                                 <div class="view-toggle-indicator"></div>
                             </div>
-                            <div id="map-crashes" class="map"></div>
+                            <div id="map-crashes" class="map" role="region" aria-label="Map of crashes by census tract"></div>
                         </div>
                     </div>
 
                     <div class="chart-grid">
                         <div class="chart-container">
                             <div class="chart-header">
-                                <h2>Model Performance by Quintile</h2>
+                                <h2>Crash rate by income</h2>
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div id="chart-confusion" class="chart"></div>
+                            <div id="chart-rate" class="chart" role="img" aria-label="Bar chart of crash rate per 1,000 residents by income quintile"></div>
                         </div>
 
                         <div class="chart-container">
                             <div class="chart-header">
-                                <h2>Crashes Over Time</h2>
+                                <h2>High-risk tracts flagged by crash history</h2>
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div id="chart-timeseries" class="chart"></div>
+                            <div id="chart-detection" class="chart" role="img" aria-label="Bar chart of the share of high-risk tract-years flagged, by income quintile, with 95% intervals"></div>
                         </div>
 
                         <div class="chart-container">
                             <div class="chart-header">
-                                <h2>Prediction Error by Income Quintile</h2>
+                                <h2>Crashes per year</h2>
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div id="chart-error-quintile" class="chart"></div>
+                            <div id="chart-timeseries" class="chart" role="img" aria-label="Line chart of yearly crashes in the poorest and richest fifths, actual and predicted"></div>
                         </div>
 
                         <div id="test2-interpretation"></div>
@@ -1553,51 +1332,41 @@
             <!-- End Test 2 Content -->
 
             <!-- Test 3 Content -->
-            <div id="test3-content" class="test-content" role="tabpanel" aria-label="Infrastructure">
+            <div id="test3-content" class="test-content" role="tabpanel" aria-labelledby="tab-test3">
                 <div class="metrics-grid" id="test3-metrics"></div>
 
                 <div class="content-split">
                     <div class="content-map">
                         <div class="map-container">
                             <div class="chart-header">
-                                <h2>Infrastructure Recommendations Map</h2>
+                                <h2>Where the money goes</h2>
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div class="view-toggle" id="toggle-allocation-type">
-                                <button class="view-toggle-option active" data-value="ai">AI Allocation</button>
-                                <button class="view-toggle-option" data-value="need">Need-Based</button>
+                            <div class="view-toggle" id="toggle-allocation-type" role="group" aria-label="Allocation">
+                                <button class="view-toggle-option active" data-value="ai" aria-pressed="true">Simulated tool</button>
+                                <button class="view-toggle-option" data-value="need" aria-pressed="false">By crash rate</button>
                                 <div class="view-toggle-indicator"></div>
                             </div>
-                            <div id="map-infrastructure" class="map"></div>
+                            <div id="map-infrastructure" class="map" role="region" aria-label="Map of crash rate and funded projects"></div>
                         </div>
                     </div>
 
                     <div class="chart-grid">
                         <div class="chart-container">
                             <div class="chart-header">
-                                <h2>Budget Allocation by Income</h2>
+                                <h2>Budget by income</h2>
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div id="chart-allocation" class="chart"></div>
-                        </div>
-
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h2>Equity Comparison: AI vs Need-Based</h2>
-                                <span class="data-source-badge"><span class="tooltip"></span></span>
-                            </div>
-                            <p class="chart-description"></p>
-                            <div id="chart-radar" class="chart"></div>
+                            <div id="chart-allocation" class="chart" role="img" aria-label="Bar chart of budget by income quintile under two allocations"></div>
                         </div>
 
                         <div id="test3-interpretation"></div>
                         <div class="methodology-note">
-                            <h3>Methodology Basis</h3>
-                            <p>Infrastructure gaps are derived from real OpenStreetMap feature density per census tract (sidewalk coverage, crosswalk count, bike lane km, signal density — normalized per 1,000 residents). Danger scores weight these gaps against census demographics to estimate crash risk.</p>
-                            <p>The AI allocation model and need-based allocation model are parameterized simulations — not evaluations of a specific vendor product. The AI model applies a 0.6 income bias weight (calibrated to documented patterns in AI transportation tools) alongside a 0.4 danger weight, simulating how volume-prediction bias propagates into budget decisions. The need-based model allocates purely by danger score.</p>
-                            <p class="methodology-note-refs">Basis: real OSM infrastructure data + Census ACS demographics; simulated AI allocation bias (strength=0.6) — an illustrative parameter informed by the demographic skew Roy et al. (2019) document in Strava data, not a measured value for any specific vendor tool.</p>
+                            <h3>Method</h3>
+                            <p>Need is each tract's NCDOT pedestrian and cyclist crashes per 1,000 residents a year. Each funded project fills the tract's weakest OpenStreetMap category (crossings, bike lanes, signals or traffic calming).</p>
+                            <p>The simulated tool ranks tracts by 0.6 × median income + 0.4 × crash rate (both rescaled 0–1), standing in for a tool that follows where data and advocacy are densest. Swap in a real tool's project list and the same comparison measures it.</p>
                         </div>
                     </div>
                 </div>
@@ -1605,7 +1374,7 @@
             <!-- End Test 3 Content -->
 
             <!-- Test 4 Content -->
-            <div id="test4-content" class="test-content" role="tabpanel" aria-label="Suppressed Demand">
+            <div id="test4-content" class="test-content" role="tabpanel" aria-labelledby="tab-test4">
                 <div class="metrics-grid" id="test4-metrics"></div>
 
                 <div class="content-split">
@@ -1616,13 +1385,13 @@
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div class="view-toggle" id="toggle-demand-view">
-                                <button class="view-toggle-option active" data-value="suppressed">Suppressed</button>
-                                <button class="view-toggle-option" data-value="potential">Potential</button>
-                                <button class="view-toggle-option" data-value="actual">Actual</button>
+                            <div class="view-toggle" id="toggle-demand-view" role="group" aria-label="Demand layer">
+                                <button class="view-toggle-option active" data-value="suppressed" aria-pressed="true">Suppressed</button>
+                                <button class="view-toggle-option" data-value="potential" aria-pressed="false">Potential</button>
+                                <button class="view-toggle-option" data-value="actual" aria-pressed="false">Actual</button>
                                 <div class="view-toggle-indicator"></div>
                             </div>
-                            <div id="map-demand" class="map"></div>
+                            <div id="map-demand" class="map" role="region" aria-label="Map of modeled walking and cycling demand"></div>
                         </div>
                     </div>
 
@@ -1633,47 +1402,44 @@
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div id="chart-funnel" class="chart"></div>
+                            <div id="chart-funnel" class="chart" role="img" aria-label="Bar chart of modeled suppression rate by income quintile"></div>
                         </div>
 
                         <div class="chart-container">
                             <div class="chart-header">
-                                <h2>AI Detection Capability</h2>
+                                <h2>Detector comparison (modeled)</h2>
                                 <span class="data-source-badge"><span class="tooltip"></span></span>
                             </div>
                             <p class="chart-description"></p>
-                            <div id="chart-scorecard" class="chart"></div>
+                            <div id="chart-scorecard" class="chart" role="img" aria-label="Bar chart comparing two modeled detectors on three measures"></div>
                         </div>
 
                         <div id="test4-interpretation"></div>
                         <div class="methodology-note">
-                            <h3>Methodology Basis</h3>
-                            <p>Suppressed demand is modeled from real OpenStreetMap per-capita infrastructure scores (sidewalks, crosswalks, bike lanes, bus stops per 1,000 residents per tract). Suppression factor: <em>1 − score²</em> applied to a census-proportional potential demand baseline. Q1 tracts score lower on infrastructure quality, producing higher suppression — consistent with documented elasticity of active transport to infrastructure investment.</p>
-                            <p>The three AI detection profiles (Naive, Sophisticated, Human Expert) are parameterized models, not evaluations of specific vendor products. Naive AI correlates with observed demand (which collapses toward zero in suppressed areas); Sophisticated AI partially corrects for infrastructure quality.</p>
-                            <p class="methodology-note-refs">Basis: Ewing &amp; Cervero (2010) meta-analysis on built environment and travel behavior; NACTO Urban Street Design Guide infrastructure standards; FHWA Active Transportation research program.</p>
+                            <h3>Method</h3>
+                            <p>Each tract's infrastructure score weights OpenStreetMap crossings, footways, cycleways, traffic signals and traffic calming per 1,000 residents. Potential demand scales with population, rising up to 1.5× in the poorest tracts for car-free households. Actual demand is potential × score², so suppression is 1 − score².</p>
+                            <p>The naive detector follows observed demand, which collapses where infrastructure is missing. The infrastructure-aware detector partly corrects for the score. Both are models; neither is a vendor product.</p>
                         </div>
                     </div>
                 </div>
             </div>
             <!-- End Test 4 Content -->
         </div>
-    </div>
+    </main>
 
     <footer class="site-footer">
         <div class="footer-inner">
             <div class="footer-origin">
                 <span>SAFE-T AI · NC Nonprofit</span>
-                <div class="footer-team">
-                    <a href="https://www.linkedin.com/in/lindsay-gross1/" target="_blank" rel="noopener">Lindsay Gross</a>
-                    <span class="separator">&middot;</span>
-                    <a href="https://www.linkedin.com/in/arnavmahale/" target="_blank" rel="noopener">Arnav Mahale</a>
-                    <span class="separator">&middot;</span>
-                    <a href="https://www.linkedin.com/in/shreya-mendi/" target="_blank" rel="noopener">Shreya Mendi</a>
-                    <span class="separator">&middot;</span>
-                    <a href="https://www.linkedin.com/in/jonasnvs/" target="_blank" rel="noopener">Jonas Neves</a>
-                </div>
+                <ul class="footer-team">
+                    <li><a href="https://www.linkedin.com/in/lindsay-gross1/" target="_blank" rel="noopener">Lindsay Gross</a></li>
+                    <li><a href="https://www.linkedin.com/in/jonasnvs/" target="_blank" rel="noopener">Jonas Neves</a></li>
+                    <li><a href="https://www.linkedin.com/in/arnavmahale/" target="_blank" rel="noopener">Arnav Mahale</a></li>
+                    <li><a href="https://www.linkedin.com/in/shreya-mendi/" target="_blank" rel="noopener">Shreya Mendi</a></li>
+                </ul>
             </div>
             <div class="footer-links">
+                <a href="/team/">Team workspace</a>
                 <a href="https://github.com/safe-t-ai/safe-t-ai.github.io" target="_blank" rel="noopener">
                     <svg width="18" height="18" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                     Source Code

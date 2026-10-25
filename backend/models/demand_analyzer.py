@@ -10,7 +10,7 @@ import pandas as pd
 import geopandas as gpd
 from typing import Dict
 from scipy.stats import pearsonr
-from config import SUPPRESSED_DEMAND_CONFIG, HIGH_SUPPRESSION_THRESHOLD, DEFAULT_RANDOM_SEED, QUINTILE_LABELS, HUMAN_EXPERT_DEMAND_BASELINE
+from config import SUPPRESSED_DEMAND_CONFIG, HIGH_SUPPRESSION_THRESHOLD, DEFAULT_RANDOM_SEED, QUINTILE_LABELS
 
 
 class SuppressedDemandAnalyzer:
@@ -32,7 +32,7 @@ class SuppressedDemandAnalyzer:
         """
         if infrastructure_df is None:
             raise ValueError(
-                "infrastructure_df is required. Run fetch_osm_infrastructure.py first."
+                "infrastructure_df is required. Run notebooks/01_fetch_data.ipynb first."
             )
         self.census_gdf = census_gdf.copy()
         self.infrastructure_df = infrastructure_df
@@ -375,7 +375,6 @@ class SuppressedDemandAnalyzer:
                 'bias_q5': float(q5_soph_error),
                 'detection_rate_high_suppression': float(detection_sophisticated)
             },
-            'human_expert_baseline': HUMAN_EXPERT_DEMAND_BASELINE
         }
 
     def generate_network_flow(self, demand_df: pd.DataFrame, top_n: int = 20) -> Dict:

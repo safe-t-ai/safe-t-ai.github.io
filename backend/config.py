@@ -21,7 +21,7 @@ TIGER_TRACTS_LAYER = 8 # Census Tracts layer ID (was 6 in ACS2022, moved to 8 in
 # Simulation assumptions for crowdsourced active-transportation data bias.
 # Direction (underrepresentation of low-income and minority users) is supported
 # by literature: Roy et al. (2019) found ~12% increase in Strava counts per 10%
-# increase in white population share; Williams & Behrendt (2025) document equity
+# increase in white population share; Williams & Behrendt (2025) discuss equity
 # implications of Strava Metro demographic skew. Specific magnitudes are
 # plausible estimates, not empirically derived.
 BIAS_PARAMETERS = {
@@ -33,8 +33,14 @@ BIAS_PARAMETERS = {
 
 # Temporal configuration
 CRASH_ANALYSIS_YEARS = [2019, 2020, 2021, 2022, 2023, 2024]
-CRASH_TRAINING_YEARS = [2019, 2020, 2021, 2022, 2023]
-CRASH_TEST_YEARS = [2024]
+# Pedestrian and cyclist crashes only (wheelchair users are pedestrians under NC law);
+# scooter, skateboard and 'Other' records are excluded.
+CRASH_NM_TYPES = ['Pedestrian', 'Wheelchair', 'Bicyclist', 'Other Cyclist']
+
+# Each backtest year is predicted from all earlier years.
+CRASH_BACKTEST_YEARS = [2021, 2022, 2023, 2024]
+# High-risk tract: crash count above this citywide quantile in its year.
+CRASH_HIGH_RISK_QUANTILE = 2 / 3
 
 # Infrastructure project types
 INFRASTRUCTURE_PROJECT_TYPES = {
@@ -44,13 +50,8 @@ INFRASTRUCTURE_PROJECT_TYPES = {
     'speed_reduction': {'cost': 75_000, 'safety_impact': 0.20},
 }
 INFRASTRUCTURE_DEFAULT_BUDGET = 5_000_000
-
-# Danger score parameters
-DANGER_SCORE_CONFIG = {
-    'base_danger': 15.0,
-    'income_multiplier_min': 1.0,
-    'income_multiplier_max': 1.8,
-}
+# Simulated planning tool: weight on median income vs crash rate when ranking tracts
+INFRASTRUCTURE_AI_INCOME_WEIGHT = 0.6
 
 # Model reproducibility
 DEFAULT_RANDOM_SEED = 42
@@ -101,17 +102,6 @@ SUPPRESSED_DEMAND_CONFIG = {
     'detection_threshold_multiplier': 1.5, # Multiple of actual_demand that counts as "detected" in high-suppression tracts
 }
 
-# Hypothetical human-expert benchmark for suppressed demand detection.
-# Not empirically measured — represents estimated expert survey capability used for comparison only.
-HUMAN_EXPERT_DEMAND_BASELINE = {
-    'correlation_with_potential': 0.85,
-    'rmse': 60.0,
-    'bias_q1': -5.0,
-    'bias_q5': -5.0,
-    'detection_rate_high_suppression': 80.0,
-    '_note': 'Hypothetical benchmark; not empirically measured.',
-}
-
 HIGH_SUPPRESSION_THRESHOLD = 70  # Suppression % that defines "high suppression"
 
 # OpenStreetMap / Overpass API
@@ -159,7 +149,6 @@ PLAUSIBILITY_RANGES = {
     'durham_total_population': (250_000, 400_000),  # Census ACS estimate ~311k
     'median_income_range': (15_000, 250_000),     # Per-tract median household income
     'budget_allocation_total': (4_500_000, 5_500_000),  # INFRASTRUCTURE_DEFAULT_BUDGET ± margin
-    'confusion_matrix_min_f1_spread': 0.05,      # Min spread between best/worst quintile F1
     'osm_crossings_total': (500, 10_000),           # Pedestrian crossings in Durham (~3,200)
     'osm_bike_infra_total': (50, 5_000),            # Cycleways and shared paths (~1,300)
     'osm_traffic_signals_total': (100, 5_000),      # Traffic signals (~1,000)

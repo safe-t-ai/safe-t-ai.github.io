@@ -10,7 +10,7 @@ export function renderMetrics(elementId, metrics) {
     document.getElementById(elementId).innerHTML = metrics.map(m => `
         <div class="metric-card">
             <h3>${m.title}</h3>
-            <div class="value ${m.sentiment}">${m.value}</div>
+            <div class="value ${m.sentiment ?? ''}">${m.value}</div>
             <div class="subtext">${m.subtext}</div>
         </div>
     `).join('');
@@ -29,8 +29,12 @@ export function initViewToggle(containerId, onChange) {
     function activate(option) {
         const current = container.querySelector('.view-toggle-option.active');
         if (current === option) return;
-        options.forEach(o => o.classList.remove('active'));
+        options.forEach(o => {
+            o.classList.remove('active');
+            o.setAttribute('aria-pressed', 'false');
+        });
         option.classList.add('active');
+        option.setAttribute('aria-pressed', 'true');
         indicator.style.width = `${option.offsetWidth}px`;
         indicator.style.transform = `translateX(${option.offsetLeft}px)`;
         onChange(/** @type {HTMLElement} */ (option).dataset.value);
@@ -58,10 +62,11 @@ export function setChartMeta(id, { badge, label, tooltip, description }) {
     if (!el) return;
     const container = el.closest('.chart-container, .map-container');
     if (!container) return;
-    const badgeEl = container.querySelector('.data-source-badge');
+    const badgeEl = /** @type {HTMLElement | null} */ (container.querySelector('.data-source-badge'));
     if (badgeEl) {
         badgeEl.className = `data-source-badge ${badge}`;
-        badgeEl.innerHTML = `${label}<span class="tooltip">${tooltip}</span>`;
+        badgeEl.tabIndex = 0;
+        badgeEl.innerHTML = `${label}<span class="tooltip" role="tooltip">${tooltip}</span>`;
     }
     const descEl = container.querySelector('.chart-description');
     if (descEl) descEl.textContent = description;
@@ -73,14 +78,14 @@ export function setChartMeta(id, { badge, label, tooltip, description }) {
  * @param {string} [title]
  * @param {{ type: 'real'|'modeled'|'simulated', label: string, tooltip?: string }} [badge]
  */
-export function renderInterpretation(elementId, findings, title = 'Key Findings', badge) {
+export function renderInterpretation(elementId, findings, title = 'Findings', badge) {
     if (!findings || findings.length === 0) return;
 
     document.getElementById(elementId).innerHTML = `
         <div class="interpretation">
             <div class="interpretation-header">
                 <h3>${title}</h3>
-                ${badge ? `<span class="data-source-badge ${badge.type}">${badge.label}<span class="tooltip">${badge.tooltip ?? ''}</span></span>` : ''}
+                ${badge ? `<span class="data-source-badge ${badge.type}" tabindex="0">${badge.label}<span class="tooltip" role="tooltip">${badge.tooltip ?? ''}</span></span>` : ''}
             </div>
             <ul>
                 ${findings.map(f => `<li>${f}</li>`).join('')}

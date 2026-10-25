@@ -11,7 +11,7 @@ const PROJECT_COLORS = {
     crosswalk: '#f59e0b',
     bike_lane: '#0d9488',
     traffic_signal: '#6366f1',
-    speed_reduction: '#ea580c'
+    speed_reduction: '#db2777'
 };
 
 export class InfrastructureAudit {
@@ -40,61 +40,53 @@ export class InfrastructureAudit {
     }
 
     renderInterpretation() {
-        const { findings, summary } = this.data.report;
+        const { ai_allocation: ai, need_based_allocation: need } = this.data.budgetAllocation;
+        const total = Object.values(ai.by_quintile).reduce((x, y) => x + y, 0);
+        const share = (/** @type {number} */ v) => `${Math.round((v / total) * 100)}%`;
         renderInterpretation('test3-interpretation', [
-            ...findings,
-            `AI allocates to ${summary.ai_projects} projects vs ${summary.need_based_projects} need-based projects`
-        ], 'Key Findings', {
+            `Ranked by real crash rates, the poorest fifth of tracts would get ${share(need.by_quintile['Q1 (Poorest)'])} of the budget. The simulated income-weighted tool gives it ${share(ai.by_quintile['Q1 (Poorest)'])}.`,
+            `Under that tool, the richest fifth gets $${ai.per_capita['Q5 (Richest)'].toFixed(0)} per resident and the poorest $${ai.per_capita['Q1 (Poorest)'].toFixed(0)}.`,
+            'The size of the gap is set by the simulated weighting. With a real tool\u2019s project list, the same comparison measures it.',
+        ], 'Findings', {
             type: 'modeled',
-            label: 'Modeled',
-            tooltip: 'Danger scores and budget allocation are modeled. Infrastructure gap inputs are real OpenStreetMap per-capita feature density per census tract.'
+            label: 'Partly simulated',
+            tooltip: 'Need side: real NCDOT crash rates and OpenStreetMap gaps. Tool side: simulated ranking that weights median income 0.6 and crash rate 0.4.',
         });
     }
 
     renderMetrics() {
-        const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
-
-        const q1AI = ai_allocation.by_quintile['Q1 (Poorest)'];
-        const q5AI = ai_allocation.by_quintile['Q5 (Richest)'];
-        const q1Need = need_based_allocation.by_quintile['Q1 (Poorest)'];
-        const q1Gap = q1Need - q1AI;
-        const needRatio = (need_based_allocation.per_capita['Q1 (Poorest)'] / need_based_allocation.per_capita['Q5 (Richest)']);
-        const aiAbsoluteRatio = q5AI / q1AI;
+        const { ai_allocation: ai, need_based_allocation: need } = this.data.budgetAllocation;
+        const q1 = 'Q1 (Poorest)', q5 = 'Q5 (Richest)';
+        const total = Object.values(ai.by_quintile).reduce((x, y) => x + y, 0);
+        const pct = (/** @type {number} */ v) => `${Math.round((v / total) * 100)}%`;
 
         renderMetrics('test3-metrics', [
             {
-                title: 'Q1 Allocation Gap',
-                value: `$${(q1Gap / 1e6).toFixed(1)}M`,
-                subtext: `Q1 underallocated vs need-based per $5M safety cycle`,
-                sentiment: 'value-danger'
+                title: 'Poorest fifth, need-based',
+                value: pct(need.by_quintile[q1]),
+                subtext: `of a $${(total / 1e6).toFixed(0)}M budget when ranked by crash rate`,
+                sentiment: '',
             },
             {
-                title: 'Need-Based Ratio',
-                value: needRatio.toFixed(0) + 'x',
-                subtext: `Q1 receives ${needRatio.toFixed(0)}x more per capita under danger-driven allocation`,
-                sentiment: 'value-success'
+                title: 'Poorest fifth, simulated tool',
+                value: pct(ai.by_quintile[q1]),
+                subtext: `$${((need.by_quintile[q1] - ai.by_quintile[q1]) / 1e6).toFixed(1)}M short of need`,
+                sentiment: '',
             },
             {
-                title: 'AI Gini Coefficient',
-                value: ai_allocation.gini_coefficient.toFixed(2),
-                subtext: 'Budget inequality across tracts (0=equal, 1=max)',
-                sentiment: 'value-warning'
+                title: 'Need-based $ per resident, poorest vs richest',
+                value: `${(need.per_capita[q1] / need.per_capita[q5]).toFixed(0)}×`,
+                subtext: 'Budget follows crash counts, so this exceeds the crash-rate gap',
             },
-            {
-                title: 'AI Absolute: Q5 vs Q1',
-                value: `$${(q5AI / 1000).toFixed(0)}k vs $${(q1AI / 1000).toFixed(0)}k`,
-                subtext: `AI sends ${aiAbsoluteRatio.toFixed(1)}× more dollars to the wealthiest areas than the poorest`,
-                sentiment: 'value-danger'
-            }
         ]);
     }
 
     renderMap() {
         setChartMeta('map-infrastructure', {
             badge: 'modeled',
-            label: 'Modeled',
-            tooltip: 'Safety need defined by danger scores — income-weighted crash risk per tract, calibrated to documented 2–5x higher pedestrian fatality rates in low-income areas (Vision Zero literature). Project types reflect real infrastructure gaps from OpenStreetMap per-capita feature density.',
-            description: 'Safety project locations from AI vs need-based allocation. Shading shows danger scores (higher = more need); markers show projects. Toggle to compare.',
+            label: 'Partly simulated',
+            tooltip: 'Shading: real NCDOT pedestrian and cyclist crashes per 1,000 residents a year. Markers: each project fills its tract\u2019s biggest OpenStreetMap infrastructure gap.',
+            description: 'Shading shows crash rate; markers show funded projects. Toggle between the simulated tool and a crash-rate ranking.',
         });
         this.map = new DurhamMap('map-infrastructure').initialize();
 
@@ -111,12 +103,12 @@ export class InfrastructureAudit {
             'danger_score',
             {
                 fillOpacity: 0.6,
-                colors: ['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15'],
+                colors: ['#f1f5f9', '#cbd5e1', '#94a3b8', '#64748b', '#334155'],
                 breaks: dangerBreaks,
                 popupFields: [
                     { label: 'Median Income', field: 'median_income_y', format: v => `$${v?.toLocaleString()}` },
                     { label: 'Minority %', field: 'pct_minority', format: v => `${v?.toFixed(1)}%` },
-                    { label: 'Danger Score', field: 'danger_score', format: v => v?.toFixed(1) },
+                    { label: 'Crashes / 1k / yr', field: 'danger_score', format: v => v?.toFixed(2) },
                     { label: 'Annual Crashes', field: 'annual_crashes', format: v => v?.toLocaleString() }
                 ]
             }
@@ -130,7 +122,7 @@ export class InfrastructureAudit {
                 color,
                 label: type.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())
             })),
-            footer: 'Marker size = project cost'
+            footer: 'Shading: crashes per 1,000 residents a year, darker is higher. Marker size: project cost.'
         });
 
         this._onResize = () => {
@@ -192,7 +184,6 @@ export class InfrastructureAudit {
 
     renderCharts() {
         this.renderAllocationChart();
-        this.renderEquityComparison();
         this.setupCrossFiltering();
     }
 
@@ -211,16 +202,16 @@ export class InfrastructureAudit {
     renderAllocationChart() {
         setChartMeta('chart-allocation', {
             badge: 'modeled',
-            label: 'Modeled',
-            tooltip: '$5M budget allocated across income quintiles. Project types reflect real infrastructure gaps from OpenStreetMap density data.',
-            description: 'AI allocation closely mirrors need-based in total but distributes dollars nearly equally across quintiles — ignoring the 15× per-capita need differential. Hover a bar to highlight corresponding tracts on the map.',
+            label: 'Partly simulated',
+            tooltip: 'The same budget allocated two ways: by the simulated income-weighted tool, and by real crash rate.',
+            description: 'Dollars per income quintile. Hover a bar to highlight those tracts on the map.',
         });
         const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
         const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
 
         const allocationSeries = [
-            { name: 'AI Allocation', allocation: ai_allocation, color: COLORS.error, delay: 0 },
-            { name: 'Need-Based', allocation: need_based_allocation, color: COLORS.success, delay: 60 }
+            { name: 'Simulated tool', allocation: ai_allocation, color: COLORS.error, delay: 0 },
+            { name: 'By crash rate', allocation: need_based_allocation, color: COLORS.success, delay: 60 }
         ];
 
         const option = {
@@ -264,87 +255,6 @@ export class InfrastructureAudit {
         };
 
         this.charts.allocation = initChart('chart-allocation', option);
-    }
-
-    renderEquityComparison() {
-        setChartMeta('chart-radar', {
-            badge: 'modeled',
-            label: 'Modeled',
-            tooltip: 'Equity metrics comparing AI-driven vs need-based allocation. Infrastructure gaps derived from OpenStreetMap feature density per census tract.',
-            description: 'Four equity dimensions normalized to 0–100 for comparison. Each dimension uses its own scale (not a single composite). Equal-weight normalization is a modeling choice — the dimensions are not inherently commensurable.',
-        });
-        const { ai_allocation, need_based_allocation } = this.data.budgetAllocation;
-        const { summary } = this.data.report;
-
-        const normalize = (val, max) => Math.min((val / max) * 100, 100);
-
-        // Normalize each dimension against the max across both strategies
-        // so neither clips to 100 and relative scale is preserved.
-        const maxDir = Math.max(
-            ai_allocation.disparate_impact_ratio,
-            need_based_allocation.disparate_impact_ratio
-        );
-        const maxQ1PerCap = Math.max(
-            ai_allocation.per_capita['Q1 (Poorest)'],
-            need_based_allocation.per_capita['Q1 (Poorest)']
-        );
-        const maxProjects = Math.max(summary.ai_projects, summary.need_based_projects);
-
-        const metrics = ['Equity', 'Q1 Per Capita', 'Budget Equality', 'Project Count'];
-
-        const seriesEntries = [
-            { name: 'AI Allocation', alloc: ai_allocation, projects: summary.ai_projects, color: COLORS.error },
-            { name: 'Need-Based', alloc: need_based_allocation, projects: summary.need_based_projects, color: COLORS.success }
-        ];
-
-        const option = {
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: { type: 'shadow' },
-                formatter: (params) => {
-                    const labels = [
-                        `Equity ratio (Q1/Q5 per capita)`,
-                        `Q1 per-capita budget`,
-                        `Budget equality (1 − Gini)`,
-                        `Projects funded`
-                    ];
-                    return `<strong>${params[0].name}</strong><br/>` +
-                        params.map((p, i) => `${p.marker} ${p.seriesName}: ${Number(p.value).toFixed(1)} — ${labels[i]}`).join('<br/>');
-                }
-            },
-            legend: {
-                data: seriesEntries.map(s => s.name),
-                bottom: 10
-            },
-            grid: {
-                left: '3%', right: '4%', bottom: '15%',
-                containLabel: true
-            },
-            xAxis: {
-                type: 'category',
-                data: metrics,
-                axisLabel: { fontSize: 11 }
-            },
-            yAxis: {
-                type: 'value',
-                name: 'Score (0-100)',
-                max: 100
-            },
-            series: seriesEntries.map(({ name, alloc, projects, color }) => ({
-                name,
-                type: 'bar',
-                data: [
-                    normalize(alloc.disparate_impact_ratio, maxDir),
-                    normalize(alloc.per_capita['Q1 (Poorest)'], maxQ1PerCap),
-                    (1 - alloc.gini_coefficient) * 100,
-                    normalize(projects, maxProjects)
-                ],
-                itemStyle: { color, borderRadius: [3, 3, 0, 0] },
-                animationDelay: (idx) => idx * 120
-            }))
-        };
-
-        this.charts.equity = initChart('chart-radar', option);
     }
 
     setupAllocationToggle() {

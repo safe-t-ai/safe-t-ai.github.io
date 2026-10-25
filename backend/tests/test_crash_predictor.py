@@ -2,9 +2,8 @@
 Tests for crash prediction auditor model.
 """
 
-import pandas as pd
-from config import CRASH_ANALYSIS_YEARS
-from models.crash_predictor import CrashPredictionAuditor
+from config import CRASH_ANALYSIS_YEARS, CRASH_BACKTEST_YEARS
+from models.crash_predictor import CrashPredictionAuditor, wilson_interval
 
 
 def test_crash_predictor_initialization(sample_census_gdf):
@@ -40,27 +39,39 @@ def test_load_real_crash_data(sample_census_gdf, tmp_path):
     assert crash_by_tract['crash_count'].min() >= 0
 
 
-def test_train_ai_on_real_data(sample_census_gdf, tmp_path):
-    """Test AI model training on real crash data and prediction evaluation."""
-    auditor = CrashPredictionAuditor(sample_census_gdf)
-
-    # Create crash data spanning training and test years
+def _crash_csv(tmp_path, per_tract_counts):
+    """per_tract_counts: {(lat, lon): count per year}"""
     rows = []
     for year in CRASH_ANALYSIS_YEARS:
-        for lat, lon in [(0.5, 0.5), (1.5, 0.5), (2.5, 0.5), (3.5, 0.5), (4.5, 0.5)]:
-            rows.append(f"{year}-06-15,{year},{lat},{lon}")
+        for (lat, lon), n in per_tract_counts.items():
+            rows += [f"{year}-06-15,{year},{lat},{lon}"] * n
+    path = tmp_path / "crashes.csv"
+    path.write_text("CrashDate,CrashYear,Latitude,Longitude\n" + "\n".join(rows) + "\n")
+    return path
 
-    crash_csv = tmp_path / "crashes.csv"
-    crash_csv.write_text(
-        "CrashDate,CrashYear,Latitude,Longitude\n" + "\n".join(rows) + "\n"
-    )
 
-    crash_df = auditor.load_real_crash_data(crash_csv)
-    predictions = auditor.train_ai_on_real_data(crash_df)
+def test_backtest_uses_only_earlier_years(sample_census_gdf, tmp_path):
+    auditor = CrashPredictionAuditor(sample_census_gdf)
+    crash_df = auditor.load_real_crash_data(_crash_csv(tmp_path, {(0.5, 0.5): 4, (1.5, 0.5): 1}))
+    bt = auditor.backtest(crash_df)
 
-    assert 'ai_predicted_crashes' in predictions.columns
-    assert 'prediction_error' in predictions.columns
-    assert 'prediction_error_abs' in predictions.columns
-    assert 'prediction_error_pct' in predictions.columns
-    assert predictions['ai_predicted_crashes'].min() >= 0
-    assert auditor.ai_model is not None
+    assert sorted(bt['year'].unique()) == CRASH_BACKTEST_YEARS
+    # Constant history: prediction equals the yearly count
+    assert (bt[bt['tract_id'] == '001']['predicted'] == 4).all()
+
+
+def test_high_risk_uses_one_citywide_threshold(sample_census_gdf, tmp_path):
+    auditor = CrashPredictionAuditor(sample_census_gdf)
+    crash_df = auditor.load_real_crash_data(_crash_csv(tmp_path, {(0.5, 0.5): 5, (1.5, 0.5): 1}))
+    bt = auditor.backtest(crash_df)
+
+    # Only the busiest tract clears the citywide cut, whatever its quintile
+    assert set(bt[bt['high_risk']]['tract_id']) == {'001'}
+    detection = auditor.detection_by_quintile(bt)
+    assert detection['Q1 (Poorest)']['flagged'] == detection['Q1 (Poorest)']['high_risk'] == len(CRASH_BACKTEST_YEARS)
+
+
+def test_wilson_interval_bounds():
+    lo, hi = wilson_interval(2, 7)
+    assert 0 < lo < 2 / 7 < hi < 1
+    assert wilson_interval(0, 0) == (0.0, 0.0)

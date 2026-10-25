@@ -510,7 +510,7 @@ body {
 .skel-half { height: 180px; }
 
 .login-card { position: relative; z-index: 1; background: white; border-radius: var(--radius-xl); box-shadow: 0 20px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08); padding: var(--space-8); width: 100%; max-width: 380px; text-align: center; }
-.login-icon { width: 56px; height: 56px; background: linear-gradient(135deg, var(--color-accent), #0e4a5c); border-radius: var(--radius-lg); margin: 0 auto var(--space-4); display: flex; align-items: center; justify-content: center; }
+.login-icon { display: block; width: 72px; height: 72px; margin: 0 auto var(--space-4); border-radius: 16px; }
 .login-title { font-size: var(--font-title3); font-weight: 700; color: var(--color-label); margin-bottom: var(--space-2); }
 .login-sub { font-size: var(--font-subhead); color: var(--color-label-secondary); margin-bottom: var(--space-6); line-height: 1.4; }
 .github-btn { width: 100%; background: var(--color-dark); color: white; border: none; border-radius: var(--radius-md); padding: 0.85rem var(--space-6); font-family: inherit; font-size: var(--font-subhead); font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: var(--space-3); transition: background-color var(--dur-normal) var(--ease-spring); min-height: 48px; }
@@ -518,7 +518,6 @@ body {
 .github-btn:active { transform: scale(0.97); }
 .github-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .github-btn:focus:not(:focus-visible) { outline: none; }
-.login-note { font-size: var(--font-caption); color: var(--color-label-tertiary); margin-top: var(--space-4); }
 .login-error { font-size: var(--font-footnote); color: var(--color-danger); background: #fef2f2; border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); margin-top: var(--space-4); display: none; }
 .login-error.visible { display: block; }
 

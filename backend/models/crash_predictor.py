@@ -1,202 +1,199 @@
 """
-Test 2: Crash Prediction Bias Auditor
+Test 2: Crash data audit.
 
-Evaluates whether AI crash prediction models accurately predict actual danger
-or simply reflect enforcement/reporting bias.
+Asks whether ranking tracts by crash history, the method behind high-injury
+networks, misses high-risk tracts in poorer neighborhoods. Each test year is
+predicted from the years before it, and every tract is judged against one
+citywide definition of high-risk.
 """
 
-import pandas as pd
-import geopandas as gpd
+import math
 from pathlib import Path
-from sklearn.metrics import mean_absolute_error
-from sklearn.linear_model import Ridge
-from config import CRASH_ANALYSIS_YEARS, CRASH_TRAINING_YEARS, CRASH_TEST_YEARS
+
+import geopandas as gpd
+import pandas as pd
+from scipy.stats import fisher_exact
+
+from config import CRASH_ANALYSIS_YEARS, CRASH_BACKTEST_YEARS, CRASH_HIGH_RISK_QUANTILE, CRASH_NM_TYPES
+
+QUINTILES = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)']
+
+
+def wilson_interval(hits: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    if n == 0:
+        return (0.0, 0.0)
+    p = hits / n
+    denom = 1 + z**2 / n
+    center = (p + z**2 / (2 * n)) / denom
+    half = z * math.sqrt(p * (1 - p) / n + z**2 / (4 * n**2)) / denom
+    return (max(0.0, center - half), min(1.0, center + half))
 
 
 class CrashPredictionAuditor:
-    """
-    Audits AI crash prediction models for demographic bias.
-
-    The core issue: AI models trained on police-reported crash data inherit
-    enforcement bias, learning to predict where crashes are *reported* rather
-    than where they actually *occur*.
-    """
-
     def __init__(self, census_gdf: gpd.GeoDataFrame):
-        """
-        Initialize auditor with census tract data.
-
-        Args:
-            census_gdf: GeoDataFrame with census tracts and demographics
-        """
         self.census_gdf = census_gdf.copy()
         self.years = CRASH_ANALYSIS_YEARS
-        self.ai_model = None
 
     def load_real_crash_data(self, crash_csv_path: Path) -> pd.DataFrame:
-        """
-        Load real NCDOT non-motorist crash data and geocode to census tracts.
-
-        Args:
-            crash_csv_path: Path to ncdot_nonmotorist_durham.csv
-
-        Returns:
-            DataFrame with crashes aggregated by tract and year
-        """
-        print("Loading NCDOT non-motorist crash data...")
-
-        # Load crash data (ArcGIS column names)
-        crash_df = pd.read_csv(crash_csv_path)
-        crash_df = crash_df.rename(columns={
-            'CrashDate': 'crash_date',
-            'CrashYear': 'year',
-            'Latitude': 'latitude',
-            'Longitude': 'longitude',
+        """NCDOT non-motorist crashes geocoded to tracts: one row per tract-year."""
+        crash_df = pd.read_csv(crash_csv_path).rename(columns={
+            'CrashYear': 'year', 'Latitude': 'latitude', 'Longitude': 'longitude',
         })
-        crash_df['crash_date'] = pd.to_datetime(crash_df['crash_date'])
         crash_df['year'] = crash_df['year'].astype(int)
-
-        # Filter to analysis window (real data spans 2007-2024)
         crash_df = crash_df[crash_df['year'].isin(self.years)]
+        if 'NM_Type' in crash_df.columns:
+            crash_df = crash_df[crash_df['NM_Type'].isin(CRASH_NM_TYPES)]
 
-        print(f"Loaded {len(crash_df)} crash records ({min(self.years)}-{max(self.years)})")
-
-        # Create Point geometries for crashes
         crash_gdf = gpd.GeoDataFrame(
             crash_df,
             geometry=gpd.points_from_xy(crash_df['longitude'], crash_df['latitude']),
-            crs='EPSG:4326'
+            crs='EPSG:4326',
         )
-
-        # Ensure census GDF has same CRS
         if self.census_gdf.crs != crash_gdf.crs:
             self.census_gdf = self.census_gdf.to_crs(crash_gdf.crs)
 
-        print("Geocoding crashes to census tracts...")
+        demo_cols = ['tract_id', 'median_income', 'pct_minority', 'total_population']
+        joined = gpd.sjoin(crash_gdf, self.census_gdf[demo_cols + ['geometry']], how='inner', predicate='within')
+        counts = joined.groupby(['tract_id', 'year']).size().reset_index(name='crash_count')
 
-        # Spatial join: assign each crash to a census tract
-        crashes_with_tracts = gpd.sjoin(
-            crash_gdf,
-            self.census_gdf[['tract_id', 'geometry', 'median_income', 'pct_minority', 'total_population']],
-            how='inner',
-            predicate='within'
-        )
-
-        print(f"Successfully geocoded {len(crashes_with_tracts)} crashes ({len(crashes_with_tracts)/len(crash_gdf)*100:.1f}%)")
-
-        # Aggregate crashes by tract and year
-        crash_counts = crashes_with_tracts.groupby(['tract_id', 'year']).size().reset_index(name='crash_count')
-
-        # Create full grid: all tracts × all years
-        all_tracts = self.census_gdf['tract_id'].unique()
-        all_years = sorted(crashes_with_tracts['year'].unique())
-
-        full_grid = pd.MultiIndex.from_product(
-            [all_tracts, all_years],
-            names=['tract_id', 'year']
+        grid = pd.MultiIndex.from_product(
+            [self.census_gdf['tract_id'].unique(), self.years], names=['tract_id', 'year']
         ).to_frame(index=False)
+        out = grid.merge(counts, on=['tract_id', 'year'], how='left')
+        out['crash_count'] = out['crash_count'].fillna(0).astype(int)
+        out = out.merge(self.census_gdf[demo_cols], on='tract_id', how='left')
+        out['income_quintile'] = pd.qcut(out['median_income'], q=5, labels=QUINTILES, duplicates='drop')
+        return out
 
-        # Merge with crash counts (filling missing with 0)
-        crash_by_tract = full_grid.merge(crash_counts, on=['tract_id', 'year'], how='left')
-        crash_by_tract['crash_count'] = crash_by_tract['crash_count'].fillna(0).astype(int)
-
-        # Join with demographics
-        crash_by_tract = crash_by_tract.merge(
-            self.census_gdf[['tract_id', 'median_income', 'pct_minority', 'total_population']],
-            on='tract_id',
-            how='left'
-        )
-
-        # Add income quintiles
-        crash_by_tract['income_quintile'] = pd.qcut(
-            crash_by_tract['median_income'],
-            q=5,
-            labels=['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'],
-            duplicates='drop'
-        )
-
-        print(f"Aggregated to {len(crash_by_tract)} tract-year observations")
-
-        return crash_by_tract
-
-    def train_ai_on_real_data(self, crash_df: pd.DataFrame) -> pd.DataFrame:
+    def backtest(self, crash_df: pd.DataFrame, quantile: float = CRASH_HIGH_RISK_QUANTILE) -> pd.DataFrame:
         """
-        Train AI prediction model on real crash data and predict the test year(s).
-
-        Demonstrates that AI models show worse prediction accuracy in low-income areas.
-
-        Args:
-            crash_df: DataFrame with crash counts by tract and year
-
-        Returns:
-            DataFrame with AI predictions and error metrics by tract
+        For each backtest year, predict each tract's crashes as its mean over all
+        earlier years. A tract is high-risk when its count is above the citywide
+        `quantile`, and flagged when its prediction is above the same quantile of
+        predictions.
         """
-        print("Training AI model on real crash data...")
+        counts = crash_df.pivot_table(index='tract_id', columns='year', values='crash_count')
+        quintile = crash_df.drop_duplicates('tract_id').set_index('tract_id')['income_quintile']
+        rows = []
+        for year in CRASH_BACKTEST_YEARS:
+            predicted = counts[[y for y in counts.columns if y < year]].mean(axis=1)
+            actual = counts[year]
+            rows.append(pd.DataFrame({
+                'year': year,
+                'income_quintile': quintile,
+                'actual': actual,
+                'predicted': predicted,
+                'high_risk': actual > actual.quantile(quantile),
+                'flagged': predicted > predicted.quantile(quantile),
+            }))
+        return pd.concat(rows).rename_axis('tract_id').reset_index()
 
-        train_data = crash_df[crash_df['year'].isin(CRASH_TRAINING_YEARS)].copy()
-        test_data = crash_df[crash_df['year'].isin(CRASH_TEST_YEARS)].copy()
+    @staticmethod
+    def detection_by_quintile(bt: pd.DataFrame) -> dict:
+        hr = bt[bt['high_risk']]
+        result = {}
+        for q in QUINTILES:
+            s = hr[hr['income_quintile'] == q]
+            hits, n = int(s['flagged'].sum()), len(s)
+            lo, hi = wilson_interval(hits, n)
+            result[q] = {'flagged': hits, 'high_risk': n, 'recall': hits / n if n else 0.0,
+                         'ci_low': lo, 'ci_high': hi}
+        return result
 
-        # Calculate historical features (average crashes over training years)
-        train_avg = train_data.groupby('tract_id').agg({
-            'crash_count': 'mean',
-            'median_income': 'first',
-            'pct_minority': 'first',
-            'total_population': 'first',
-            'income_quintile': 'first'
-        }).reset_index()
+    @staticmethod
+    def q1_vs_rest_p(bt: pd.DataFrame) -> float:
+        hr = bt[bt['high_risk']]
+        q1 = hr['income_quintile'] == QUINTILES[0]
+        table = [[int(hr[q1]['flagged'].sum()), int((~hr[q1]['flagged']).sum())],
+                 [int(hr[~q1]['flagged'].sum()), int((~hr[~q1]['flagged']).sum())]]
+        return float(fisher_exact(table)[1])
 
-        train_avg.columns = ['tract_id', 'avg_past_crashes', 'median_income', 'pct_minority', 'total_population', 'income_quintile']
+    @staticmethod
+    def rate_by_quintile(crash_df: pd.DataFrame) -> dict:
+        """Crashes per 1,000 residents per year, by income quintile."""
+        g = crash_df.groupby('income_quintile', observed=True).agg(
+            crashes=('crash_count', 'sum'), person_years=('total_population', 'sum'))
+        return {q: float(g.loc[q, 'crashes'] / g.loc[q, 'person_years'] * 1000) for q in QUINTILES}
 
-        # Prepare features for training
-        feature_cols = ['median_income', 'pct_minority', 'total_population', 'avg_past_crashes']
 
-        # Normalize features
-        X_train = train_avg[feature_cols].fillna(train_avg[feature_cols].median())
-        X_train_norm = (X_train - X_train.mean()) / X_train.std()
+def build_outputs(census_gdf: gpd.GeoDataFrame, crash_csv_path: Path, source_label: str) -> dict:
+    """All Test 2 frontend artifacts, keyed by output filename stem."""
+    from utils.demographic_analysis import racial_crash_baseline
 
-        y_train = train_avg['avg_past_crashes']
+    auditor = CrashPredictionAuditor(census_gdf)
+    crash_df = auditor.load_real_crash_data(crash_csv_path)
+    bt = auditor.backtest(crash_df)
+    detection = auditor.detection_by_quintile(bt)
+    detection_median = auditor.detection_by_quintile(auditor.backtest(crash_df, quantile=0.5))
+    rates = auditor.rate_by_quintile(crash_df)
+    p_value = auditor.q1_vs_rest_p(bt)
+    raw = pd.read_csv(crash_csv_path)
+    baseline = racial_crash_baseline(census_gdf, raw[raw['NM_Type'].isin(CRASH_NM_TYPES)], CRASH_ANALYSIS_YEARS, source_label)
 
-        # Train Ridge regression model
-        self.ai_model = Ridge(alpha=1.0)
-        self.ai_model.fit(X_train_norm, y_train)
+    q1, q5 = QUINTILES[0], QUINTILES[-1]
+    rate_ratio = rates[q1] / rates[q5]
+    first, last = CRASH_BACKTEST_YEARS[0], CRASH_BACKTEST_YEARS[-1]
+    d1, d5 = detection[q1], detection[q5]
+    m1, m5 = detection_median[q1], detection_median[q5]
 
-        print(f"Model trained. Feature coefficients: {dict(zip(feature_cols, self.ai_model.coef_))}")
+    report = {
+        '_provenance': {
+            'data_type': 'real',
+            'real': ['US Census ACS demographics', 'NCDOT non-motorist crashes (ArcGIS Feature Service)'],
+            'simulated': [],
+        },
+        'summary': {
+            'total_crashes': int(crash_df['crash_count'].sum()),
+            'years_analyzed': CRASH_ANALYSIS_YEARS,
+            'backtest_years': CRASH_BACKTEST_YEARS,
+            'tracts_analyzed': int(crash_df['tract_id'].nunique()),
+            'high_risk_quantile': CRASH_HIGH_RISK_QUANTILE,
+        },
+        'rate_per_1k_by_quintile': rates,
+        'rate_ratio_q1_q5': rate_ratio,
+        'detection_by_quintile': detection,
+        'detection_by_quintile_median_cut': detection_median,
+        'q1_vs_rest_p_value': p_value,
+        'racial_baseline': baseline,
+        'findings': [
+            f"Crash history flagged {d1['flagged']} of {d1['high_risk']} high-risk tract-years in the poorest fifth "
+            f"({d1['ci_low']:.0%}–{d1['ci_high']:.0%}) and {d5['flagged']} of {d5['high_risk']} in the richest "
+            f"({d5['ci_low']:.0%}–{d5['ci_high']:.0%}), {first}–{last}. No gap is detectable (Fisher exact p = {p_value:.2f}), "
+            f"though the richest fifth has few high-risk tract-years to compare.",
+            f"With a looser cut (above the citywide median) the poorest fifth is flagged more often, "
+            f"{m1['recall']:.0%} vs {m5['recall']:.0%}.",
+            "Crash records only show reported crashes. Underreporting, and tools that weigh crashes against estimated "
+            "foot and bike traffic, need the audits in Tests 1, 3 and 4.",
+        ],
+    }
 
-        # Prepare test data
-        test_with_history = test_data.merge(
-            train_avg[['tract_id', 'avg_past_crashes']],
-            on='tract_id',
-            how='left'
-        )
+    counts = crash_df.pivot_table(index='tract_id', columns='year', values='crash_count')
+    quintile = crash_df.drop_duplicates('tract_id').set_index('tract_id')['income_quintile']
+    series = {}
+    for q in QUINTILES:
+        tracts = quintile[quintile == q].index
+        series[q] = {
+            'actual_crashes': [int(counts.loc[tracts, y].sum()) for y in CRASH_ANALYSIS_YEARS],
+            'predicted_crashes': [
+                round(float(counts.loc[tracts, [p for p in CRASH_ANALYSIS_YEARS if p < y]].mean(axis=1).sum()), 1)
+                if y in CRASH_BACKTEST_YEARS else None
+                for y in CRASH_ANALYSIS_YEARS
+            ],
+        }
+    time_series = {'years': CRASH_ANALYSIS_YEARS, 'by_quintile': series}
 
-        X_test = test_with_history[feature_cols].fillna(train_avg[feature_cols].median())
-        X_test_norm = (X_test - X_train.mean()) / X_train.std()
+    latest = bt[bt['year'] == last].set_index('tract_id')
+    demo = crash_df.drop_duplicates('tract_id').set_index('tract_id')
+    per_tract = pd.DataFrame({
+        'actual_crashes': latest['actual'],
+        'predicted_crashes': latest['predicted'].round(2),
+        'high_risk': latest['high_risk'],
+        'flagged': latest['flagged'],
+        'rate_per_1k': (counts.sum(axis=1) / len(CRASH_ANALYSIS_YEARS) / demo['total_population'] * 1000).round(2),
+        'median_income': demo['median_income'],
+        'income_quintile': demo['income_quintile'].astype(str),
+    }).reset_index()
+    geo = census_gdf[['tract_id', 'geometry']].merge(per_tract, on='tract_id')
+    geo['geometry'] = geo['geometry'].simplify(0.001)
 
-        # Make predictions
-        test_with_history['ai_predicted_crashes'] = self.ai_model.predict(X_test_norm)
-        test_with_history['ai_predicted_crashes'] = test_with_history['ai_predicted_crashes'].clip(lower=0)
-
-        # Calculate prediction errors
-        test_with_history['prediction_error'] = (
-            test_with_history['ai_predicted_crashes'] - test_with_history['crash_count']
-        )
-        test_with_history['prediction_error_abs'] = test_with_history['prediction_error'].abs()
-        test_with_history['prediction_error_pct'] = (
-            test_with_history['prediction_error'].abs() / (test_with_history['crash_count'] + 1) * 100
-        )
-
-        # Calculate MAE by quintile
-        mae_by_quintile = test_with_history.groupby('income_quintile', observed=True).agg({
-            'prediction_error_abs': 'mean',
-            'crash_count': 'mean',
-            'ai_predicted_crashes': 'mean'
-        }).round(2)
-
-        print("\nPrediction Error (MAE) by Income Quintile:")
-        print(mae_by_quintile)
-
-        # Calculate overall metrics
-        overall_mae = mean_absolute_error(test_with_history['crash_count'], test_with_history['ai_predicted_crashes'])
-        print(f"\nOverall MAE: {overall_mae:.2f}")
-
-        return test_with_history
+    return {'crash-report': report, 'crash-time-series': time_series, 'crash-geo-data': geo.__geo_interface__}

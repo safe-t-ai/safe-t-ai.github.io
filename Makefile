@@ -1,4 +1,4 @@
-.PHONY: help setup install install-backend install-frontend clean clean-all dev build deploy test data run-notebooks venv
+.PHONY: help setup install install-backend install-frontend install-hooks venv dev build preview deploy test test-quick lint lint-fix hooks clean clean-all
 
 .DEFAULT_GOAL := help
 
@@ -12,7 +12,7 @@ help: ## Display this help
 
 ##@ Setup
 
-setup: install install-hooks data ## Complete setup (install dependencies, hooks, and generate data)
+setup: install install-hooks ## Install dependencies and pre-commit hooks
 
 install: install-backend install-frontend ## Install all dependencies
 
@@ -31,20 +31,8 @@ install-hooks: ## Install pre-commit hooks
 
 ##@ Development
 
-dev: ## Start frontend dev server (data served from frontend/public/data/)
+dev: ## Start frontend dev server (reads committed data in frontend/public/data/)
 	cd frontend && npm run dev
-
-##@ Data
-
-data: ## Data lives in frontend/public/data/ on main — no separate pull needed
-	@echo "✓ Data is committed to main in frontend/public/data/"
-
-run-notebooks: ## Execute all pipeline notebooks locally (requires Jupyter)
-	jupyter nbconvert --to notebook --execute notebooks/01_fetch_data.ipynb --output notebooks/01_fetch_data.ipynb
-	jupyter nbconvert --to notebook --execute notebooks/02_test1_volume_estimation.ipynb --output notebooks/02_test1_volume_estimation.ipynb
-	jupyter nbconvert --to notebook --execute notebooks/03_test2_crash_prediction.ipynb --output notebooks/03_test2_crash_prediction.ipynb
-	jupyter nbconvert --to notebook --execute notebooks/04_test3_infrastructure.ipynb --output notebooks/04_test3_infrastructure.ipynb
-	jupyter nbconvert --to notebook --execute notebooks/05_test4_suppressed_demand.ipynb --output notebooks/05_test4_suppressed_demand.ipynb
 
 ##@ Build & Deploy
 
@@ -85,8 +73,6 @@ clean: ## Remove build artifacts and caches
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
 
-clean-all: clean ## Remove all generated files including dependencies
+clean-all: clean ## Also remove the venv and node_modules
 	rm -rf $(VENV)
 	rm -rf frontend/node_modules
-	rm -rf backend/data/raw
-	rm -rf backend/data/simulated

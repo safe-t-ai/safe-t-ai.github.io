@@ -55,9 +55,14 @@ def test_infrastructure_budget_from_config():
     assert isinstance(INFRASTRUCTURE_DEFAULT_BUDGET, int)
 
 
-def test_calculate_equity_metrics(sample_census_gdf, sample_infrastructure_df):
+def test_calculate_equity_metrics(sample_census_gdf, sample_infrastructure_df, tmp_path):
     """Test equity metrics: Gini uses per-tract allocation, disparate impact is Q1/Q5 per-capita."""
     auditor = InfrastructureRecommendationAuditor(sample_census_gdf, sample_infrastructure_df)
+    crash_csv = tmp_path / "crashes.csv"
+    crash_csv.write_text("CrashDate,CrashYear,Latitude,Longitude\n" + "\n".join(
+        f"2022-06-15,2022,{lat},0.5" for lat in (0.5, 0.5, 0.5, 1.5, 1.5, 2.5)) + "\n")
+    danger = auditor.load_danger_scores(crash_csv)
+    assert danger.set_index('tract_id').loc['001', 'danger_score'] > danger.set_index('tract_id').loc['005', 'danger_score']
     auditor.simulate_ai_recommendations()
     auditor.simulate_need_based_recommendations()
 

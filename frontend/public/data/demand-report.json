@@ -7,7 +7,7 @@
     "simulated": [
       "potential demand",
       "actual demand",
-      "AI detection models"
+      "detection models"
     ],
     "parameters": {
       "high_suppression_threshold": 70,
@@ -26,7 +26,7 @@
     "suppression_rate": 80.90079975108752,
     "tracts_analyzed": 67,
     "high_suppression_tracts": 50,
-    "naive_ai_correlation": 0.24797693077877545,
+    "naive_ai_correlation": 0.2479769307787755,
     "sophisticated_ai_correlation": 0.8203028400765606
   },
   "high_suppression_threshold": 70,
@@ -68,9 +68,9 @@
     }
   },
   "findings": [
-    "In Durham's poorest tracts, an estimated 425 daily trips per tract are suppressed by missing infrastructure \u2014 the latent demand that 'no one walks or bikes there' arguments overlook.",
-    "Citywide, 80.9% of potential active transportation demand goes unrealized; Q1 (poorest) areas have 82.7% suppression vs 73.5% in Q5.",
-    "A naive detection model achieves only 0.25 correlation with potential demand \u2014 it cannot detect demand that infrastructure has already eliminated.",
-    "A more sophisticated detection model reaches 0.82 correlation but still undercounts by 43.9% in Q1 tracts, where suppression is highest."
+    "In the model, 81% of potential walking and cycling trips are suppressed citywide: 83% in the poorest fifth of tracts and 73% in the richest. Suppression is 1 minus the square of each tract's real OpenStreetMap infrastructure score.",
+    "A detector that follows observed trips reaches r = 0.25 with modeled potential demand. It cannot see trips that missing infrastructure prevents.",
+    "A detector that adjusts for infrastructure reaches r = 0.82, and still undercounts the poorest fifth by 44%.",
+    "These are model outputs. Counts taken before and after new sidewalks or bike lanes would test them."
   ]
 }

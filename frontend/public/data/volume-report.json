@@ -256,9 +256,8 @@
     }
   ],
   "interpretation": [
-    "Simulated AI undercounts pedestrians in Q1 (lowest-income) tracts by 41% on average \u2014 a 43 percentage point gap vs the highest-income quintile",
-    "The same pattern holds by race: high-minority tracts show 33% undercounting vs 16% overcounting in low-minority areas",
-    "This 43pp income gap and 49pp race gap represent the audit methodology's input parameters \u2014 calibrated to ranges documented in research on crowdsourced mobility data bias"
+    "The simulated tool undercounts pedestrians in Q1 (lowest-income) tracts by 41% on average \u2014 a 43 percentage point gap vs the highest-income quintile",
+    "These gaps come from the assumed undercount, so they show the audit recovers a bias it was given. They do not measure any vendor tool."
   ],
   "_provenance": {
     "data_type": "mixed",

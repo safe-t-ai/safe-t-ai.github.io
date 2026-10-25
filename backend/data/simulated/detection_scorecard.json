@@ -1,6 +1,6 @@
 {
   "naive_ai": {
-    "correlation_with_potential": 0.24797693077877545,
+    "correlation_with_potential": 0.2479769307787755,
     "rmse": 603.1026021586359,
     "bias_q1": -83.54886117516968,
     "bias_q5": -79.26744952204481,
@@ -12,13 +12,5 @@
     "bias_q1": -43.869710333150365,
     "bias_q5": -33.890005954842756,
     "detection_rate_high_suppression": 100.0
-  },
-  "human_expert_baseline": {
-    "correlation_with_potential": 0.85,
-    "rmse": 60.0,
-    "bias_q1": -5.0,
-    "bias_q5": -5.0,
-    "detection_rate_high_suppression": 80.0,
-    "_note": "Hypothetical benchmark; not empirically measured."
   }
 }

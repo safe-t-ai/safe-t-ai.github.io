@@ -1,38 +1,21 @@
 /**
- * Tree-shaken ECharts bundle — imports only the components used across tests.
- * Reduces bundle from ~800KB (full) to ~300KB.
+ * Tree-shaken ECharts bundle: only the components the tests use.
  */
 import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import {
-    BarChart,
-    LineChart,
-    ScatterChart,
-    HeatmapChart,
-    FunnelChart,
-} from 'echarts/charts';
-import {
-    TitleComponent,
-    TooltipComponent,
-    GridComponent,
-    LegendComponent,
-    VisualMapComponent,
-    VisualMapContinuousComponent,
-} from 'echarts/components';
+import { BarChart, LineChart, ScatterChart, CustomChart } from 'echarts/charts';
+import { TooltipComponent, GridComponent, LegendComponent, AriaComponent } from 'echarts/components';
 
 echarts.use([
     CanvasRenderer,
     BarChart,
     LineChart,
     ScatterChart,
-    HeatmapChart,
-    FunnelChart,
-    TitleComponent,
+    CustomChart,
     TooltipComponent,
     GridComponent,
     LegendComponent,
-    VisualMapComponent,
-    VisualMapContinuousComponent,
+    AriaComponent,
 ]);
 
 export default echarts;

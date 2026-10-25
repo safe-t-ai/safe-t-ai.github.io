@@ -34,8 +34,6 @@ class APIClient {
     // Test 2 endpoints
     /** @returns {Promise<CrashReport>} */
     getCrashReport() { return this.get('crash-report'); }
-    /** @returns {Promise<ConfusionMatrices>} */
-    getConfusionMatrices() { return this.get('confusion-matrices'); }
     /** @returns {Promise<CrashTimeSeries>} */
     getCrashTimeSeries() { return this.get('crash-time-series'); }
     /** @returns {Promise<CrashGeoData>} */

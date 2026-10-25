@@ -60,11 +60,13 @@ export function initChart(elementId, config) {
     config.textStyle = { fontFamily: FONT_FAMILY, ...(config.textStyle || {}) };
     // Merge tooltip style and animation defaults
     config.tooltip = { ...TOOLTIP_STYLE, ...(config.tooltip || {}) };
-    if (!config.animationDuration) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        config.animation = false;
+    } else if (!config.animationDuration) {
         Object.assign(config, ANIMATION_DEFAULTS);
     }
-    // Colorblind-accessible decal patterns on all series
-    config.aria = { decal: { show: true }, ...(config.aria || {}) };
+    // Generated text description for screen readers; axis labels carry category, not color alone
+    config.aria = { enabled: true, ...(config.aria || {}) };
 
     const chart = echarts.init(document.getElementById(elementId));
     chart.setOption(config);
@@ -102,7 +104,8 @@ export const COLORS = {
     success: '#0f766e',
     warning: '#d97706',
     error: '#c2410c',
-    quintiles: ['#c2410c', '#e8903e', '#9ca3af', '#3ab7a5', '#0891b2'],
+    // Ordinal, poorest to richest: orange to blue stays distinct under red-green colour blindness
+    quintiles: ['#c2410c', '#f59e0b', '#94a3b8', '#60a5fa', '#1d4ed8'],
     minority: ['#0891b2', '#6366f1', '#c2410c'],
     gradient: ['#0891b2', '#3ab7a5', '#e8903e', '#c2410c']
 };
@@ -138,18 +141,18 @@ export function createBarChartConfig(data, options = {}) {
             type: 'category',
             data: data.map(d => d[xField]),
             axisLabel: {
-                fontSize: getResponsiveFontSize(12, 10),
-                rotate: isMobile() ? 15 : 0
+                fontSize: getResponsiveFontSize(12, 11),
+                interval: 0
             }
         },
         yAxis: {
             type: 'value',
             name: yAxisLabel,
             nameTextStyle: {
-                fontSize: getResponsiveFontSize(12, 10)
+                fontSize: getResponsiveFontSize(12, 11)
             },
             axisLabel: {
-                fontSize: getResponsiveFontSize(11, 9)
+                fontSize: 11
             }
         },
         series: [{
@@ -214,7 +217,7 @@ export function createScatterChartConfig(data, options = {}) {
 
     const allX = data.map(d => d[xField]);
     const allY = data.map(d => d[yField]);
-    const minVal = Math.floor(Math.min(...allX, ...allY) * 0.9);
+    const minVal = 0;
     const maxVal = Math.ceil(Math.max(...allX, ...allY) * 1.1);
 
     return {
@@ -233,11 +236,11 @@ export function createScatterChartConfig(data, options = {}) {
             bottom: 0,
             orient: 'horizontal',
             textStyle: {
-                fontSize: getResponsiveFontSize(11, 9)
+                fontSize: 11
             }
         } : {},
         grid: {
-            left: isMobile() ? '8%' : '3%',
+            left: isMobile() ? '12%' : '6%',
             right: isMobile() ? '5%' : '4%',
             bottom: colorField ? (isMobile() ? '20%' : '15%') : (isMobile() ? '10%' : '3%'),
             top: isMobile() ? '15%' : '10%',

@@ -28,10 +28,10 @@ export class VolumeEstimationAudit {
 
         this.data = { report, choroplethData, counters };
 
-        renderInterpretation('interpretation', report.interpretation, 'Key Findings', {
+        renderInterpretation('interpretation', report.interpretation, 'What the demo shows', {
             type: 'simulated',
             label: 'Simulated',
-            tooltip: 'Counter locations, AI predictions, and all bias parameters are simulated — illustrative, not empirically measured. Direction informed by Roy et al. (2019) on demographic skew in Strava data. Real vendor data requires proprietary API access.'
+            tooltip: 'Counter locations, volumes and the undercount are all simulated. Roy et al. (2019) support the direction of the skew in Strava data; the size is assumed.'
         });
         this.renderMetrics();
         this.renderMap();
@@ -39,38 +39,27 @@ export class VolumeEstimationAudit {
     }
 
     renderMetrics() {
-        const { overall_accuracy } = this.data.report;
-        const volumeBias = (overall_accuracy.total_predicted_volume - overall_accuracy.total_true_volume) / overall_accuracy.total_true_volume * 100;
+        const { overall_accuracy, by_income } = this.data.report;
+        const byQ = Object.fromEntries(by_income.by_quintile.map(q => [q.label, q]));
+        const fmt = (/** @type {number} */ v) => `${v > 0 ? '+' : ''}${v.toFixed(0)}%`;
 
         renderMetrics('metrics', [
             {
-                title: 'Mean Absolute Error',
-                value: `${overall_accuracy.metrics.mae.toFixed(0)} trips/day`,
-                subtext: `Across ${overall_accuracy.total_counters} locations`,
-                sentiment: 'value-warning'
+                title: 'Count error, poorest fifth',
+                value: fmt(byQ.Q1.mean_error_pct),
+                subtext: `Mean over ${byQ.Q1.count} simulated counters`,
+                sentiment: '',
             },
             {
-                title: 'Mean Error',
-                value: `${overall_accuracy.metrics.mean_pct_error.toFixed(1)}%`,
-                subtext: overall_accuracy.metrics.mean_pct_error > 0
-                    ? 'AI overcounts on average'
-                    : 'AI undercounts on average',
-                sentiment: Math.abs(overall_accuracy.metrics.mean_pct_error) > 10 ? 'value-danger' : 'value-warning'
+                title: 'Count error, richest fifth',
+                value: fmt(byQ.Q5.mean_error_pct),
+                subtext: `Mean over ${byQ.Q5.count} simulated counters`,
             },
             {
-                title: 'R\u00B2',
-                value: overall_accuracy.metrics.r_squared.toFixed(2),
-                subtext: overall_accuracy.metrics.r_squared > 0.7
-                    ? 'Variance explained — strong model fit'
-                    : 'Variance explained — moderate fit (simulated data)',
-                sentiment: overall_accuracy.metrics.r_squared > 0.7 ? 'value-success' : 'value-warning'
+                title: 'Simulated counters',
+                value: String(overall_accuracy.total_counters),
+                subtext: 'Placed across income fifths; replace with real counter sites',
             },
-            {
-                title: 'Total Volume Bias',
-                value: `${volumeBias.toFixed(1)}%`,
-                subtext: `${overall_accuracy.total_predicted_volume.toLocaleString()} vs ${overall_accuracy.total_true_volume.toLocaleString()} actual`,
-                sentiment: Math.abs(volumeBias) > 10 ? 'value-danger' : 'value-warning'
-            }
         ]);
     }
 
@@ -79,7 +68,7 @@ export class VolumeEstimationAudit {
             badge: 'simulated',
             label: 'Simulated',
             tooltip: 'Simulated counter locations using illustrative bias parameters (not empirically measured), directionally informed by Roy et al. (2019) on demographic skew in Strava data. Real vendor counter data requires proprietary API access.',
-            description: 'AI volume prediction error across Durham census tracts. Darker red indicates higher prediction errors, concentrated in low-income areas.',
+            description: 'Simulated count error by tract. Orange is undercount, purple is overcount; dots are counter sites.',
         });
         this.map = new DurhamMap('map').initialize();
 
@@ -152,7 +141,7 @@ export class VolumeEstimationAudit {
             badge: 'simulated',
             label: 'Simulated',
             tooltip: 'Real Census demographics with simulated volume predictions. Bias parameters are illustrative, not empirically measured — direction informed by Roy et al. (2019) on demographic skew in Strava Metro data.',
-            description: 'Prediction accuracy across income quintiles (Q1=poorest, Q5=richest). Shows mean absolute error in predicted vs actual pedestrian/cyclist counts.',
+            description: 'Mean signed error of the simulated tool by income fifth (Q1 poorest). Below zero is an undercount.',
         });
         const { by_income } = this.data.report;
 
@@ -224,7 +213,7 @@ export class VolumeEstimationAudit {
             xField: 'true_volume',
             yField: 'predicted_volume',
             xAxisLabel: 'Actual Daily Volume',
-            yAxisLabel: 'AI Predicted Volume',
+            yAxisLabel: 'Tool estimate',
             colorField: 'income_quintile',
             colorLabels: { 1: 'Q1', 2: 'Q2', 3: 'Q3', 4: 'Q4', 5: 'Q5' },
             colors: COLORS.quintiles,
@@ -248,7 +237,7 @@ export class VolumeEstimationAudit {
             badge: 'simulated',
             label: 'Simulated',
             tooltip: 'Simulated prediction errors across all counter locations. Error model uses an illustrative undercount parameter, not an empirically measured figure — direction informed by Roy et al. (2019).',
-            description: 'Each dot is one counter location. Dots left of zero indicate underprediction by the AI model.',
+            description: 'Each dot is one counter. Left of zero means the tool undercounted.',
         });
         const { scatter_data } = this.data.report;
         const quintileLabels = { 1: 'Q1', 2: 'Q2', 3: 'Q3', 4: 'Q4', 5: 'Q5' };

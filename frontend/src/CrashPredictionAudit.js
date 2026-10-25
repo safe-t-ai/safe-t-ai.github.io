@@ -1,5 +1,5 @@
 /**
- * Crash Prediction Bias Audit
+ * Test 2: Crash data audit (real NCDOT data)
  */
 
 import api from './services/api.js';
@@ -7,408 +7,246 @@ import { DurhamMap } from './components/common/DurhamMap.js';
 import { initChart, createBarChartConfig, COLORS } from './services/chartConfig.js';
 import { renderMetrics, renderInterpretation, initViewToggle, setChartMeta } from './services/renderUtils.js';
 
+const QUINTILES = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
+const SHORT = ['Q1', 'Q2', 'Q3', 'Q4', 'Q5'];
+const RAMP = ['#fff7ec', '#fee8c8', '#fdd49e', '#fdbb84', '#fc8d59', '#e34a33', '#b30000'];
+
 export class CrashPredictionAudit {
     constructor() {
         this.data = {};
         this.charts = {};
         this.map = null;
-        this.currentView = 'actual'; // 'actual' or 'predicted'
+        /** @type {number[] | undefined} */
+        this._countBreaks = undefined;
     }
 
     async initialize() {
-        const [report, confusionMatrices, timeSeries, crashGeoData] = await Promise.all([
+        const [report, timeSeries, geo] = await Promise.all([
             api.getCrashReport(),
-            api.getConfusionMatrices(),
             api.getCrashTimeSeries(),
-            api.getCrashGeoData()
+            api.getCrashGeoData(),
         ]);
+        this.data = { report, timeSeries, geo };
 
-        this.data = { report, confusionMatrices, timeSeries, crashGeoData };
-
-        renderInterpretation('test2-interpretation', report.findings, 'Key Findings', {
-            type: 'real',
-            label: 'Real Data',
-            tooltip: 'NCDOT non-motorist crash records 2019–2024 (883 records). A Ridge regression is used as a probe — the finding is about structural patterns in the data, not this specific model.'
-        });
-        this.renderBaselineContext();
         this.renderMetrics();
         this.renderMap();
-        this.renderCharts();
-        this.setupViewToggle();
-    }
-
-    renderBaselineContext() {
-        const b = this.data.report.racial_baseline;
-        if (!b) return;
-        document.getElementById('test2-baseline').innerHTML = `
-            <div class="baseline-callout" aria-label="Pre-AI baseline: racial disparity in crash risk">
-                <div class="baseline-callout-header">
-                    <h3 class="baseline-title">Before AI: Who bears crash risk</h3>
-                    <span class="baseline-source">${b.source}</span>
-                </div>
-                <div class="baseline-stats">
-                    <div class="baseline-stat">
-                        <span class="baseline-number baseline-danger">${b.black_victim_pct.toFixed(0)}%</span>
-                        <span class="baseline-label">of crash victims<br>are Black residents</span>
-                    </div>
-                    <span class="baseline-divider" aria-hidden="true">vs.</span>
-                    <div class="baseline-stat">
-                        <span class="baseline-number">${b.black_population_pct.toFixed(0)}%</span>
-                        <span class="baseline-label">of Durham's<br>population</span>
-                    </div>
-                    <span class="baseline-divider" aria-hidden="true">→</span>
-                    <div class="baseline-stat">
-                        <span class="baseline-number baseline-danger">${b.rate_ratio_black_vs_white.toFixed(1)}×</span>
-                        <span class="baseline-label">higher crash rate<br>than white residents</span>
-                    </div>
-                </div>
-                <p class="baseline-context">This disparity exists before AI allocates any safety resources. SAFE-T measures whether AI compounds it — directing investment away from communities already at greatest risk.</p>
-            </div>
-        `;
+        this.renderRateChart();
+        this.renderDetectionChart();
+        this.renderTimeSeries();
+        this.setupCrossFiltering();
+        renderInterpretation('test2-interpretation', report.findings, 'Findings', {
+            type: 'real',
+            label: 'Real data',
+            tooltip: 'NCDOT non-motorist crash records geocoded to Census tracts. Each year from the backtest window is predicted only from earlier years.',
+        });
     }
 
     renderMetrics() {
-        const { summary } = this.data.report;
-        const { by_quintile } = this.data.confusionMatrices;
-
-        const q1_accuracy = by_quintile['Q1 (Poorest)']?.accuracy ?? 0;
-        const q5_accuracy = by_quintile['Q5 (Richest)']?.accuracy ?? 0;
-        const q1_error = this.data.report.error_by_quintile['Q1 (Poorest)']?.error_pct ?? 0;
-        const q5_error = this.data.report.error_by_quintile['Q5 (Richest)']?.error_pct ?? 0;
-
-        const q1_recall = by_quintile['Q1 (Poorest)']?.recall ?? 0;
-        const q5_recall = by_quintile['Q5 (Richest)']?.recall ?? 0;
+        const { report } = this.data;
+        const rates = report.rate_per_1k_by_quintile;
+        const d = report.detection_by_quintile;
+        const q1 = d[QUINTILES[0]], q5 = d[QUINTILES[4]];
+        const pct = x => `${Math.round(x * 100)}%`;
 
         renderMetrics('test2-metrics', [
             {
-                title: 'Q1 Recall',
-                value: (q1_recall * 100).toFixed(0) + '%',
-                subtext: 'High-risk tracts detectable from data in poorest areas',
-                sentiment: 'value-danger'
+                title: 'Crash rate, poorest vs richest',
+                value: `${report.rate_ratio_q1_q5.toFixed(1)}×`,
+                subtext: `${rates[QUINTILES[0]].toFixed(2)} vs ${rates[QUINTILES[4]].toFixed(2)} per 1,000 residents a year`,
+                sentiment: 'value-danger',
             },
             {
-                title: 'Q5 Recall',
-                value: (q5_recall * 100).toFixed(0) + '%',
-                subtext: 'High-risk tracts detectable from data in wealthiest areas',
-                sentiment: 'value-success'
+                title: 'Flagged in poorest fifth',
+                value: `${q1.flagged} of ${q1.high_risk}`,
+                subtext: `${pct(q1.recall)} of high-risk tract-years`,
             },
             {
-                title: 'Detection Gap',
-                value: ((q5_recall - q1_recall) * 100).toFixed(0) + ' pts',
-                subtext: `${(100 - q1_recall * 100).toFixed(0)}% of Q1 high-risk tracts go undetected vs ${(100 - q5_recall * 100).toFixed(0)}% in Q5`,
-                sentiment: 'value-danger'
+                title: 'Flagged in richest fifth',
+                value: `${q5.flagged} of ${q5.high_risk}`,
+                subtext: `${pct(q5.recall)} of high-risk tract-years`,
             },
-            {
-                title: `Total Crashes (${summary.years_analyzed.length}yr)`,
-                value: summary.total_crashes_all_years.toLocaleString(),
-                subtext: `Durham County ${summary.years_analyzed[0]}\u2013${summary.years_analyzed.at(-1)} (NCDOT)`,
-                sentiment: 'value-info'
-            }
         ]);
     }
 
     renderMap() {
+        const year = this.data.report.summary.backtest_years.at(-1);
+        const span = this.data.report.summary.years_analyzed;
         setChartMeta('map-crashes', {
             badge: 'real',
-            label: 'Real Data',
-            tooltip: 'NCDOT non-motorist crash locations (pedestrian/bicycle), geocoded to census tracts via spatial join.',
-            description: 'Actual crash distribution vs what a model trained on this data predicts. Where they diverge most is where the data\'s structural patterns are weakest — typically Q1 tracts.',
+            label: 'Real data',
+            tooltip: 'NCDOT pedestrian and cyclist crash locations, joined to Census tracts.',
+            description: `Switch between the long-run crash rate and the ${year} counts the crash-history model was tested on.`,
         });
+
+        const views = {
+            rate: { field: 'rate_per_1k', title: `Crashes per 1,000 residents a year (${span[0]}–${span.at(-1)})` },
+            actual: { field: 'actual_crashes', title: `Crashes in ${year}` },
+            predicted: { field: 'predicted_crashes', title: `Predicted for ${year} from earlier years` },
+        };
+        const fmt = v => (Number.isInteger(v) ? String(v) : v.toFixed(1));
+        const breaksFor = field => {
+            const vals = this.data.geo.features.map(f => f.properties[field]).filter(v => v > 0).sort((a, b) => a - b);
+            const q = p => vals[Math.min(Math.floor(vals.length * p), vals.length - 1)];
+            return [0, q(0.2), q(0.4), q(0.6), q(0.8), q(0.95), Infinity];
+        };
+
         this.map = new DurhamMap('map-crashes').initialize();
-        this.updateCrashLayer();
+        const show = key => {
+            const v = views[key];
+            const breaks = key === 'rate' ? breaksFor('rate_per_1k') : (this._countBreaks ??= breaksFor('actual_crashes'));
+            if (this.map.choroplethLayer) this.map.map.removeLayer(this.map.choroplethLayer);
+            if (this.map.legendControl) this.map.map.removeControl(this.map.legendControl);
+            this.map.addChoroplethLayer(this.data.geo, v.field, {
+                colors: RAMP,
+                breaks,
+                fillOpacity: 0.75,
+                popupFields: [
+                    { label: 'Income quintile', field: 'income_quintile' },
+                    { label: 'Median income', field: 'median_income', format: x => `$${x?.toLocaleString()}` },
+                    { label: 'Crashes / 1k / yr', field: 'rate_per_1k', format: x => x?.toFixed(2) },
+                    { label: `Crashes ${year}`, field: 'actual_crashes' },
+                    { label: `Predicted ${year}`, field: 'predicted_crashes', format: x => x?.toFixed(1) },
+                ],
+            });
+            this.map.addLegend({
+                title: v.title,
+                colorScale: RAMP
+                    .map((color, i) => ({
+                        color,
+                        empty: i > 0 && breaks[i] === breaks[i - 1],
+                        label: i === 0 ? '0' : i === RAMP.length - 1 ? `> ${fmt(breaks[i - 1])}` : `${fmt(breaks[i - 1])}–${fmt(breaks[i])}`,
+                    }))
+                    .filter(e => !e.empty),
+            });
+        };
+        show('rate');
+        initViewToggle('toggle-crash-view', show);
 
         this._onResize = () => {
-            if (this.map && document.getElementById('map-crashes')?.offsetParent !== null) {
-                this.map.invalidateSize();
-            }
+            if (document.getElementById('map-crashes')?.offsetParent !== null) this.map?.invalidateSize();
         };
         window.addEventListener('resize', this._onResize);
     }
 
-    /** Compute shared color breaks from both actual and predicted values. */
-    _computeSharedBreaks() {
-        if (this._sharedBreaks) return this._sharedBreaks;
-        const allValues = this.data.crashGeoData.features
-            .flatMap(f => [f.properties.actual_crashes, f.properties.ai_predicted_crashes])
-            .filter(v => v != null && v > 0)
-            .sort((a, b) => a - b);
-        const q = (arr, p) => arr[Math.min(Math.floor(arr.length * p), arr.length - 1)];
-        this._sharedBreaks = [
-            q(allValues, 0.125), q(allValues, 0.25), q(allValues, 0.375),
-            q(allValues, 0.5), q(allValues, 0.625), q(allValues, 0.75),
-            q(allValues, 0.875), Math.ceil(q(allValues, 1))
-        ];
-        return this._sharedBreaks;
-    }
-
-    updateCrashLayer() {
-        const isActual = this.currentView === 'actual';
-        const field = isActual ? 'actual_crashes' : 'ai_predicted_crashes';
-        const testYear = this.data.report.summary.years_analyzed.at(-1);
-        const label = isActual ? `Actual Crashes (${testYear})` : `AI Predicted Crashes (${testYear})`;
-
-        // Shared scale so toggling views reveals over/underprediction by color shift
-        const breaks = this._computeSharedBreaks();
-
-        if (this.map.choroplethLayer) {
-            this.map.map.removeLayer(this.map.choroplethLayer);
-        }
-
-        this.map.addChoroplethLayer(
-            this.data.crashGeoData,
-            field,
+    renderRateChart() {
+        setChartMeta('chart-rate', {
+            badge: 'real',
+            label: 'Real data',
+            tooltip: 'Total crashes divided by tract population, summed across each income quintile and averaged over all years.',
+            description: 'Pedestrian and cyclist crashes per 1,000 residents a year. Q1 is the poorest fifth of tracts.',
+        });
+        const rates = this.data.report.rate_per_1k_by_quintile;
+        const config = createBarChartConfig(
+            QUINTILES.map((q, i) => ({ label: SHORT[i], value: Number(rates[q].toFixed(2)) })),
             {
-                fillOpacity: 0.7,
-                colors: ['#ffffcc', '#ffeda0', '#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c', '#b10026'],
-                breaks: breaks,
-                popupFields: [
-                    { label: 'Median Income', field: 'median_income', format: v => `$${v?.toLocaleString()}` },
-                    { label: 'Income Quintile', field: 'income_quintile' },
-                    { label: `Actual Crashes (${testYear})`, field: 'actual_crashes', format: v => v?.toLocaleString() },
-                    { label: 'AI Predicted', field: 'ai_predicted_crashes', format: v => v?.toFixed(1) }
-                ]
-            }
+                color: COLORS.quintiles,
+                formatter: p => `<strong>${QUINTILES[p[0].dataIndex]}</strong><br/>${p[0].value.toFixed(2)} crashes per 1,000 residents a year`,
+            },
         );
-
-        const fmt = v => Number.isInteger(v) ? v : v.toFixed(1);
-        this.map.addLegend({
-            title: label,
-            colorScale: [
-                { color: '#ffffcc', label: `<${fmt(breaks[2])}` },
-                { color: '#fed976', label: `${fmt(breaks[2])}\u2013${fmt(breaks[5])}` },
-                { color: '#fc4e2a', label: `${fmt(breaks[5])}\u2013${fmt(breaks[7])}` },
-                { color: '#b10026', label: `>${fmt(breaks[7])}` }
-            ]
-        });
+        config.series[0].label = { show: true, position: 'top', formatter: p => p.value.toFixed(2), fontSize: 12 };
+        this.charts.rate = initChart('chart-rate', config);
     }
 
-    renderCharts() {
-        this.renderConfusionMatrix();
-        this.renderTimeSeriesChart();
-        this.renderErrorByQuintile();
-        this.setupCrossFiltering();
-    }
-
-    setupCrossFiltering() {
-        if (!this.map) return;
-        const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
-
-        if (this.charts.confusion) {
-            this.charts.confusion.on('mouseover', (params) => {
-                const qIdx = params.data?.[0];
-                if (qIdx != null && quintiles[qIdx]) {
-                    this.map.highlightByProperty('income_quintile', quintiles[qIdx]);
-                }
-            });
-            this.charts.confusion.on('mouseout', () => this.map.resetHighlight());
-        }
-
-        if (this.charts.errorQuintile) {
-            this.charts.errorQuintile.on('mouseover', (params) => {
-                if (params.dataIndex != null && quintiles[params.dataIndex]) {
-                    this.map.highlightByProperty('income_quintile', quintiles[params.dataIndex]);
-                }
-            });
-            this.charts.errorQuintile.on('mouseout', () => this.map.resetHighlight());
-        }
-    }
-
-    renderConfusionMatrix() {
-        setChartMeta('chart-confusion', {
+    renderDetectionChart() {
+        const { report } = this.data;
+        const years = report.summary.backtest_years;
+        setChartMeta('chart-detection', {
             badge: 'real',
-            label: 'Real Data',
-            tooltip: 'Ridge regression trained on real NCDOT non-motorist crash data (883 records, 2019–2024; training on 2019–2023, evaluated on 2024). Census demographics as features.',
-            description: 'Classification metrics when a model is trained on real Durham crash data. The Q1/Q5 recall gap is a property of the data\'s structure — Q3/Q4 recall = 1.0 with low precision shows the data over-signals danger in mid-income areas while under-signaling it in Q1.',
+            label: 'Real data',
+            tooltip: 'High-risk: a tract whose crash count that year is above the citywide 67th percentile. Flagged: its prediction from earlier years is above the 67th percentile of predictions. Whiskers are 95% Wilson intervals.',
+            description: `Share of high-risk tract-years that crash history flagged, ${years[0]}–${years.at(-1)}. Whiskers show the 95% range; where ranges overlap, the difference could be chance.`,
         });
-        const { by_quintile } = this.data.confusionMatrices;
-
-        const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
-        const metrics = ['Precision', 'Recall', 'F1 Score'];
-
-        const data = [];
-        quintiles.forEach((quintile, qIdx) => {
-            if (by_quintile[quintile]) {
-                const qData = by_quintile[quintile];
-                data.push([qIdx, 0, qData.precision]);
-                data.push([qIdx, 1, qData.recall]);
-                data.push([qIdx, 2, qData.f1_score]);
-            }
-        });
-
-        const option = {
-            tooltip: {
-                position: 'top',
-                formatter: (params) => {
-                    const quintile = quintiles[params.data[0]];
-                    const metric = metrics[params.data[1]];
-                    const value = params.data[2];
-                    return `${quintile}<br/>${metric}: ${value.toFixed(2)}`;
-                }
-            },
-            grid: {
-                top: '15%',
-                left: '3%',
-                right: '3%',
-                bottom: '15%',
-                containLabel: true
-            },
-            xAxis: {
-                type: 'category',
-                data: quintiles,
-                splitArea: { show: true },
-                axisLabel: { interval: 0, rotate: 0, fontSize: 11 }
-            },
-            yAxis: {
-                type: 'category',
-                data: metrics,
-                splitArea: { show: true }
-            },
-            visualMap: {
-                min: 0,
-                max: 1,
-                calculable: true,
-                orient: 'horizontal',
-                left: 'center',
-                bottom: '5%',
-                inRange: {
-                    color: ['#f7fbff', '#deebf7', '#c6dbef', '#9ecae1', '#6baed6', '#4292c6', '#2171b5', '#08519c']
-                }
-            },
-            series: [{
-                type: 'heatmap',
-                data: data,
-                label: {
-                    show: true,
-                    formatter: (params) => params.data[2].toFixed(2)
-                },
-                emphasis: {
-                    itemStyle: {
-                        shadowBlur: 10,
-                        shadowColor: 'rgba(0, 0, 0, 0.5)'
-                    }
-                }
-            }]
-        };
-
-        this.charts.confusion = initChart('chart-confusion', option);
-    }
-
-    renderTimeSeriesChart() {
-        setChartMeta('chart-timeseries', {
-            badge: 'real',
-            label: 'Real Data',
-            tooltip: 'Non-motorist crash trends from NCDOT ArcGIS Feature Service, aggregated by census tract.',
-            description: 'Actual crash counts vs what a model trained on this data predicts, by year. The persistent gap in Q1 reflects the data\'s structural under-representation of danger in low-income tracts.',
-        });
-        const { years, by_quintile } = this.data.timeSeries;
-
-        const quintileSeries = [
-            { key: 'Q1 (Poorest)', label: 'Q1', color: '#0891b2' },
-            { key: 'Q5 (Richest)', label: 'Q5', color: '#7c3aed' }
-        ];
-
-        const series = quintileSeries.flatMap(({ key, label, color }) => [
-            {
-                name: `${label} Actual`,
-                type: 'line',
-                data: by_quintile[key].actual_crashes,
-                lineStyle: { color, width: 3 },
-                itemStyle: { color },
-            },
-            {
-                name: `${label} Predicted`,
-                type: 'line',
-                data: by_quintile[key].ai_predicted_crashes,
-                lineStyle: { color, type: 'dashed', width: 2 },
-                itemStyle: { color },
-            }
-        ]);
+        const d = report.detection_by_quintile;
+        const rows = QUINTILES.map(q => d[q]);
 
         const option = {
             tooltip: {
                 trigger: 'axis',
-                axisPointer: { type: 'cross' },
-                formatter: (params) =>
-                    `<strong>${params[0].name}</strong><br/>` +
-                    params.map(p => `${p.marker} ${p.seriesName}: ${Math.round(p.value).toLocaleString()}`).join('<br/>')
+                axisPointer: { type: 'shadow' },
+                confine: true,
+                formatter: p => {
+                    const r = rows[p[0].dataIndex];
+                    return `<strong>${QUINTILES[p[0].dataIndex]}</strong><br/>Flagged ${r.flagged} of ${r.high_risk} (${Math.round(r.recall * 100)}%)<br/>95% interval ${Math.round(r.ci_low * 100)}–${Math.round(r.ci_high * 100)}%`;
+                },
             },
-            legend: {
-                data: series.map(s => s.name),
-                bottom: 10
-            },
-            grid: {
-                left: '3%',
-                right: '4%',
-                bottom: '15%',
-                containLabel: true
-            },
-            xAxis: {
-                type: 'category',
-                data: years,
-                boundaryGap: false
-            },
-            yAxis: {
-                type: 'value',
-                name: 'Total Crashes'
-            },
-            series
+            grid: { left: '3%', right: '4%', top: 30, bottom: '3%', containLabel: true },
+            xAxis: { type: 'category', data: SHORT },
+            yAxis: { type: 'value', min: 0, max: 100, axisLabel: { formatter: '{value}%' } },
+            series: [
+                {
+                    type: 'bar',
+                    data: rows.map(r => Math.round(r.recall * 100)),
+                    itemStyle: { color: p => COLORS.quintiles[p.dataIndex], borderRadius: [3, 3, 0, 0] },
+                    label: { show: true, position: 'insideBottom', distance: 8, color: '#fff', fontWeight: 600, formatter: p => `${rows[p.dataIndex].flagged}/${rows[p.dataIndex].high_risk}` },
+                    animationDelay: idx => idx * 100,
+                },
+                {
+                    type: 'custom',
+                    silent: true,
+                    renderItem: (params, api) => {
+                        const x = api.coord([api.value(0), 0])[0];
+                        const lo = api.coord([0, api.value(1)])[1];
+                        const hi = api.coord([0, api.value(2)])[1];
+                        const style = { stroke: '#1a202c', lineWidth: 1.5 };
+                        return {
+                            type: 'group',
+                            children: [
+                                { type: 'line', shape: { x1: x, y1: lo, x2: x, y2: hi }, style },
+                                { type: 'line', shape: { x1: x - 6, y1: lo, x2: x + 6, y2: lo }, style },
+                                { type: 'line', shape: { x1: x - 6, y1: hi, x2: x + 6, y2: hi }, style },
+                            ],
+                        };
+                    },
+                    data: rows.map((r, i) => [i, r.ci_low * 100, r.ci_high * 100]),
+                    z: 10,
+                },
+            ],
         };
-
-        this.charts.timeseries = initChart('chart-timeseries', option);
+        this.charts.detection = initChart('chart-detection', option);
     }
 
-    renderErrorByQuintile() {
-        setChartMeta('chart-error-quintile', {
+    renderTimeSeries() {
+        setChartMeta('chart-timeseries', {
             badge: 'real',
-            label: 'Real Data',
-            tooltip: 'Mean absolute error of Ridge regression predictions on real NCDOT non-motorist crash data, grouped by neighborhood income quintile.',
-            description: 'Prediction error by income quintile. The gap is evidence of structural patterns in the training data — Q1 crash patterns don\'t produce strong enough signal for any model to reliably identify high-risk tracts.',
+            label: 'Real data',
+            tooltip: 'Yearly crash totals per quintile. Dashed lines: each year predicted as the mean of all earlier years.',
+            description: 'Crashes per year in the poorest and richest fifths, with the crash-history prediction dashed.',
         });
-        const { error_by_quintile } = this.data.report;
-
-        const quintiles = ['Q1 (Poorest)', 'Q2', 'Q3', 'Q4', 'Q5 (Richest)'];
-        const chartData = quintiles.map(q => ({
-            label: q,
-            value: error_by_quintile[q].error_pct
-        }));
-
-        const config = createBarChartConfig(chartData, {
-            yAxisLabel: 'Prediction Error (%)',
-            color: COLORS.quintiles,
-            formatter: (params) => {
-                const item = params[0];
-                const q = quintiles[item.dataIndex];
-                const d = error_by_quintile[q];
-                return `
-                    <strong>${q}</strong><br/>
-                    Error: ${d.error_pct.toFixed(1)}%<br/>
-                    MAE: ${d.mae.toFixed(1)} crashes<br/>
-                    Actual: ${d.actual_crashes.toFixed(1)}<br/>
-                    Predicted: ${d.ai_predicted_crashes.toFixed(1)}
-                `;
-            }
+        const { years, by_quintile } = this.data.timeSeries;
+        const pairs = [
+            { key: QUINTILES[0], label: 'Q1', color: COLORS.quintiles[0] },
+            { key: QUINTILES[4], label: 'Q5', color: COLORS.quintiles[4] },
+        ];
+        const series = pairs.flatMap(({ key, label, color }) => [
+            { name: `${label} actual`, type: 'line', data: by_quintile[key].actual_crashes, lineStyle: { color, width: 3 }, itemStyle: { color } },
+            { name: `${label} predicted`, type: 'line', data: by_quintile[key].predicted_crashes, lineStyle: { color, width: 2, type: 'dashed' }, itemStyle: { color }, connectNulls: false },
+        ]);
+        this.charts.timeseries = initChart('chart-timeseries', {
+            tooltip: {
+                trigger: 'axis',
+                formatter: params => `<strong>${params[0].name}</strong><br/>` +
+                    params.filter(p => p.value != null).map(p => `${p.marker} ${p.seriesName}: ${Math.round(p.value)}`).join('<br/>'),
+            },
+            legend: { top: 0 },
+            grid: { left: '3%', right: '6%', top: 40, bottom: 8, containLabel: true },
+            xAxis: { type: 'category', data: years, boundaryGap: false },
+            yAxis: { type: 'value' },
+            series,
         });
-
-        this.charts.errorQuintile = initChart('chart-error-quintile', config);
     }
 
-    setupViewToggle() {
-        initViewToggle('toggle-crash-view', (value) => {
-            this.currentView = value;
-            this.updateCrashLayer();
-        });
+    setupCrossFiltering() {
+        for (const chart of [this.charts.rate, this.charts.detection]) {
+            chart.on('mouseover', p => this.map.highlightByProperty('income_quintile', QUINTILES[p.dataIndex]));
+            chart.on('mouseout', () => this.map.resetHighlight());
+        }
     }
 
     cleanup() {
-        if (this._onResize) {
-            window.removeEventListener('resize', this._onResize);
-            this._onResize = null;
-        }
-        Object.values(this.charts).forEach(chart => chart.dispose());
+        if (this._onResize) window.removeEventListener('resize', this._onResize);
+        Object.values(this.charts).forEach(c => c.dispose());
         this.charts = {};
-        if (this.map) {
-            this.map.cleanup();
-            this.map = null;
-        }
+        this.map?.cleanup();
+        this.map = null;
     }
 }
